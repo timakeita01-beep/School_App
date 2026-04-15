@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Nouvelle Classe{% endblock %}
+{% block meta_desc %}Créer une nouvelle classe dans l'établissement{% endblock %}
+{% block page_title %}Les classes{% endblock %}
+{% block search_placeholder %}Rechercher une classe...{% endblock %}
+{% block nav_classes %}active{% endblock %}
+
+{% block content %}
+
+<!-- Page header -->
+<div class="page-header">
+  <div class="page-header-text">
+    <h2>Créer une nouvelle classe</h2>
+    <p>Remplissez les informations pour ajouter un nouveau groupe.</p>
+  </div>
+  <a href="{% url 'classes_list' %}" class="btn btn-secondary" id="btnRetour">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+         fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="19" y1="12" x2="5" y2="12"/>
+      <polyline points="12 19 5 12 12 5"/>
+    </svg>
+    Retour aux classes
+  </a>
+</div>
+
+<!-- Form card -->
+<div class="form-page">
+  <div class="form-card">
+
+    <!-- Header -->
+    <div class="form-card-header">
+      <h2>Nouvelle classe</h2>
+      <p>Informations de base de la classe</p>
+    </div>
+
+    <!-- Body -->
+    <div class="form-card-body">
+      <form method="post" action="{% url 'classe_ajouter' %}" id="formAjouterClasse" novalidate>
+        {% csrf_token %}
+
+        <!-- Nom -->
+        <div class="form-group">
+          <label class="form-label" for="id_nom">Nom de la classe</label>
+          <input
+            type="text"
+            class="form-input {% if errors.nom %}is-error{% endif %}"
+            id="id_nom"
+            name="nom"
+            value="{{ nom|default:'' }}"
+            placeholder="Ex : 6ème A, 5ème B, CM2..."
+            required
+            autocomplete="off"
+          />
+          {% if errors.nom %}
+          <p class="form-error" role="alert">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            {{ errors.nom }}
+          </p>
+          {% endif %}
+        </div>
+
+        <!-- Niveau -->
+        <div class="form-group">
+          <label class="form-label" for="id_niveau">Niveau</label>
+          <input
+            type="number"
+            class="form-input {% if errors.niveau %}is-error{% endif %}"
+            id="id_niveau"
+            name="niveau"
+            value="{{ niveau|default:'' }}"
+            placeholder="Ex : 6  (pour 6ème)"
+            min="1"
+            required
+          />
+          <p class="form-hint">Entrez un entier positif représentant le niveau (ex: 6 pour 6ème).</p>
+          {% if errors.niveau %}
+          <p class="form-error" role="alert">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            {{ errors.niveau }}
+          </p>
+          {% endif %}
+        </div>
+
+        <!-- Actions -->
+        <div class="form-actions">
+          <a href="{% url 'classes_list' %}" class="btn btn-secondary">Annuler</a>
+          <button type="submit" class="btn btn-primary" id="btnSoumettre">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            Créer la classe
+          </button>
+        </div>
+
+      </form>
+    </div><!-- /form-card-body -->
+  </div><!-- /form-card -->
+</div><!-- /form-page -->
+
+{% endblock %}
