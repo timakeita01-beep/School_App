@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Nouvel Élève{% endblock %}
+{% block page_title %}Élèves{% endblock %}
+{% block nav_eleves %}active{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h2>Ajouter un élève</h2>
+    <p>Remplissez les informations de l’élève</p>
+  </div>
+</div>
+
+<div class="form-page">
+  <div class="form-card">
+
+    <div class="form-card-header">
+      <h2>Nouvel élève</h2>
+    </div>
+
+    <div class="form-card-body">
+
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <!-- Nom -->
+        <div class="form-group">
+          <label class="form-label">Nom</label>
+          {{ form.nom }}
+        </div>
+
+        <!-- Prénom -->
+        <div class="form-group">
+          <label class="form-label">Prénom</label>
+          {{ form.prenom }}
+        </div>
+
+        <!-- Classe -->
+        <div class="form-group">
+          <label class="form-label">Classe</label>
+          {{ form.classe }}
+        </div>
+
+        <!-- Parent -->
+        <div class="form-group">
+          <label class="form-label">Parent</label>
+          {{ form.parent }}
+        </div>
+
+        <!-- Photo -->
+        <div class="form-group">
+          <label class="form-label">Photo</label>
+          {{ form.photo }}
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">
+            Ajouter
+          </button>
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+</div>
+
+{% endblock %}

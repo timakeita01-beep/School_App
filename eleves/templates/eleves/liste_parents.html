@@ -1,0 +1,195 @@
+{% extends 'eleves/base.html' %}
+{% load static %}
+
+{% block title %}Parents & Tuteurs{% endblock %}
+{% block meta_desc %}Liste de tous les parents et tuteurs — Portail Scolaire{% endblock %}
+{% block page_title %}Parents{% endblock %}
+{% block search_placeholder %}Rechercher un parent...{% endblock %}
+{% block nav_parents %}active{% endblock %}
+
+{% block content %}
+
+<!-- =====================
+     PAGE HEADER
+     ===================== -->
+<div class="page-header">
+  <div class="page-header-text">
+    <h2>Parents &amp; Tuteurs</h2>
+    <p>Gestion des contacts des tuteurs légaux</p>
+  </div>
+  <a href="{% url 'ajouter_parent' %}" class="btn btn-primary" id="btnAjouterParent">
+    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+         fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+         aria-hidden="true">
+      <line x1="12" x2="12" y1="5" y2="19"/>
+      <line x1="5"  x2="19" y1="12" y2="12"/>
+    </svg>
+    Ajouter un parent
+  </a>
+</div>
+
+<!-- =====================
+     TABLE
+     ===================== -->
+<div class="table-card">
+  <table class="table" id="tableParents">
+    <thead>
+      <tr>
+        <th>Nom</th>
+        <th>Téléphone</th>
+        <th>Email</th>
+        <th>Enfants inscrits</th>
+        <th style="text-align: right;">Actions</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      {% for parent in parents %}
+      <tr>
+
+        <!-- NOM -->
+        <td>
+          <div class="eleve-cell">
+            <div class="eleve-avatar" aria-hidden="true">{{ parent.nom|first|upper }}</div>
+            <span class="eleve-nom">{{ parent.nom }}</span>
+          </div>
+        </td>
+
+        <!-- TÉLÉPHONE -->
+        <td>
+          <a href="tel:{{ parent.telephone }}" class="parent-tel-link">
+            {{ parent.telephone }}
+          </a>
+        </td>
+
+        <!-- EMAIL -->
+        <td>
+          {% if parent.email %}
+            <a href="mailto:{{ parent.email }}" class="text-muted" style="font-size:12.5px;">
+              {{ parent.email }}
+            </a>
+          {% else %}
+            <span class="text-muted">—</span>
+          {% endif %}
+        </td>
+
+        <!-- ENFANTS -->
+        <td>
+          {% with nb=parent.enfants.count %}
+            {% if nb > 0 %}
+              <span class="badge-classe">{{ nb }} élève{% if nb > 1 %}s{% endif %}</span>
+            {% else %}
+              <span class="text-muted">—</span>
+            {% endif %}
+          {% endwith %}
+        </td>
+
+        <!-- ACTIONS -->
+        <td>
+          <div class="td-actions">
+            <a href="{% url 'modifier_parent' parent.pk %}" class="btn-icon btn-edit"
+               title="Modifier {{ parent.nom }}" aria-label="Modifier {{ parent.nom }}">
+              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"
+                   fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                   aria-hidden="true">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4Z"/>
+              </svg>
+            </a>
+            <button type="button" class="btn-icon btn-delete"
+                    onclick="openDeleteModal('{{ parent.pk }}', '{{ parent.nom }}')"
+                    title="Supprimer {{ parent.nom }}" aria-label="Supprimer {{ parent.nom }}">
+              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"
+                   fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                   aria-hidden="true">
+                <polyline points="3 6 5 6 21 6"/>
+                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                <path d="M10 11v6"/><path d="M14 11v6"/>
+                <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+              </svg>
+            </button>
+          </div>
+        </td>
+
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="5">
+          <div class="empty-state">
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
+                 aria-hidden="true">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+            <h3>Aucun parent enregistré</h3>
+            <p>Commencez par ajouter le premier tuteur.</p>
+            <a href="{% url 'ajouter_parent' %}" class="btn btn-primary">+ Ajouter un parent</a>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+
+  </table>
+</div>
+
+<!-- Modal suppression -->
+<div class="modal-overlay" id="deleteModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="modal">
+    <div class="modal-icon-wrap">
+      <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24"
+           fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+           aria-hidden="true">
+        <polyline points="3 6 5 6 21 6"/>
+        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+        <path d="M10 11v6"/><path d="M14 11v6"/>
+        <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+      </svg>
+    </div>
+    <h3 id="modalTitle">Confirmer la suppression</h3>
+    <p id="modalDesc">Voulez-vous vraiment supprimer ce parent ?<br>Cette action est irréversible.</p>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-secondary" onclick="closeDeleteModal()">Annuler</button>
+      <form id="deleteForm" method="post" action="">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Supprimer</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  function openDeleteModal(pk, nom) {
+    document.getElementById('deleteForm').action = '/eleves/parents/' + pk + '/delete/';
+    document.getElementById('modalDesc').innerHTML =
+      'Voulez-vous vraiment supprimer <strong>' + nom + '</strong> ?<br>Cette action est irréversible.';
+    document.getElementById('deleteModal').classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeDeleteModal() {
+    document.getElementById('deleteModal').classList.remove('active');
+    document.body.style.overflow = '';
+  }
+  document.getElementById('deleteModal').addEventListener('click', function(e) {
+    if (e.target === this) closeDeleteModal();
+  });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDeleteModal(); });
+
+  /* Recherche live */
+  const si = document.getElementById('searchInput');
+  if (si) {
+    si.addEventListener('input', function() {
+      const q = this.value.toLowerCase();
+      document.querySelectorAll('#tableParents tbody tr').forEach(row => {
+        row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+      });
+    });
+  }
+</script>
+{% endblock %}
