@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Modifier — {{ data.nom }}{% endblock %}
+{% block meta_desc %}Modifier les informations de la classe {{ data.nom }}{% endblock %}
+{% block page_title %}Les classes{% endblock %}
+{% block search_placeholder %}Rechercher une classe...{% endblock %}
+{% block nav_classes %}active{% endblock %}
+
+{% block content %}
+
+<!-- Page header -->
+<div class="page-header">
+  <div class="page-header-text">
+    <h2>Modifier la classe</h2>
+    <p>Mettez à jour les informations de <strong>{{ data.nom }}</strong>.</p>
+  </div>
+  <a href="{% url 'classes_list' %}" class="btn btn-secondary" id="btnRetour">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+         fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="19" y1="12" x2="5" y2="12"/>
+      <polyline points="12 19 5 12 12 5"/>
+    </svg>
+    Retour aux classes
+  </a>
+</div>
+
+<!-- Form card -->
+<div class="form-page">
+  <div class="form-card">
+
+    <!-- Coloured header -->
+    <div class="form-card-header">
+      <h2>{{ data.nom }}</h2>
+      <p>Modifiez les champs souhaités puis enregistrez.</p>
+    </div>
+
+    <!-- Body -->
+    <div class="form-card-body">
+      <form method="post" action="{% url 'classe_modifier' data.pk %}" id="formModifierClasse" novalidate>
+        {% csrf_token %}
+
+        <!-- Nom -->
+        <div class="form-group">
+          <label class="form-label" for="id_nom">Nom de la classe</label>
+          <input
+            type="text"
+            class="form-input {% if errors.nom %}is-error{% endif %}"
+            id="id_nom"
+            name="nom"
+            value="{{ form_data.nom|default:data.nom }}"
+            placeholder="Ex : 6ème A, CM2..."
+            required
+            autocomplete="off"
+          />
+          {% if errors.nom %}
+          <p class="form-error" role="alert">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            {{ errors.nom }}
+          </p>
+          {% endif %}
+        </div>
+
+        <!-- Niveau -->
+        <div class="form-group">
+          <label class="form-label" for="id_niveau">Niveau</label>
+          <input
+            type="number"
+            class="form-input {% if errors.niveau %}is-error{% endif %}"
+            id="id_niveau"
+            name="niveau"
+            value="{{ form_data.niveau|default:data.niveau }}"
+            placeholder="Ex : 6"
+            min="1"
+            required
+          />
+          <p class="form-hint">Entrez un entier positif représentant le niveau (ex: 6 pour 6ème).</p>
+          {% if errors.niveau %}
+          <p class="form-error" role="alert">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            {{ errors.niveau }}
+          </p>
+          {% endif %}
+        </div>
+
+        <!-- Actions -->
+        <div class="form-actions">
+          <a href="{% url 'classes_list' %}" class="btn btn-secondary">Annuler</a>
+          <button type="submit" class="btn btn-primary" id="btnEnregistrer">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+              <polyline points="17 21 17 13 7 13 7 21"/>
+              <polyline points="7 3 7 8 15 8"/>
+            </svg>
+            Enregistrer les modifications
+          </button>
+        </div>
+
+      </form>
+    </div><!-- /form-card-body -->
+  </div><!-- /form-card -->
+</div><!-- /form-page -->
+
+{% endblock %}
