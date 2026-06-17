@@ -1,0 +1,103 @@
+{% extends 'eleves/base.html' %}
+{% load static %}
+
+{% block title %}Ajouter un parent{% endblock %}
+{% block meta_desc %}Enregistrer un nouveau tuteur ou parent — Portail Scolaire{% endblock %}
+{% block page_title %}Parents{% endblock %}
+{% block search_placeholder %}Rechercher un parent...{% endblock %}
+{% block nav_parents %}active{% endblock %}
+
+{% block content %}
+
+<!-- Fil d'Ariane -->
+<nav class="breadcrumb" aria-label="Fil d'ariane">
+  <a href="{% url 'liste_parents' %}">Parents</a>
+  <span class="breadcrumb-sep" aria-hidden="true">›</span>
+  <span>Ajouter un parent</span>
+</nav>
+
+<div class="form-page">
+  <div class="form-card">
+
+    <!-- En-tête -->
+    <div class="form-card-header">
+      <div style="display:flex; align-items:center; gap:14px;">
+        <div style="width:44px; height:44px; border-radius:50%; background:rgba(255,255,255,.2);
+                    display:flex; align-items:center; justify-content:center; border:2px solid rgba(255,255,255,.4);">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+               fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+        </div>
+        <div>
+          <h2>Nouveau parent / tuteur</h2>
+          <p>Enregistrez les informations de contact du tuteur</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Corps -->
+    <div class="form-card-body">
+      <form method="post" novalidate>
+        {% csrf_token %}
+
+        <!-- Nom -->
+        <div class="form-group">
+          <label class="form-label" for="id_nom">Nom complet</label>
+          {{ form.nom }}
+          {% if form.nom.errors %}
+            <p class="form-error">{{ form.nom.errors.0 }}</p>
+          {% endif %}
+        </div>
+
+        <!-- Téléphone -->
+        <div class="form-group">
+          <label class="form-label" for="id_telephone">
+            Numéro de téléphone <span class="required-mark">*</span>
+          </label>
+          {{ form.telephone }}
+          <p class="form-hint">Ce numéro sera utilisé pour contacter le parent depuis la fiche de l'élève.</p>
+          {% if form.telephone.errors %}
+            <p class="form-error">{{ form.telephone.errors.0 }}</p>
+          {% endif %}
+        </div>
+
+        <!-- Email -->
+        <div class="form-group">
+          <label class="form-label" for="id_email">Adresse e-mail <span class="form-optional">(optionnel)</span></label>
+          {{ form.email }}
+          {% if form.email.errors %}
+            <p class="form-error">{{ form.email.errors.0 }}</p>
+          {% endif %}
+        </div>
+
+        <!-- Erreurs générales -->
+        {% if form.non_field_errors %}
+          <div class="message message-error" style="margin-bottom:16px;">
+            {{ form.non_field_errors }}
+          </div>
+        {% endif %}
+
+        <!-- Boutons -->
+        <div class="form-actions">
+          <a href="{% url 'liste_parents' %}" class="btn btn-secondary">Annuler</a>
+          <button type="submit" class="btn btn-primary">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                 aria-hidden="true">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            Enregistrer le parent
+          </button>
+        </div>
+
+      </form>
+    </div>
+
+  </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,311 @@
+{% extends 'eleves/base.html' %}
+{% load static %}
+
+{% block title %}Liste des élèves{% endblock %}
+{% block meta_desc %}Liste et gestion de tous les élèves — Portail Scolaire{% endblock %}
+{% block page_title %}Élèves{% endblock %}
+{% block search_placeholder %}Rechercher un élève...{% endblock %}
+{% block nav_eleves %}active{% endblock %}
+
+{% block content %}
+
+<!-- =====================
+     STATS DASHBOARD
+     ===================== -->
+<div class="stats-grid">
+
+  <div class="stat-card">
+    <div class="stat-icon stat-icon--blue">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+           fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+        <circle cx="9" cy="7" r="4"/>
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+      </svg>
+    </div>
+    <div class="stat-info">
+      <span class="stat-label">Total élèves</span>
+      <span class="stat-value">{{ total_eleves }}</span>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-icon stat-icon--pink">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+           fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+        <circle cx="12" cy="7" r="4"/>
+      </svg>
+    </div>
+    <div class="stat-info">
+      <span class="stat-label">Total filles</span>
+      <span class="stat-value">{{ total_filles }}</span>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-icon stat-icon--teal">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+           fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+        <circle cx="12" cy="7" r="4"/>
+      </svg>
+    </div>
+    <div class="stat-info">
+      <span class="stat-label">Total garçons</span>
+      <span class="stat-value">{{ total_garcons }}</span>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-icon stat-icon--gold">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+           fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+      </svg>
+    </div>
+    <div class="stat-info">
+      <span class="stat-label">Moyenne générale</span>
+      <span class="stat-value">{{ moyenne_generale }}</span>
+    </div>
+  </div>
+
+</div>
+
+<!-- =====================
+     PAGE HEADER
+     ===================== -->
+<div class="page-header">
+  <div class="page-header-text">
+    <h2>Liste des élèves</h2>
+    <p>Gestion des informations de chaque élève avec aisance</p>
+  </div>
+
+  <a href="{% url 'ajouter_eleve' %}" class="btn btn-primary" id="btnAjouterEleve">
+    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+         fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+         aria-hidden="true">
+      <line x1="12" x2="12" y1="5" y2="19"/>
+      <line x1="5"  x2="19" y1="12" y2="12"/>
+    </svg>
+    Ajouter un élève
+  </a>
+</div>
+
+<!-- =====================
+     TABLE
+     ===================== -->
+<div class="table-card">
+  <table class="table" id="tableEleves">
+    <thead>
+      <tr>
+        <th>Élève</th>
+        <th>Classe</th>
+        <th>Statut</th>
+        <th>Tuteur</th>
+        <th>Téléphone</th>
+        <th style="text-align: right;">Actions</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      {% for eleve in eleves %}
+      <tr>
+
+        <!-- ÉLÈVE (avatar + nom complet) -->
+        <td>
+          <div class="eleve-cell">
+            <div class="eleve-avatar" aria-hidden="true">
+              {% if eleve.image %}
+                <img src="{{ eleve.image.url }}" alt="{{ eleve.nom }} {{ eleve.prenom }}" />
+              {% else %}
+                {{ eleve.prenom|first|upper }}{{ eleve.nom|first|upper }}
+              {% endif %}
+            </div>
+            <div class="eleve-info">
+              <span class="eleve-nom">{{ eleve.nom }} {{ eleve.prenom }}</span>
+              <span class="eleve-sub">
+                {% if eleve.sexe == 'M' %}Garçon{% else %}Fille{% endif %}
+              </span>
+            </div>
+          </div>
+        </td>
+
+        <!-- CLASSE -->
+        <td>
+          <span class="badge-classe">{{ eleve.classe.nom }}</span>
+        </td>
+
+        <!-- STATUT -->
+        <td>
+          {% if eleve.statut == 'REGULIER' %}
+            <span class="badge badge--success">Régulier</span>
+          {% else %}
+            <span class="badge badge--warning">Irrégulier</span>
+          {% endif %}
+        </td>
+
+        <!-- TUTEUR -->
+        <td>
+          {% if eleve.parent %}
+            <span class="eleve-nom">{{ eleve.parent.nom }}</span>
+          {% else %}
+            <span class="text-muted">—</span>
+          {% endif %}
+        </td>
+
+        <!-- TÉLÉPHONE -->
+        <td>
+          {% if eleve.parent %}
+            {{ eleve.parent.telephone }}
+          {% else %}
+            <span class="text-muted">—</span>
+          {% endif %}
+        </td>
+
+        <!-- ACTIONS -->
+        <td>
+          <div class="td-actions">
+
+            <!-- Voir la fiche -->
+            <a href="{% url 'detail_eleve' eleve.pk %}" class="btn-icon btn-view"
+               title="Voir la fiche de {{ eleve.nom }}"
+               aria-label="Voir la fiche de {{ eleve.nom }}">
+              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"
+                   fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                   aria-hidden="true">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </a>
+
+            <!-- Modifier -->
+            <a href="{% url 'modifier_eleve' eleve.pk %}" class="btn-icon btn-edit"
+               title="Modifier {{ eleve.nom }}"
+               aria-label="Modifier {{ eleve.nom }}">
+              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"
+                   fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                   aria-hidden="true">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4Z"/>
+              </svg>
+            </a>
+
+            <!-- Supprimer (ouvre modal) -->
+            <button type="button"
+                    class="btn-icon btn-delete"
+                    onclick="openDeleteModal('{{ eleve.pk }}', '{{ eleve.nom }} {{ eleve.prenom }}')"
+                    title="Supprimer {{ eleve.nom }}"
+                    aria-label="Supprimer {{ eleve.nom }}">
+              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"
+                   fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                   aria-hidden="true">
+                <polyline points="3 6 5 6 21 6"/>
+                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                <path d="M10 11v6"/>
+                <path d="M14 11v6"/>
+                <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+              </svg>
+            </button>
+
+          </div>
+        </td>
+
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="6">
+          <div class="empty-state">
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
+                 aria-hidden="true">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+            <h3>Aucun élève trouvé</h3>
+            <p>Commencez par ajouter le premier élève.</p>
+            <a href="{% url 'ajouter_eleve' %}" class="btn btn-primary">+ Ajouter un élève</a>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+
+  </table>
+</div>
+
+<!-- =====================
+     MODAL SUPPRESSION
+     ===================== -->
+<div class="modal-overlay" id="deleteModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="modal">
+    <div class="modal-icon-wrap">
+      <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24"
+           fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+           aria-hidden="true">
+        <polyline points="3 6 5 6 21 6"/>
+        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+        <path d="M10 11v6"/>
+        <path d="M14 11v6"/>
+        <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+      </svg>
+    </div>
+    <h3 id="modalTitle">Confirmer la suppression</h3>
+    <p id="modalDesc">Voulez-vous vraiment supprimer cet élève ?<br>Cette action est irréversible.</p>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-secondary" onclick="closeDeleteModal()">Annuler</button>
+      <form id="deleteForm" method="post" action="">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Supprimer</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  /* ------ Delete modal ------ */
+  function openDeleteModal(pk, nomComplet) {
+    const modal    = document.getElementById('deleteModal');
+    const form     = document.getElementById('deleteForm');
+    const desc     = document.getElementById('modalDesc');
+    form.action    = '/' + 'eleves/' + pk + '/delete/';
+    desc.innerHTML = 'Voulez-vous vraiment supprimer <strong>' + nomComplet + '</strong> ?<br>Cette action est irréversible.';
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeDeleteModal() {
+    document.getElementById('deleteModal').classList.remove('active');
+    document.body.style.overflow = '';
+  }
+
+  /* Fermer en cliquant hors du modal */
+  document.getElementById('deleteModal').addEventListener('click', function(e) {
+    if (e.target === this) closeDeleteModal();
+  });
+
+  /* Fermer avec Escape */
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeDeleteModal();
+  });
+
+  /* ------ Recherche live ------ */
+  const searchInput = document.getElementById('searchInput');
+  if (searchInput) {
+    searchInput.addEventListener('input', function() {
+      const q    = this.value.toLowerCase();
+      const rows = document.querySelectorAll('#tableEleves tbody tr');
+      rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(q) ? '' : 'none';
+      });
+    });
+  }
+</script>
+{% endblock %}

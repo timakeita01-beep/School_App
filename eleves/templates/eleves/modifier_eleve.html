@@ -1,0 +1,155 @@
+{% extends 'eleves/base.html' %}
+{% load static %}
+
+{% block title %}Modifier — {{ eleve.nom }} {{ eleve.prenom }}{% endblock %}
+{% block meta_desc %}Modification du profil de {{ eleve.nom }} {{ eleve.prenom }}{% endblock %}
+{% block page_title %}Modifier un élève{% endblock %}
+{% block search_placeholder %}Rechercher un élève...{% endblock %}
+{% block nav_eleves %}active{% endblock %}
+
+{% block content %}
+
+<!-- Fil d'Ariane -->
+<nav class="breadcrumb" aria-label="Fil d'ariane">
+  <a href="{% url 'liste_eleves' %}">Élèves</a>
+  <span class="breadcrumb-sep" aria-hidden="true">›</span>
+  <a href="{% url 'detail_eleve' eleve.pk %}">{{ eleve.nom }} {{ eleve.prenom }}</a>
+  <span class="breadcrumb-sep" aria-hidden="true">›</span>
+  <span>Modifier</span>
+</nav>
+
+<!-- ========================
+     FORMULAIRE
+     ======================== -->
+<div class="form-page">
+  <div class="form-card">
+
+    <!-- En-tête -->
+    <div class="form-card-header">
+      <div style="display:flex; align-items:center; gap:14px;">
+        <!-- Mini avatar -->
+        <div class="form-avatar-mini">
+          {% if eleve.image %}
+            <img src="{{ eleve.image.url }}" alt="{{ eleve.nom }}" />
+          {% else %}
+            {{ eleve.prenom|first|upper }}{{ eleve.nom|first|upper }}
+          {% endif %}
+        </div>
+        <div>
+          <h2>Modifier le profil</h2>
+          <p>{{ eleve.nom }} {{ eleve.prenom }} &mdash; {{ eleve.classe.nom }}</p>
+        </div>
+      </div>
+    </div><!-- /form-card-header -->
+
+    <!-- Corps du formulaire -->
+    <div class="form-card-body">
+      <form method="post" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
+
+        <!-- Ligne 1 : Nom / Prénom -->
+        <div class="form-row-2">
+          <div class="form-group">
+            <label class="form-label" for="id_nom">Nom</label>
+            {{ form.nom }}
+            {% if form.nom.errors %}
+              <p class="form-error">{{ form.nom.errors.0 }}</p>
+            {% endif %}
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="id_prenom">Prénom</label>
+            {{ form.prenom }}
+            {% if form.prenom.errors %}
+              <p class="form-error">{{ form.prenom.errors.0 }}</p>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Ligne 2 : Sexe / Date de naissance -->
+        <div class="form-row-2">
+          <div class="form-group">
+            <label class="form-label" for="id_sexe">Sexe</label>
+            <div class="select-wrap">{{ form.sexe }}</div>
+            {% if form.sexe.errors %}
+              <p class="form-error">{{ form.sexe.errors.0 }}</p>
+            {% endif %}
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="id_date_naissance">Date de naissance</label>
+            {{ form.date_naissance }}
+            {% if form.date_naissance.errors %}
+              <p class="form-error">{{ form.date_naissance.errors.0 }}</p>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Ligne 3 : Classe / Statut -->
+        <div class="form-row-2">
+          <div class="form-group">
+            <label class="form-label" for="id_classe">Classe</label>
+            <div class="select-wrap">{{ form.classe }}</div>
+            {% if form.classe.errors %}
+              <p class="form-error">{{ form.classe.errors.0 }}</p>
+            {% endif %}
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="id_statut">Statut</label>
+            <div class="select-wrap">{{ form.statut }}</div>
+            {% if form.statut.errors %}
+              <p class="form-error">{{ form.statut.errors.0 }}</p>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Parent -->
+        <div class="form-group">
+          <label class="form-label" for="id_parent">Tuteur / Parent</label>
+          <div class="select-wrap">{{ form.parent }}</div>
+          {% if form.parent.errors %}
+            <p class="form-error">{{ form.parent.errors.0 }}</p>
+          {% endif %}
+        </div>
+
+        <!-- Photo -->
+        <div class="form-group">
+          <label class="form-label" for="id_image">Photo de profil</label>
+          {% if eleve.image %}
+            <div class="current-photo-preview">
+              <img src="{{ eleve.image.url }}" alt="Photo actuelle" />
+              <span class="text-muted" style="font-size:12px;">Photo actuelle — choisissez une nouvelle pour la remplacer</span>
+            </div>
+          {% endif %}
+          {{ form.image }}
+          <p class="form-hint">Formats acceptés : JPG, PNG, WebP. Max 5 Mo.</p>
+          {% if form.image.errors %}
+            <p class="form-error">{{ form.image.errors.0 }}</p>
+          {% endif %}
+        </div>
+
+        <!-- Erreurs non liées aux champs -->
+        {% if form.non_field_errors %}
+          <div class="message message-error" style="margin-bottom:16px;">
+            {{ form.non_field_errors }}
+          </div>
+        {% endif %}
+
+        <!-- Boutons -->
+        <div class="form-actions">
+          <a href="{% url 'detail_eleve' eleve.pk %}" class="btn btn-secondary">Annuler</a>
+          <button type="submit" class="btn btn-primary">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                 aria-hidden="true">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            Enregistrer les modifications
+          </button>
+        </div>
+
+      </form>
+    </div><!-- /form-card-body -->
+
+  </div><!-- /form-card -->
+</div><!-- /form-page -->
+
+{% endblock %}
