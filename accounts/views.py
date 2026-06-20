@@ -5,7 +5,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 # Create your views here.
 def home(request):
-    return render(request, "home.html")
+    return render(request, "accounts/home.html")
 
 def is_teacher(user):
     return user.groups.filter(name="Teacher").exists()

@@ -168,14 +168,14 @@
 <body>
 <div class="sidebar">
     <div class="sidebar-header">
-        <span>Portail Scolaire</span>
+        <span>School Manage App</span>
     </div>
     <nav class="nav-links">
-        <a href="#" class="nav-item active">ACCUEIL</a>
-        <a href="#" class="nav-item">MES ÉLÈVES</a>
-        <a href="#" class="nav-item">SAISIE DES NOTES</a>
-        <a href="#" class="nav-item">EMPLOI DU TEMPS</a>
-        <a href="#" class="nav-item">MESSAGERIE</a>
+        <a href="{% url 'teacher_dashboard' %}" class="nav-item active">ACCUEIL</a>
+        <a href="{% url 'teacher_students' %}" class="nav-item">MES ÉLÈVES</a>
+        <a href="{% url 'saisie_note' %}" class="nav-item">SAISIE DES NOTES</a>
+        <a href="{% url 'emploi_du_temps' %}" class="nav-item">EMPLOI DU TEMPS</a>
+        <a href="{% url 'messages' %}" class="nav-item">MESSAGERIE</a>
     </nav>
     <div style="padding: 20px; border-top: 1px solid #eee;">
         <a href="{% url 'logout' %}" class="logout-btn">Se déconnecter</a>
