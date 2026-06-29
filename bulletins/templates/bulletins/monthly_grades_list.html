@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bulletin - Notes mensuelles</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 24px; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border: 1px solid #ddd; padding: 8px; }
+    th { background: #f5f5f5; }
+    .filters { margin-bottom: 18px; padding: 12px; border: 1px solid #eee; }
+    input { margin-right: 8px; }
+  </style>
+</head>
+<body>
+  <h1>Notes mensuelles (Oct → Jun)</h1>
+
+  <form class="filters" method="get">
+    <label>Année:</label>
+    <input name="year" value="{{ filters.year|default:'' }}" />
+
+    <label>Élève:</label>
+    <input name="student" value="{{ filters.student|default:'' }}" />
+
+    <label>Classe:</label>
+    <input name="class" value="{{ filters.class|default:'' }}" />
+
+    <label>Matière:</label>
+    <input name="subject" value="{{ filters.subject|default:'' }}" />
+
+    <button type="submit">Filtrer</button>
+  </form>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Élève</th>
+        <th>Classe</th>
+        <th>Matière</th>
+        <th>Année</th>
+        <th>Mois</th>
+        <th>Note</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for g in grades %}
+        <tr>
+          <td>{{ g.student_name }}</td>
+          <td>{{ g.class_name }}</td>
+          <td>{{ g.subject_name }}</td>
+          <td>{{ g.year }}</td>
+          <td>{{ g.month_label }}</td>
+          <td>{% if g.score is None %}-{% else %}{{ g.score }}{% endif %}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="6">Aucune donnée.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</body>
+</html>
+
