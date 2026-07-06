@@ -1,10 +1,263 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% load bulletin_extras static %}
+{% extends "base.html" %}
 
-</body>
-</html>
+{% block title %}Bulletin de {{ student_name }}{% endblock %}
+
+{% block page_title %}Bulletin Scolaire{% endblock %}
+
+{% block nav_bulletins %}active{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-text">
+    <h2>Bulletin de {{ student_name }}</h2>
+    <p>Classe: {{ class_name }} | Année scolaire: {{ year }}</p>
+  </div>
+  <a href="{% url 'monthly_grades_list' %}" class="btn btn-secondary">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+         fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M19 12H5M12 19l-7-7 7-7"/>
+    </svg>
+    Retour à la liste
+  </a>
+</div>
+
+<div class="bulletin-card">
+  <div class="bulletin-header">
+    <div class="bulletin-title-section">
+      <h3>Résultats par Matière</h3>
+      <p class="bulletin-subtitle">Notes mensuelles et moyennes</p>
+    </div>
+  </div>
+
+  <div class="bulletin-body">
+    <div class="table-responsive">
+      <table class="grades-table">
+        <thead>
+          <tr>
+            <th class="subject-col">Matière</th>
+            {% for month in month_labels %}
+              <th class="month-col">{{ month }}</th>
+            {% endfor %}
+            <th class="average-col">Moyenne</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for subject_name, data in subjects.items %}
+            <tr>
+              <td class="subject-col">
+                <div class="subject-name">{{ data.name }}</div>
+              </td>
+              {% for i in month_labels %}
+                {% with month_idx=forloop.counter0 %}
+                  <td class="month-col">
+                    {% if data.months|get_item:month_idx is None %}
+                      <span class="grade-missing">-</span>
+                    {% else %}
+                      <span class="grade-value">{{ data.months|get_item:month_idx }}</span>
+                    {% endif %}
+                  </td>
+                {% endwith %}
+              {% endfor %}
+              <td class="average-col">
+                {% if data.average is None %}
+                  <span class="grade-missing">-</span>
+                {% else %}
+                  <span class="grade-average">{{ data.average|floatformat:2 }}</span>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% if general_average is not None %}
+      <div class="general-average">
+        <div class="average-label">Moyenne Générale</div>
+        <div class="average-value">{{ general_average|floatformat:2 }}</div>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+  .bulletin-card {
+    background: var(--color-surface);
+    border-radius: var(--r);
+    border: 1px solid var(--color-border);
+    overflow: hidden;
+    box-shadow: var(--sh-md);
+    animation: fadeSlideIn var(--t-slow) ease both;
+  }
+
+  .bulletin-header {
+    background: var(--color-card-top);
+    padding: 24px 28px;
+  }
+
+  .bulletin-title-section h3 {
+    font-size: 20px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 4px;
+  }
+
+  .bulletin-subtitle {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.75);
+  }
+
+  .bulletin-body {
+    padding: 28px;
+  }
+
+  .table-responsive {
+    overflow-x: auto;
+    margin-bottom: 24px;
+  }
+
+  .grades-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  .grades-table thead {
+    background: var(--color-bg);
+  }
+
+  .grades-table th {
+    padding: 12px 16px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--color-text-muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border-bottom: 2px solid var(--color-border);
+    white-space: nowrap;
+  }
+
+  .grades-table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--color-border);
+    color: var(--color-text);
+  }
+
+  .grades-table tbody tr {
+    transition: background var(--t-fast);
+  }
+
+  .grades-table tbody tr:hover {
+    background: var(--color-nav-active);
+  }
+
+  .grades-table tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  .subject-col {
+    font-weight: 600;
+    min-width: 180px;
+  }
+
+  .month-col {
+    text-align: center;
+    min-width: 80px;
+  }
+
+  .average-col {
+    text-align: center;
+    font-weight: 700;
+    min-width: 90px;
+  }
+
+  .grade-value {
+    color: var(--color-text);
+    font-weight: 500;
+  }
+
+  .grade-missing {
+    color: var(--color-text-light);
+    font-style: italic;
+  }
+
+  .grade-average {
+    color: var(--color-primary);
+    font-size: 14px;
+  }
+
+  .general-average {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px;
+    background: var(--color-primary-light);
+    border-radius: var(--r-sm);
+    border-left: 4px solid var(--color-primary);
+  }
+
+  .average-label {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--color-text);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .average-value {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--color-primary);
+  }
+
+  @media (max-width: 768px) {
+    .page-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .bulletin-header {
+      padding: 20px;
+    }
+
+    .bulletin-body {
+      padding: 20px;
+    }
+
+    .grades-table {
+      font-size: 12px;
+    }
+
+    .grades-table th,
+    .grades-table td {
+      padding: 10px 12px;
+    }
+
+    .subject-col {
+      min-width: 140px;
+    }
+
+    .month-col {
+      min-width: 60px;
+    }
+
+    .average-col {
+      min-width: 70px;
+    }
+
+    .general-average {
+      flex-direction: column;
+      gap: 8px;
+      text-align: center;
+    }
+
+    .average-value {
+      font-size: 24px;
+    }
+  }
+</style>
+{% endblock %}

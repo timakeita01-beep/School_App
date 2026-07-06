@@ -1,63 +1,369 @@
-<!doctype html>
-<html lang="fr">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Bulletin - Notes mensuelles</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 24px; }
-    table { border-collapse: collapse; width: 100%; }
-    th, td { border: 1px solid #ddd; padding: 8px; }
-    th { background: #f5f5f5; }
-    .filters { margin-bottom: 18px; padding: 12px; border: 1px solid #eee; }
-    input { margin-right: 8px; }
-  </style>
-</head>
-<body>
-  <h1>Notes mensuelles (Oct → Jun)</h1>
+{% extends "base.html" %}
+{% load static %}
 
-  <form class="filters" method="get">
-    <label>Année:</label>
-    <input name="year" value="{{ filters.year|default:'' }}" />
+{% block title %}Notes Mensuelles{% endblock %}
 
-    <label>Élève:</label>
-    <input name="student" value="{{ filters.student|default:'' }}" />
+{% block page_title %}Notes Mensuelles{% endblock %}
 
-    <label>Classe:</label>
-    <input name="class" value="{{ filters.class|default:'' }}" />
+{% block nav_bulletins %}active{% endblock %}
 
-    <label>Matière:</label>
-    <input name="subject" value="{{ filters.subject|default:'' }}" />
+{% block content %}
+<div class="page-header">
+  <div class="page-header-text">
+    <h2>Notes Mensuelles</h2>
+    <p>Consultez toutes les notes enregistrées</p>
+  </div>
+</div>
 
-    <button type="submit">Filtrer</button>
+<div class="filters-card">
+  <div class="filters-header">
+    <h3>Filtres</h3>
+    <p>Affinez votre recherche</p>
+  </div>
+
+  <form method="get" class="filters-form" id="monthFilterForm">
+    <div class="filters-row">
+      <div class="filter-group">
+        <label class="filter-label">Mois</label>
+        <div class="month-buttons" style="display: flex; flex-wrap: wrap; gap: 8px;">
+          {% for m in month_labels %}
+          <button type="button"
+                  class="month-btn {% if forloop.counter0|stringformat:"s" in filters.months %}active{% endif %}"
+                  data-value="{{ forloop.counter0 }}"
+                  onclick="toggleMonth(this)">
+            {{ m }}
+          </button>
+          {% endfor %}
+        </div>
+        {% for m in filters.months %}
+        <input type="hidden" name="months" value="{{ m }}" />
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="filters-actions">
+      <button type="submit" class="btn btn-primary">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/>
+          <path d="m21 21-4.35-4.35"/>
+        </svg>
+        Filtrer
+      </button>
+      <a href="{% url 'monthly_grades_list' %}" class="btn btn-secondary">
+        Réinitialiser
+      </a>
+    </div>
   </form>
+</div>
 
-  <table>
-    <thead>
-      <tr>
-        <th>Élève</th>
-        <th>Classe</th>
-        <th>Matière</th>
-        <th>Année</th>
-        <th>Mois</th>
-        <th>Note</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for g in grades %}
+<div class="grades-table-card">
+  <div class="table-responsive">
+    <table class="data-table">
+      <thead>
         <tr>
-          <td>{{ g.student_name }}</td>
-          <td>{{ g.class_name }}</td>
-          <td>{{ g.subject_name }}</td>
-          <td>{{ g.year }}</td>
-          <td>{{ g.month_label }}</td>
-          <td>{% if g.score is None %}-{% else %}{{ g.score }}{% endif %}</td>
+          <th>Élève</th>
+          <th>Classe</th>
+          <th>Matière</th>
+          <th>Année</th>
+          <th>Mois</th>
+          <th>Note</th>
         </tr>
-      {% empty %}
-        <tr><td colspan="6">Aucune donnée.</td></tr>
-      {% endfor %}
-    </tbody>
-  </table>
-</body>
-</html>
+      </thead>
+      <tbody>
+        {% for g in grades %}
+          <tr>
+            <td class="student-name">{{ g.student_name }}</td>
+            <td>{{ g.class_name }}</td>
+            <td>{{ g.subject_name }}</td>
+            <td>{{ g.year }}</td>
+            <td>{{ g.month_label }}</td>
+            <td class="grade-cell">
+              {% if g.score is None %}
+                <span class="grade-missing">-</span>
+              {% else %}
+                <span class="grade-value">{{ g.score }}</span>
+              {% endif %}
+            </td>
+          </tr>
+        {% empty %}
+          <tr class="empty-row">
+            <td colspan="6">
+              <div class="empty-state">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                </svg>
+                <p>Aucune donnée disponible</p>
+              </div>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
 
+{% block extra_js %}
+<script>
+function toggleMonth(btn) {
+  btn.classList.toggle('active');
+  var form = document.getElementById('monthFilterForm');
+  var hidden = form.querySelectorAll('input[name="months"]');
+  // Remove existing hidden inputs
+  hidden.forEach(function(h) { h.remove(); });
+  // Re-create hidden inputs from active buttons
+  form.querySelectorAll('.month-btn.active').forEach(function(b) {
+    var inp = document.createElement('input');
+    inp.type = 'hidden';
+    inp.name = 'months';
+    inp.value = b.getAttribute('data-value');
+    form.appendChild(inp);
+  });
+}
+</script>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+  .month-btn {
+    padding: 8px 18px;
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--r-sm);
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--t);
+    outline: none;
+  }
+  .month-btn:hover {
+    border-color: var(--color-accent);
+    background: var(--color-primary-light);
+  }
+  .month-btn.active {
+    background: var(--color-accent);
+    color: #fff;
+    border-color: var(--color-accent);
+  }
+
+  .filters-card {
+    background: var(--color-surface);
+    border-radius: var(--r);
+    border: 1px solid var(--color-border);
+    overflow: hidden;
+    box-shadow: var(--sh-md);
+    animation: fadeSlideIn var(--t-slow) ease both;
+    margin-bottom: 28px;
+  }
+
+  .filters-header {
+    background: var(--color-card-top);
+    padding: 24px 28px;
+  }
+
+  .filters-header h3 {
+    font-size: 20px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 4px;
+  }
+
+  .filters-header p {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.75);
+  }
+
+  .filters-form {
+    padding: 28px;
+  }
+
+  .filters-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+    margin-bottom: 24px;
+  }
+
+  .filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .filter-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--color-text-muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .form-input {
+    width: 100%;
+    height: 44px;
+    padding: 0 14px;
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--r-sm);
+    font-size: 14px;
+    color: var(--color-text);
+    background: var(--color-bg);
+    transition: border-color var(--t), box-shadow var(--t), background var(--t);
+    outline: none;
+  }
+
+  .form-input:focus {
+    border-color: var(--color-accent);
+    background: var(--color-surface);
+    box-shadow: 0 0 0 3px rgba(91, 156, 214, 0.15);
+  }
+
+  .form-input::placeholder {
+    color: var(--color-text-light);
+  }
+
+  .filters-actions {
+    display: flex;
+    gap: 10px;
+    padding-top: 20px;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .grades-table-card {
+    background: var(--color-surface);
+    border-radius: var(--r);
+    border: 1px solid var(--color-border);
+    overflow: hidden;
+    box-shadow: var(--sh-md);
+    animation: fadeSlideIn var(--t-slow) ease both;
+    animation-delay: 0.1s;
+  }
+
+  .table-responsive {
+    overflow-x: auto;
+  }
+
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  .data-table thead {
+    background: var(--color-bg);
+  }
+
+  .data-table th {
+    padding: 14px 18px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--color-text-muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border-bottom: 2px solid var(--color-border);
+    white-space: nowrap;
+  }
+
+  .data-table td {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--color-border);
+    color: var(--color-text);
+  }
+
+  .data-table tbody tr {
+    transition: background var(--t-fast);
+  }
+
+  .data-table tbody tr:hover {
+    background: var(--color-nav-active);
+  }
+
+  .data-table tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  .student-name {
+    font-weight: 600;
+    color: var(--color-primary);
+  }
+
+  .grade-cell {
+    text-align: center;
+  }
+
+  .grade-value {
+    display: inline-block;
+    padding: 4px 12px;
+    background: var(--color-primary-light);
+    color: var(--color-primary);
+    border-radius: var(--r-xs);
+    font-weight: 600;
+    font-size: 13px;
+  }
+
+  .grade-missing {
+    color: var(--color-text-light);
+    font-style: italic;
+  }
+
+  .empty-row td {
+    padding: 0;
+  }
+
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    text-align: center;
+  }
+
+  .empty-state svg {
+    opacity: 0.25;
+    margin-bottom: 16px;
+  }
+
+  .empty-state p {
+    font-size: 14px;
+    color: var(--color-text-muted);
+    font-weight: 500;
+  }
+
+  @media (max-width: 768px) {
+    .filters-header {
+      padding: 20px;
+    }
+
+    .filters-form {
+      padding: 20px;
+    }
+
+    .filters-row {
+      grid-template-columns: 1fr;
+    }
+
+    .filters-actions {
+      flex-direction: column;
+    }
+
+    .filters-actions .btn {
+      width: 100%;
+      justify-content: center;
+    }
+
+    .data-table {
+      font-size: 12px;
+    }
+
+    .data-table th,
+    .data-table td {
+      padding: 10px 12px;
+    }
+  }
+</style>
+{% endblock %}
