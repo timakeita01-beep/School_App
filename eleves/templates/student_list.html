@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Liste des Élèves | Portail Scolaire</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f1f5f9;
+            color: #0f172a;
+            line-height: 1.5;
+        }
+
+        /* Layout principal */
+        .dashboard {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* ========= SIDEBAR ========= */
+        .sidebar {
+            width: 280px;
+            background: #ffffff;
+            border-right: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            padding: 2rem 1.5rem;
+        }
+
+        .logo-area {
+            margin-bottom: 2rem;
+        }
+
+        .logo-area h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: -0.3px;
+        }
+
+        .logo-area .sub {
+            font-size: 0.7rem;
+            color: #475569;
+            font-weight: 500;
+            margin-top: 4px;
+        }
+
+        /* Profile card */
+        .profile-card {
+            background: #f8fafc;
+            border-radius: 1rem;
+            padding: 1rem;
+            margin-bottom: 2rem;
+            border: 1px solid #e2e8f0;
+        }
+
+        .profile-name {
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: #0f172a;
+        }
+
+        .profile-email {
+            font-size: 0.7rem;
+            color: #475569;
+            margin-top: 4px;
+            word-break: break-all;
+        }
+
+        /* Navigation */
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0.7rem 1rem;
+            border-radius: 0.75rem;
+            color: #334155;
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .nav-item i {
+            width: 22px;
+            font-size: 1rem;
+            color: #5b6e8c;
+        }
+
+        .nav-item.active {
+            background: #eef2ff;
+            color: #1e40af;
+        }
+
+        .nav-item.active i {
+            color: #1e40af;
+        }
+
+        .nav-item:not(.active):hover {
+            background: #f1f5f9;
+        }
+
+        /* Stats dans sidebar */
+        .sidebar-stats {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #f8fafc;
+            border-radius: 1rem;
+            text-align: center;
+        }
+
+        .sidebar-stats .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1e40af;
+        }
+
+        .sidebar-stats .stat-label {
+            font-size: 0.7rem;
+            color: #5b6e8c;
+            font-weight: 500;
+        }
+
+        /* Footer sidebar */
+        .sidebar-footer {
+            margin-top: auto;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .footer-links {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .footer-links a {
+            font-size: 0.7rem;
+            color: #64748b;
+            text-decoration: none;
+        }
+
+        .footer-links a:hover {
+            color: #1e40af;
+        }
+
+        .copyright {
+            font-size: 0.65rem;
+            color: #94a3b8;
+            text-align: center;
+        }
+
+        /* ========= MAIN CONTENT ========= */
+        .main-content {
+            flex: 1;
+            padding: 2rem 2.5rem;
+            overflow-y: auto;
+        }
+
+        /* Breadcrumb */
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            color: #5b6e8c;
+            margin-bottom: 1.5rem;
+        }
+
+        .breadcrumb a {
+            color: #3b82f6;
+            text-decoration: none;
+        }
+
+        .breadcrumb span {
+            color: #94a3b8;
+        }
+
+        /* Header page */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .page-header h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .page-header p {
+            color: #475569;
+            font-size: 0.9rem;
+            margin-top: 0.25rem;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.6rem 1.2rem;
+            border-radius: 0.75rem;
+            font-weight: 500;
+            font-size: 0.8rem;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: #1e40af;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1e3a8a;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(30, 64, 175, 0.3);
+        }
+
+        .btn-outline {
+            border: 1px solid #cbd5e1;
+            background: white;
+            color: #0f172a;
+        }
+
+        .btn-outline:hover {
+            background: #f8fafc;
+            border-color: #94a3b8;
+        }
+
+        .btn-success {
+            background: #16a34a;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #15803d;
+            transform: translateY(-1px);
+        }
+
+        .btn-danger {
+            background: #dc2626;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #b91c1c;
+        }
+
+        .btn-sm {
+            padding: 0.35rem 0.75rem;
+            font-size: 0.7rem;
+            border-radius: 0.5rem;
+        }
+
+        /* Table container */
+        .table-container {
+            background: white;
+            border-radius: 1.25rem;
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            padding: 0 0.5rem;
+        }
+
+        .student-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+
+        .student-table th {
+            text-align: left;
+            padding: 1rem 0.75rem 0.75rem 0.75rem;
+            font-weight: 600;
+            font-size: 0.7rem;
+            color: #5b6e8c;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid #e2e8f0;
+            background: #fafcff;
+        }
+
+        .student-table td {
+            padding: 0.9rem 0.75rem;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: middle;
+        }
+
+        .student-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .student-table tr:hover {
+            background: #f8fafc;
+        }
+
+        .actions-cell {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            padding: 0.3rem 0.6rem;
+            border-radius: 0.5rem;
+            font-size: 0.7rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .action-btn.view {
+            background: #eef2ff;
+            color: #1e40af;
+        }
+
+        .action-btn.view:hover {
+            background: #dbeafe;
+        }
+
+        .action-btn.edit {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .action-btn.edit:hover {
+            background: #fde68a;
+        }
+
+        .action-btn.delete {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .action-btn.delete:hover {
+            background: #fecaca;
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #94a3b8;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: #cbd5e1;
+        }
+
+        .empty-state h4 {
+            color: #475569;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .sidebar {
+                display: none;
+            }
+            .main-content {
+                padding: 1.5rem;
+            }
+            .page-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .header-actions {
+                flex-direction: column;
+            }
+            .header-actions .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .student-table {
+                font-size: 0.75rem;
+            }
+            .student-table th,
+            .student-table td {
+                padding: 0.6rem 0.4rem;
+            }
+            .actions-cell {
+                flex-direction: column;
+                gap: 0.25rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="dashboard">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="logo-area">
+            <h1>School_App</h1>
+            <div class="sub">Système de Gestion Scolaire</div>
+        </div>
+
+        <!-- Profile -->
+        <div class="profile-card">
+            <div class="profile-name">
+                <i class="fas fa-user-graduate" style="margin-right: 8px; font-size: 0.8rem;"></i> Principal Ezkiel
+            </div>
+            <div class="profile-email">Ezekiel.admin@school.edu</div>
+        </div>
+
+        <!-- Navigation -->
+        <nav>
+            <div class="nav-item">
+                <i class="fas fa-home"></i> <span>Accueil</span>
+            </div>
+            <div class="nav-item active">
+                <i class="fas fa-users"></i> <span>Élèves</span>
+            </div>
+            <div class="nav-item">
+                <i class="fas fa-user-friends"></i> <span>Parents</span>
+            </div>
+            <div class="nav-item">
+                <i class="fas fa-chalkboard-user"></i> <span>Enseignant</span>
+            </div>
+            <div class="nav-item">
+                <i class="fas fa-building"></i> <span>Classes</span>
+            </div>
+            <div class="nav-item">
+                <i class="fas fa-calendar-week"></i> <span>Emploi du temps</span>
+            </div>
+            <div class="nav-item">
+                <i class="fas fa-file-alt"></i> <span>Bulletins</span>
+            </div>
+        </nav>
+
+        <!-- Stats mini -->
+        <div class="sidebar-stats">
+            <div class="stat-number">{{ student_list|length }}</div>
+            <div class="stat-label">Total Élèves</div>
+        </div>
+
+        <!-- Footer -->
+        <div class="sidebar-footer">
+            <div class="footer-links">
+                <a href="#">Politique de confidentialité</a>
+                <a href="#">Mentions légales</a>
+                <a href="#">Contact</a>
+            </div>
+            <div class="copyright">
+                School_App © 2026<br>
+                Système de Gestion Scolaire.<br>
+                Fait par NextGenTech.
+            </div>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+        <!-- Breadcrumb -->
+        <div class="breadcrumb">
+            <a href="#">Accueil</a>
+            <span>/</span>
+            <span>Élèves</span>
+        </div>
+
+        <!-- Page Header -->
+        <div class="page-header">
+            <div>
+                <h2>Liste des Élèves</h2>
+                <p>Gérez les informations de chaque élève avec aisance.</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'student_create' %}" class="btn btn-primary">
+                    <i class="fas fa-user-plus"></i> Ajouter un étudiant
+                </a>
+                <a href="#" class="btn btn-outline">
+                    <i class="fas fa-cog"></i> Paramètres
+                </a>
+            </div>
+        </div>
+
+        <!-- Table -->
+        <div class="table-container">
+            <div class="table-wrapper">
+                {% if student_list %}
+                <table class="student-table">
+                    <thead>
+                        <tr>
+                            <th>NOM</th>
+                            <th>PRÉNOM</th>
+                            <th>CLASSE</th>
+                            <th>TUTEUR</th>
+                            <th>TÉLÉPHONE</th>
+                            <th>ACTIONS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for student in student_list %}
+                        <tr>
+                            <td><strong>{{ student.last_name|upper }}</strong></td>
+                            <td>{{ student.first_name }}</td>
+                            <td>{{ student.classroom.nom|default:"-" }}</td>
+                            <td>{{ student.parent.first_name }} {{ student.parent.last_name }}</td>
+                            <td>{{ student.parent.phone_number|default:"-" }}</td>
+                            <td>
+                                <div class="actions-cell">
+                                    <a href="{% url 'student_detail' student.identification_number %}" class="action-btn view" title="Voir">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{% url 'student_update' student.identification_number %}" class="action-btn edit" title="Modifier">
+                                        <i class="fas fa-pen"></i>
+                                    </a>
+                                    <a href="{% url 'student_delete' student.identification_number %}" class="action-btn delete" title="Supprimer" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet élève ?')">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-user-graduate"></i>
+                    <h4>Aucun élève enregistré</h4>
+                    <p>Commencez par ajouter un nouvel étudiant.</p>
+                    <a href="{% url 'student_create' %}" class="btn btn-primary" style="margin-top: 1rem;">
+                        <i class="fas fa-user-plus"></i> Ajouter un étudiant
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Footer léger -->
+        <div style="margin-top: 2rem; border-top: 1px solid #e2e8f0; padding-top: 1rem; font-size: 0.7rem; color: #94a3b8; text-align: center;">
+            School_App © 2026 Système de Gestion Scolaire. Fait par SEPTA.
+        </div>
+    </main>
+</div>
+</body>
+</html>

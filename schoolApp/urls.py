@@ -23,4 +23,5 @@ urlpatterns = [
     path('', include('accounts.urls')),
     path('',include('classes.urls')),
     path('',include('matieres.urls')),
+    path('',include('eleves.urls')),
 ]
