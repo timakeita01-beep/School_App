@@ -17,11 +17,20 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from django.urls import include
+from django.conf import settings
+from django.conf.urls.static import static
+from django.shortcuts import redirect
+
+def home_redirect(request):
+    return redirect('classes_list')
 
 urlpatterns = [
+    path('', home_redirect, name='home'),
     path('admin/', admin.site.urls),
-    path('', include('accounts.urls')),
-    path('', include('classes.urls')),
-    path('eleve/',include('eleves.urls')),
+    path('classes/', include('classes.urls')),
+    path('eleves/', include('eleves.urls')),
     path('bulletins/', include('bulletins.urls')),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
