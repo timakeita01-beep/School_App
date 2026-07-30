@@ -8,6 +8,16 @@ def voir(request):
     classes = Classe.objects.all().order_by('-niveau')
     return render(request, 'classes.html', {'classes': classes})
 
+def classe_detail(request, pk):
+    classe = get_object_or_404(Classe, pk=pk)
+    # Tous les élèves de cette classe
+    eleves = classe.students.all()
+    context = {
+        "classe": classe,
+        "eleves": eleves,
+    }
+    return render(request, "classe_detail.html", context)
+
 # Ajouter une nouvelle classe
 
 def ajouter_classe(request):

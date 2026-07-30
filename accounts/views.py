@@ -3,6 +3,7 @@ from django.shortcuts import redirect
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 # Create your views here.
 def home(request):
     return render(request, "accounts/home.html")
@@ -54,3 +55,8 @@ def admin_dashboard(request):
         return redirect("dashboard")
 
     return render(request, "accounts/admin_dashboard.html")
+
+def teacher_list(request):
+    # Logique pour récupérer la liste des enseignants
+    teachers = User.objects.filter(groups__name='Teacher')
+    return render(request, 'accounts/teacher_list.html', {'teachers': teachers})

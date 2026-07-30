@@ -15,7 +15,7 @@
     <h2>Modifier la classe</h2>
     <p>Mettez à jour les informations de <strong>{{ data.nom }}</strong>.</p>
   </div>
-  <a href="{% url 'classes_list' %}" class="btn btn-secondary" id="btnRetour">
+  <a href="{% url 'classes:list' %}" class="btn btn-secondary" id="btnRetour">
     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
          fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
       <line x1="19" y1="12" x2="5" y2="12"/>
@@ -37,7 +37,7 @@
 
     <!-- Body -->
     <div class="form-card-body">
-      <form method="post" action="{% url 'classe_modifier' data.pk %}" id="formModifierClasse" novalidate>
+      <form method="post" action="{% url 'classes:modifier' data.pk %}" id="formModifierClasse" novalidate>
         {% csrf_token %}
 
         <!-- Nom -->
@@ -95,7 +95,7 @@
 
         <!-- Actions -->
         <div class="form-actions">
-          <a href="{% url 'classes_list' %}" class="btn btn-secondary">Annuler</a>
+          <a href="{% url 'classes:list' %}" class="btn btn-secondary">Annuler</a>
           <button type="submit" class="btn btn-primary" id="btnEnregistrer">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
                  fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">

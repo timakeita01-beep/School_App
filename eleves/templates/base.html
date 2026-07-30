@@ -12,6 +12,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+
   <!-- Main CSS -->
   <link rel="stylesheet" href="{% static 'css/main.css' %}" />
   {% block extra_css %}{% endblock %}
@@ -143,7 +146,7 @@
 
     <!-- Topbar -->
     <header class="topbar">
-      <h1 class="topbar-title">Recherche</h1>
+      <h1 class="topbar-title">{% block page_title %}Portail Scolaire{% endblock %}</h1>
 
       <div class="search-wrapper">
         <span class="search-icon" aria-hidden="true">

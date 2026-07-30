@@ -13,9 +13,9 @@
 <div class="page-header">
   <div class="page-header-text">
     <h2>Gestion des classes</h2>
-    <p>Organisez et supervisez les groupes d'enseignement.</p>
+    <p>Organisez et supervisez les classes.</p>
   </div>
-  <a href="{% url 'classe_ajouter' %}" class="btn btn-primary" id="btnCreerClasse">
+  <a href="{% url 'classes:ajouter' %}" class="btn btn-primary" id="btnCreerClasse">
     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
          fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
       <line x1="12" x2="12" y1="5" y2="19"/>
@@ -80,9 +80,9 @@
 
       <!-- Actions -->
       <div class="card-actions">
-        <a href="#" class="details-link" id="details-{{ classe.pk }}">Détails</a>
+        <a href="{% url 'classes:detail' classe.pk %}" class="details-link" id="details-{{ classe.pk }}">Détails</a>
         <div class="card-btns">
-          <a href="{% url 'classe_modifier' classe.pk %}"
+          <a href="{% url 'classes:modifier' classe.pk %}"
              class="btn-icon btn-edit"
              id="edit-{{ classe.pk }}"
              title="Modifier {{ classe.nom }}"
@@ -112,7 +112,7 @@
   {% endfor %}
 
   <!-- Ajouter une nouvelle card -->
-  <a href="{% url 'classe_ajouter' %}"
+  <a href="{% url 'classes:ajouter' %}"
      class="class-card add-card"
      id="addClassCard"
      aria-label="Ajouter une nouvelle classe">
@@ -141,7 +141,7 @@
   </svg>
   <h3>Aucune classe créée</h3>
   <p>Commencez par ajouter votre première classe.</p>
-  <a href="{% url 'classe_ajouter' %}" class="btn btn-primary">
+  <a href="{% url 'classes:ajouter' %}" class="btn btn-primary">
     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
          fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
       <line x1="12" x2="12" y1="5" y2="19"/>
