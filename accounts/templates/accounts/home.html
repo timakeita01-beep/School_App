@@ -1,0 +1,1094 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Portail Scolaire — Système de Gestion Scolaire" />
+  <title>Portail Scolaire | Accueil</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+
+  <style>
+    /* ============================================
+       RESET & BASE
+       ============================================ */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #f1f5f9;
+      color: #0f172a;
+      overflow-x: hidden;
+    }
+
+    a {
+      text-decoration: none;
+    }
+
+    /* ============================================
+       NAVBAR (sans extension)
+       ============================================ */
+    .navbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+      padding: 0.75rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.3s ease;
+    }
+
+    .navbar.scrolled {
+      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+      background: rgba(255, 255, 255, 0.95);
+    }
+
+    .navbar-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .navbar-brand .brand-icon {
+      width: 38px;
+      height: 38px;
+      background: #2563eb;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .navbar-brand .brand-icon svg {
+      width: 20px;
+      height: 20px;
+      color: white;
+    }
+
+    .navbar-brand .brand-text {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .navbar-brand .brand-name {
+      font-size: 16px;
+      font-weight: 700;
+      color: #0f172a;
+      letter-spacing: -0.3px;
+    }
+
+    .navbar-brand .brand-sub {
+      font-size: 10px;
+      color: #64748b;
+      font-weight: 500;
+      margin-top: -2px;
+    }
+
+    .navbar-links {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .navbar-links a {
+      font-size: 14px;
+      font-weight: 500;
+      color: #475569;
+      transition: color 0.2s ease;
+    }
+
+    .navbar-links a:hover {
+      color: #2563eb;
+    }
+
+    .btn-login {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 20px;
+      background: #2563eb;
+      color: white !important;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 14px;
+      transition: all 0.3s ease;
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn-login:hover {
+      background: #1d4ed8;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
+      color: white !important;
+    }
+
+    .btn-login svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    /* Menu hamburger */
+    .hamburger {
+      display: none;
+      flex-direction: column;
+      gap: 4px;
+      cursor: pointer;
+      padding: 4px;
+    }
+
+    .hamburger span {
+      width: 24px;
+      height: 2.5px;
+      background: #0f172a;
+      border-radius: 4px;
+      transition: all 0.3s ease;
+    }
+
+    .hamburger.active span:nth-child(1) {
+      transform: rotate(45deg) translate(4px, 6px);
+    }
+
+    .hamburger.active span:nth-child(2) {
+      opacity: 0;
+    }
+
+    .hamburger.active span:nth-child(3) {
+      transform: rotate(-45deg) translate(4px, -6px);
+    }
+
+    /* ============================================
+       HERO SECTION
+       ============================================ */
+    .home-hero {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 100vh;
+      padding: 6rem 2rem 4rem;
+      gap: 4rem;
+      max-width: 1200px;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    .home-hero-content {
+      flex: 1;
+      max-width: 600px;
+    }
+
+    .home-hero-content .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #dbeafe;
+      color: #2563eb;
+      padding: 4px 16px 4px 12px;
+      border-radius: 50px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+    }
+
+    .home-hero-content .badge .dot {
+      width: 8px;
+      height: 8px;
+      background: #2563eb;
+      border-radius: 50%;
+      animation: pulse-dot 2s infinite;
+    }
+
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    .home-title {
+      font-size: 48px;
+      font-weight: 800;
+      color: #0f172a;
+      line-height: 1.1;
+      margin-bottom: 1rem;
+    }
+
+    .home-title .highlight {
+      background: linear-gradient(135deg, #2563eb, #7c3aed);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .home-subtitle {
+      font-size: 18px;
+      color: #64748b;
+      line-height: 1.7;
+      margin-bottom: 2rem;
+      max-width: 500px;
+    }
+
+    .home-buttons {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .btn-hero {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 32px;
+      border-radius: 14px;
+      font-size: 16px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      border: none;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .btn-hero-primary {
+      background: #2563eb;
+      color: white;
+      box-shadow: 0 4px 16px rgba(37, 99, 235, 0.3);
+    }
+
+    .btn-hero-primary:hover {
+      background: #1d4ed8;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(37, 99, 235, 0.4);
+    }
+
+    .btn-hero-secondary {
+      background: #f1f5f9;
+      color: #0f172a;
+    }
+
+    .btn-hero-secondary:hover {
+      background: #e2e8f0;
+      transform: translateY(-2px);
+    }
+
+    /* ===== FLOATING APP MOCKUP ===== */
+    .home-mockup {
+      flex: 1;
+      max-width: 500px;
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .floating-app {
+      background: white;
+      border-radius: 32px;
+      padding: 24px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.12);
+      border: 1px solid #e2e8f0;
+      width: 100%;
+      max-width: 420px;
+      animation: float 4s ease-in-out infinite;
+      position: relative;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-16px); }
+    }
+
+    .floating-app-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #f1f5f9;
+    }
+
+    .floating-app-header .app-brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      font-size: 16px;
+      color: #0f172a;
+    }
+
+    .floating-app-header .app-brand svg {
+      color: #2563eb;
+    }
+
+    .floating-app-header .app-actions {
+      display: flex;
+      gap: 6px;
+    }
+
+    .floating-app-header .app-actions span {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .floating-app-header .app-actions .red { background: #ef4444; }
+    .floating-app-header .app-actions .yellow { background: #f59e0b; }
+    .floating-app-header .app-actions .green { background: #10b981; }
+
+    .floating-app-body {
+      padding-top: 16px;
+    }
+
+    .floating-app-stat {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .floating-app-stat-item {
+      flex: 1;
+      background: #f8fafc;
+      padding: 12px;
+      border-radius: 12px;
+      text-align: center;
+    }
+
+    .floating-app-stat-item .number {
+      font-size: 20px;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .floating-app-stat-item .label {
+      font-size: 11px;
+      color: #64748b;
+    }
+
+    .floating-app-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .floating-app-list-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      background: #f8fafc;
+      border-radius: 10px;
+    }
+
+    .floating-app-list-item .avatar {
+      width: 32px;
+      height: 32px;
+      background: #dbeafe;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 12px;
+      color: #2563eb;
+    }
+
+    .floating-app-list-item .info {
+      flex: 1;
+    }
+
+    .floating-app-list-item .info .name {
+      font-size: 13px;
+      font-weight: 500;
+      color: #0f172a;
+    }
+
+    .floating-app-list-item .info .detail {
+      font-size: 11px;
+      color: #94a3b8;
+    }
+
+    .floating-app-list-item .status {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 10px;
+      border-radius: 20px;
+      background: #d1fae5;
+      color: #065f46;
+    }
+
+    /* ===== FLOATING ELEMENTS ===== */
+    .float-element {
+      position: absolute;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      animation: float-element 6s ease-in-out infinite;
+      z-index: -1;
+    }
+
+    .float-element-1 {
+      top: -20px;
+      right: -20px;
+      width: 60px;
+      height: 60px;
+      background: #fef3c7;
+      animation-delay: 0s;
+    }
+
+    .float-element-2 {
+      bottom: -30px;
+      left: -30px;
+      width: 80px;
+      height: 80px;
+      background: #dbeafe;
+      animation-delay: 2s;
+    }
+
+    .float-element-3 {
+      top: 50%;
+      right: -40px;
+      width: 50px;
+      height: 50px;
+      background: #d1fae5;
+      animation-delay: 4s;
+    }
+
+    @keyframes float-element {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      50% { transform: translateY(-20px) rotate(10deg); }
+    }
+
+    /* ============================================
+       SECTION SEPTA
+       ============================================ */
+    .septa-section {
+      padding: 4rem 2rem;
+      max-width: 1200px;
+      margin: 0 auto;
+      border-top: 1px solid #e2e8f0;
+    }
+
+    .septa-logo {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 2rem;
+    }
+
+    .septa-logo-text {
+      font-size: 48px;
+      font-weight: 800;
+      letter-spacing: 8px;
+      background: linear-gradient(135deg, #0f172a, #2563eb);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .septa-logo-sub {
+      font-size: 14px;
+      color: #64748b;
+      letter-spacing: 4px;
+      font-weight: 500;
+    }
+
+    .septa-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2rem;
+      margin-top: 2rem;
+    }
+
+    .septa-card {
+      background: white;
+      border-radius: 16px;
+      padding: 2rem;
+      border: 1px solid #e2e8f0;
+      transition: all 0.3s ease;
+      text-align: center;
+    }
+
+    .septa-card:hover {
+      transform: translateY(-4px);
+      border-color: #2563eb;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.06);
+    }
+
+    .septa-card .icon {
+      width: 56px;
+      height: 56px;
+      background: #dbeafe;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1rem;
+      color: #2563eb;
+    }
+
+    .septa-card .icon svg {
+      width: 28px;
+      height: 28px;
+    }
+
+    .septa-card h3 {
+      font-size: 18px;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 0.5rem;
+    }
+
+    .septa-card p {
+      font-size: 14px;
+      color: #64748b;
+      line-height: 1.6;
+    }
+
+    /* ============================================
+       SECTION OBJECTIFS
+       ============================================ */
+    .objectifs-section {
+      padding: 3rem 2rem;
+      background: #f8fafc;
+      border-radius: 20px;
+      max-width: 1200px;
+      margin: 2rem auto;
+    }
+
+    .objectifs-title {
+      text-align: center;
+      font-size: 28px;
+      font-weight: 800;
+      color: #0f172a;
+      margin-bottom: 0.5rem;
+    }
+
+    .objectifs-sub {
+      text-align: center;
+      color: #64748b;
+      font-size: 16px;
+      margin-bottom: 2rem;
+    }
+
+    .objectifs-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.5rem;
+      padding: 0 1rem;
+    }
+
+    .objectif-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      padding: 1.5rem;
+      background: white;
+      border-radius: 14px;
+      border: 1px solid #e2e8f0;
+      transition: all 0.3s ease;
+    }
+
+    .objectif-item:hover {
+      border-color: #2563eb;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.04);
+    }
+
+    .objectif-item .obj-icon {
+      width: 44px;
+      height: 44px;
+      background: #dbeafe;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      color: #2563eb;
+    }
+
+    .objectif-item .obj-icon svg {
+      width: 22px;
+      height: 22px;
+    }
+
+    .objectif-item h4 {
+      font-size: 16px;
+      font-weight: 600;
+      color: #0f172a;
+      margin: 0 0 4px;
+    }
+
+    .objectif-item p {
+      font-size: 13px;
+      color: #64748b;
+      margin: 0;
+      line-height: 1.5;
+    }
+
+    /* ============================================
+       FOOTER
+       ============================================ */
+    .footer-home {
+      text-align: center;
+      padding: 2rem;
+      border-top: 1px solid #e2e8f0;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .footer-home .footer-text {
+      font-size: 12px;
+      color: #94a3b8;
+    }
+
+    .footer-home .footer-text strong {
+      color: #2563eb;
+    }
+
+    /* ============================================
+       RESPONSIVE
+       ============================================ */
+    @media (max-width: 1024px) {
+      .home-hero {
+        flex-direction: column;
+        text-align: center;
+        gap: 2rem;
+        padding: 6rem 2rem 3rem;
+      }
+
+      .home-hero-content {
+        max-width: 100%;
+      }
+
+      .home-subtitle {
+        max-width: 100%;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .home-buttons {
+        justify-content: center;
+      }
+
+      .home-mockup {
+        max-width: 100%;
+      }
+
+      .septa-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .navbar {
+        padding: 0.75rem 1rem;
+      }
+
+      .navbar-links {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        flex-direction: column;
+        padding: 1.5rem;
+        gap: 1rem;
+        border-bottom: 1px solid #e2e8f0;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+      }
+
+      .navbar-links.open {
+        display: flex;
+      }
+
+      .hamburger {
+        display: flex;
+      }
+
+      .home-title {
+        font-size: 32px;
+      }
+
+      .home-subtitle {
+        font-size: 16px;
+      }
+
+      .septa-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .objectifs-grid {
+        grid-template-columns: 1fr;
+        padding: 0;
+      }
+
+      .septa-logo-text {
+        font-size: 32px;
+        letter-spacing: 4px;
+      }
+
+      .floating-app {
+        padding: 16px;
+      }
+
+      .btn-hero {
+        padding: 12px 24px;
+        font-size: 14px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .home-title {
+        font-size: 26px;
+      }
+
+      .btn-hero {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .home-buttons {
+        flex-direction: column;
+        width: 100%;
+      }
+
+      .float-element-1, .float-element-2, .float-element-3 {
+        display: none;
+      }
+
+      .objectifs-section {
+        padding: 2rem 1rem;
+        border-radius: 12px;
+        margin: 1rem auto;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ============================================
+     NAVBAR (indépendante)
+     ============================================ -->
+<nav class="navbar" id="navbar">
+  <div class="navbar-brand">
+    <div class="brand-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+        <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+      </svg>
+    </div>
+    <div class="brand-text">
+      <span class="brand-name">SCHOOLAPP</span>
+      <span class="brand-sub">École Primaire</span>
+    </div>
+  </div>
+
+  <div class="navbar-links" id="navbarLinks">
+    <a href="#septa">À propos</a>
+    <a href="#objectifs">Objectifs</a>
+    <a href="#contact">Contact</a>
+    <a href="{% url 'accounts:login' %}" class="btn-login">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4"/>
+        <polyline points="10 17 15 12 10 7"/>
+        <line x1="15" x2="3" y1="12" y2="12"/>
+      </svg>
+      Se connecter
+    </a>
+  </div>
+
+  <div class="hamburger" id="hamburger" onclick="toggleMenu()">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</nav>
+
+<!-- ============================================
+     HERO SECTION
+     ============================================ -->
+<section class="home-hero">
+  <div class="home-hero-content">
+    <div class="badge">
+      <span class="dot"></span>
+      Digitalisation scolaire au Mali
+    </div>
+    <h1 class="home-title">
+      Gérez votre école<br>
+      <span class="highlight">en toute simplicité</span>
+    </h1>
+    <p class="home-subtitle">
+      Portail Scolaire est la solution tout-en-un pour la gestion des établissements scolaires.
+      Centralisez les notes, les bulletins, les absences et la communication avec les parents.
+    </p>
+    <div class="home-buttons">
+      <a href="{% url 'accounts:login' %}" class="btn-hero btn-hero-primary">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4"/>
+          <polyline points="10 17 15 12 10 7"/>
+          <line x1="15" x2="3" y1="12" y2="12"/>
+        </svg>
+        Se connecter
+      </a>
+      <a href="#septa" class="btn-hero btn-hero-secondary">
+        En savoir plus
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
+        </svg>
+      </a>
+    </div>
+  </div>
+
+  <!-- ===== MOCKUP FLOTTANT ===== -->
+  <div class="home-mockup">
+    <div class="floating-app">
+      <div class="floating-app-header">
+        <div class="app-brand">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+            <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+          </svg>
+          SCHOOLAPP
+        </div>
+        <div class="app-actions">
+          <span class="red"></span>
+          <span class="yellow"></span>
+          <span class="green"></span>
+        </div>
+      </div>
+      <div class="floating-app-body">
+        <div class="floating-app-stat">
+          <div class="floating-app-stat-item">
+            <div class="number">1,240</div>
+            <div class="label">Élèves</div>
+          </div>
+          <div class="floating-app-stat-item">
+            <div class="number">24</div>
+            <div class="label">Classes</div>
+          </div>
+          <div class="floating-app-stat-item">
+            <div class="number">18</div>
+            <div class="label">Enseignants</div>
+          </div>
+        </div>
+        <div class="floating-app-list">
+          <div class="floating-app-list-item">
+            <div class="avatar">AT</div>
+            <div class="info">
+              <div class="name">Aicha TRAORE</div>
+              <div class="detail">1ère année • Notes: 17.5/20</div>
+            </div>
+            <span class="status">Excellent</span>
+          </div>
+          <div class="floating-app-list-item">
+            <div class="avatar">MD</div>
+            <div class="info">
+              <div class="name">Mohamed DEMBELE</div>
+              <div class="detail">4ème année • Notes: 15.2/20</div>
+            </div>
+            <span class="status">Bon</span>
+          </div>
+          <div class="floating-app-list-item">
+            <div class="avatar">KD</div>
+            <div class="info">
+              <div class="name">Kadiatou DIALLO</div>
+              <div class="detail">6ème année • Notes: 18.5/20</div>
+            </div>
+            <span class="status">Excellent</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Éléments flottants autour du mockup -->
+      <div class="float-element float-element-1">🗒️</div>
+      <div class="float-element float-element-2">🗃️</div>
+      <div class="float-element float-element-3">📊</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================
+     SECTION SEPTA
+     ============================================ -->
+<section id="septa" class="septa-section">
+  <div class="septa-logo">
+    <div class="septa-logo-text">SEPTA</div>
+    <div class="septa-logo-sub">Collaboration · Innovation · Technologie</div>
+  </div>
+
+  <div class="septa-grid">
+    <div class="septa-card">
+      <div class="icon">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+        </svg>
+      </div>
+      <h3>Qui sommes-nous ?</h3>
+      <p>
+        SEPTA est une entreprise malienne spécialisée dans les solutions numériques pour l'éducation.
+        Nous croyons en un avenir où la technologie rapproche les communautés éducatives.
+      </p>
+    </div>
+
+    <div class="septa-card">
+      <div class="icon">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9"/>
+        </svg>
+      </div>
+      <h3>Notre Mission</h3>
+      <p>
+        Digitaliser les écoles primaires maliennes pour offrir une gestion transparente,
+        efficace et moderne, tout en renforçant le lien entre les parents et l'école.
+      </p>
+    </div>
+
+    <div class="septa-card">
+      <div class="icon">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+        </svg>
+      </div>
+      <h3>Nos Valeurs</h3>
+      <p>
+        Collaboration, Innovation et Technologie sont au cœur de notre démarche.
+        Nous plaçons l'humain et la transparence au centre de chaque solution que nous développons.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================
+     SECTION OBJECTIFS
+     ============================================ -->
+<section id="objectifs" class="objectifs-section">
+  <h2 class="objectifs-title">Pourquoi digitaliser votre école ?</h2>
+  <p class="objectifs-sub">
+    Le Portail Scolaire répond aux vrais besoins des écoles primaires au Mali
+  </p>
+
+  <div class="objectifs-grid">
+    <div class="objectif-item">
+      <div class="obj-icon">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+        </svg>
+      </div>
+      <div>
+        <h4>Transparence totale</h4>
+        <p>Les parents suivent en temps réel les notes, les absences et les bulletins de leurs enfants.</p>
+      </div>
+    </div>
+
+    <div class="objectif-item">
+      <div class="obj-icon">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+        </svg>
+      </div>
+      <div>
+        <h4>Centralisation des données</h4>
+        <p>Toutes les informations scolaires sont regroupées dans une plateforme unique et sécurisée.</p>
+      </div>
+    </div>
+
+    <div class="objectif-item">
+      <div class="obj-icon">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+        </svg>
+      </div>
+      <div>
+        <h4>Communication instantanée</h4>
+        <p>Les notifications en temps réel permettent un dialogue fluide entre l'école et les parents.</p>
+      </div>
+    </div>
+
+    <div class="objectif-item">
+      <div class="obj-icon">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+        </svg>
+      </div>
+      <div>
+        <h4>Renforcement de la confiance</h4>
+        <p>En rendant l'information accessible, nous renforçons la confiance entre l'école et les familles.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================
+     FOOTER
+     ============================================ -->
+<footer id="contact" class="footer-home">
+  <p class="footer-text">
+    © 2026 <strong>SCHOOLAPP</strong> — Système de Gestion Scolaire.<br>
+    Fait par <strong>SEPTA</strong> — Collaboration · Innovation · Technologie
+  </p>
+</footer>
+
+<!-- ============================================
+     JAVASCRIPT
+     ============================================ -->
+<script>
+  // Toggle menu hamburger
+  function toggleMenu() {
+    const links = document.getElementById('navbarLinks');
+    const hamburger = document.getElementById('hamburger');
+    links.classList.toggle('open');
+    hamburger.classList.toggle('active');
+  }
+
+  // Fermer le menu au clic sur un lien
+  document.querySelectorAll('.navbar-links a').forEach(link => {
+    link.addEventListener('click', () => {
+      document.getElementById('navbarLinks').classList.remove('open');
+      document.getElementById('hamburger').classList.remove('active');
+    });
+  });
+
+  // Effet de scroll sur la navbar
+  window.addEventListener('scroll', function() {
+    const navbar = document.getElementById('navbar');
+    if (window.scrollY > 20) {
+      navbar.classList.add('scrolled');
+    } else {
+      navbar.classList.remove('scrolled');
+    }
+  });
+
+  // Smooth scroll pour les ancres
+  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+      e.preventDefault();
+      const target = document.querySelector(this.getAttribute('href'));
+      if (target) {
+        target.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
+        });
+      }
+    });
+  });
+</script>
+
+</body>
+</html>

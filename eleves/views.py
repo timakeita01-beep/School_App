@@ -141,7 +141,7 @@ def student_create(request):
             classroom=classroom,
             inscription_date=request.POST.get("inscription_date"),
             parent=parent,
-        )
+        ) 
 
         messages.success(request, "L'élève a été inscrit avec succès.")
 

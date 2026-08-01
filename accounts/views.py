@@ -1,10 +1,43 @@
-from django.shortcuts import render
-from django.shortcuts import redirect
-from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render, redirect
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-# Create your views here.
+from django.db import models
+from eleves.models import Student
+from classes.models import Classe
+from matieres.models import Matiere
+
+@login_required
+def admin_dashboard(request):
+    if not request.user.is_staff:
+        return redirect("accounts:dashboard")
+    
+    # Statistiques
+    total_eleves = Student.objects.count()
+    total_enseignants = User.objects.filter(groups__name='Teacher').count()
+    total_classes = Classe.objects.count()
+    total_matieres = Matiere.objects.count()
+    
+    # Derniers élèves inscrits
+    derniers_eleves = Student.objects.all().order_by('-inscription_date')[:5]
+    
+    # Répartition des classes
+    repartition_classes = Classe.objects.annotate(total=models.Count('students'))
+    max_eleves = repartition_classes.aggregate(models.Max('total'))['total__max'] or 1
+    
+    context = {
+        'total_eleves': total_eleves,
+        'total_enseignants': total_enseignants,
+        'total_classes': total_classes,
+        'total_matieres': total_matieres,
+        'derniers_eleves': derniers_eleves,
+        'repartition_classes': repartition_classes,
+        'max_eleves': max_eleves,
+    }
+    
+    return render(request, "accounts/admin_dashboard.html", context)
+
+
 def home(request):
     return render(request, "accounts/home.html")
 
@@ -23,7 +56,7 @@ def login_view(request):
 
         if user is not None:
             login(request, user)
-            return redirect("dashboard")
+            return redirect("accounts:admin_dashboard")
         else:
             return render(request, "accounts/login.html", {
                 "error": "Nom ou mot de passe incorrect"
@@ -33,28 +66,22 @@ def login_view(request):
 
 def logout_view(request):
     logout(request)
-    return redirect("login")
+    return redirect("accounts:login")
 
 @login_required
 def dashboard(request):
     if request.user.is_staff:
-        return redirect("admin_dashboard")
+        return redirect("accounts:admin_dashboard")
     else:
-        return redirect("teacher_dashboard")
+        return redirect("accounts:teacher_dashboard")
 
 
 def teacher_dashboard(request):
     if request.user.is_staff:
-        return redirect("dashboard")
+        return redirect("accounts:admin_dashboard")
 
     return render(request, "accounts/teacher_dashboard.html")
 
-@login_required
-def admin_dashboard(request):
-    if not request.user.is_staff:
-        return redirect("dashboard")
-
-    return render(request, "accounts/admin_dashboard.html")
 
 def teacher_list(request):
     # Logique pour récupérer la liste des enseignants

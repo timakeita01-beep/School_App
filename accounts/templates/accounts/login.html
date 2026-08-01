@@ -1,173 +1,721 @@
-<style>
-    /* 1. Fond bleu profond et flou (le "cadre" de la scène) */
+<!DOCTYPE html>
+{% load static %}
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Connexion | Portail Scolaire</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ============================================
+       RESET & BASE
+       ============================================ */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
     body {
-        margin: 0;
-        padding: 0;
-        font-family: 'Montserrat', 'Segoe UI', sans-serif; /* Une police plus "tech" */
-        background: radial-gradient(circle at center, #102542 0%, #081221 100%); /* Bleu nuit profond */
-        height: 100vh;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        overflow: hidden;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #f0f4ff;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      position: relative;
+      overflow-x: hidden;
     }
 
-    /* 2. Le container "Verre" (Glassmorphism) */
-    .glass-login-container {
-        background: rgba(255, 255, 255, 0.05); /* Très transparent */
-        backdrop-filter: blur(10px); /* L'effet de flou dépoli */
-        -webkit-backdrop-filter: blur(10px);
-        padding: 50px 40px;
-        border-radius: 30px;
-        border: 1px solid rgba(255, 255, 255, 0.1); /* Bordure très fine et subtile */
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-        width: 380px;
-        text-align: center;
-        position: relative;
-        overflow: hidden; /* Pour contenir les reflets */
+    /* ============================================
+       BACKGROUND ANIMÉ
+       ============================================ */
+    .bg-shapes {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 0;
+      overflow: hidden;
+      pointer-events: none;
     }
 
-    /* 3. L'Avatar Icône Photo (Subtil et technologique) */
-    .photo-avatar {
-        width: 100px;
-        height: 100px;
-        border-radius: 50%;
-        border: 2px solid rgba(0, 212, 255, 0.3); /* Bordure bleu cyan subtile */
-        margin: 0 auto 30px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        font-size: 50px;
-        color: rgba(0, 212, 255, 0.6); /* Cyan translucide */
-        background: rgba(0, 0, 0, 0.2);
+    .bg-shapes .shape {
+      position: absolute;
+      border-radius: 50%;
+      opacity: 0.3;
+      animation: float-shape 8s ease-in-out infinite;
     }
 
-    /* 4. Les Champs de Saisie (Minimalistes et sombres) */
-    .input-group {
-        margin-bottom: 20px;
-        position: relative;
+    .bg-shapes .shape-1 {
+      width: 300px;
+      height: 300px;
+      background: linear-gradient(135deg, #2563eb, #7c3aed);
+      top: -100px;
+      right: -80px;
+      animation-delay: 0s;
+      opacity: 0.15;
     }
 
-    input[type="text"], 
-    input[type="password"] {
-        width: 100%;
-        padding: 15px 20px;
-        background: rgba(0, 0, 0, 0.3); /* Fond très sombre */
-        border: 1px solid rgba(255, 255, 255, 0.1); /* Bordure subtile */
-        border-radius: 10px;
-        color: #fff; /* Texte blanc pour la lisibilité */
-        outline: none;
-        transition: 0.3s;
-        box-sizing: border-box;
-        font-size: 1rem;
+    .bg-shapes .shape-2 {
+      width: 400px;
+      height: 400px;
+      background: linear-gradient(135deg, #60a5fa, #a78bfa);
+      bottom: -150px;
+      left: -100px;
+      animation-delay: 2s;
+      opacity: 0.10;
     }
 
-    /* Effet au focus : plus lumineux */
-    input:focus {
-        border-color: rgba(0, 212, 255, 0.6);
-        background: rgba(0, 0, 0, 0.4);
+    .bg-shapes .shape-3 {
+      width: 150px;
+      height: 150px;
+      background: linear-gradient(135deg, #93c5fd, #c4b5fd);
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      animation-delay: 4s;
+      opacity: 0.08;
     }
 
-    /* 5. Bouton Connexion (Le point focal) */
-    .btn-submit {
-        width: 100%;
-        padding: 15px;
-        border: none;
-        border-radius: 10px;
-        background: linear-gradient(135deg, #0056b3 0%, #002d5c 100%); /* Dégradé bleu profond */
-        color: #fff;
-        font-weight: bold;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        cursor: pointer;
-        margin-top: 15px;
-        box-shadow: 0 5px 15px rgba(0, 86, 179, 0.3);
-        transition: 0.3s;
+    @keyframes float-shape {
+      0%, 100% { transform: translateY(0) scale(1); }
+      50% { transform: translateY(-30px) scale(1.05); }
     }
 
-    .btn-submit:hover {
-        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
-        box-shadow: 0 8px 25px rgba(0, 123, 255, 0.5);
+    /* ============================================
+       CONTAINER PRINCIPAL
+       ============================================ */
+    .login-container {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 440px;
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(20px);
+      border-radius: 32px;
+      padding: 48px 40px 40px;
+      box-shadow: 0 20px 60px rgba(37, 99, 235, 0.12), 0 4px 20px rgba(0,0,0,0.04);
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      transition: all 0.3s ease;
     }
 
-    /* 6. Liens secondaires (Luminosité réduite) */
-    .extras {
-        margin-top: 25px;
-        font-size: 0.8rem;
-        color: rgba(255, 255, 255, 0.6); /* Blanc translucide */
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
+    .login-container:hover {
+      box-shadow: 0 30px 80px rgba(37, 99, 235, 0.16);
     }
 
-    .extras a {
-        color: rgba(0, 212, 255, 0.7); /* Cyan translucide */
-        text-decoration: none;
+    /* ============================================
+       LOGO / BRAND
+       ============================================ */
+    .login-brand {
+      text-align: center;
+      margin-bottom: 36px;
     }
 
-    .extras a:hover {
-        color: #fff;
+    .login-brand .brand-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 56px;
+      height: 56px;
+      background: linear-gradient(135deg, #2563eb, #4f46e5);
+      border-radius: 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 8px 24px rgba(37, 99, 235, 0.25);
     }
 
-    .remember-me {
-        display: flex;
-        align-items: center;
-        gap: 5px;
+    .login-brand .brand-icon svg {
+      width: 28px;
+      height: 28px;
+      color: white;
     }
 
-    .signup-link {
-        margin-top: 20px;
-        font-size: 0.85rem;
-        color: rgba(255, 255, 255, 0.6);
+    .login-brand h1 {
+      font-size: 24px;
+      font-weight: 800;
+      color: #0f172a;
+      letter-spacing: -0.5px;
     }
 
-    /* Les "lueurs" (points de lumière) */
-    .glow-point {
-        position: absolute;
-        width: 5px;
-        height: 5px;
-        background: #fff;
-        border-radius: 50%;
-        box-shadow: 0 0 10px #fff, 0 0 20px #00d4ff;
+    .login-brand p {
+      font-size: 14px;
+      color: #64748b;
+      margin-top: 4px;
     }
 
-    .glow-1 { top: 20px; left: 20px; }
-    .glow-2 { bottom: 20px; right: 20px; }
-</style>
+    /* ============================================
+       TITRE DU FORMULAIRE
+       ============================================ */
+    .form-title {
+      text-align: center;
+      margin-bottom: 28px;
+    }
 
-<div class="glass-login-container">
-    <div class="glow-point glow-1"></div>
-    <div class="glow-point glow-2"></div>
-    
-    <div class="photo-avatar">📷</div>
-    
-    <form method="POST">
-        {% csrf_token %}
-        
-        <div class="input-group">
-            <input type="text" name="username" placeholder="Username" required>
-        </div>
-        
-        <div class="input-group">
-            <input type="password" name="password" placeholder="Password" required>
-        </div>
-        
-        <button type="submit" class="btn-submit">Se connecter</button>
-    </form>
+    .form-title h2 {
+      font-size: 20px;
+      font-weight: 700;
+      color: #0f172a;
+    }
 
-    <div class="extras">
-        <div class="remember-me">
-            <input type="checkbox" id="remember">
-            <label for="remember">Remember me</label>
-        </div>
-        <a href="#">Forgot Password?</a>
-    </div>
+    .form-title p {
+      font-size: 14px;
+      color: #94a3b8;
+      margin-top: 4px;
+    }
 
-    <div class="signup-link">
-        Don't have account? <a href="#">Sign up</a>
-    </div>
+    /* ============================================
+       FORMULAIRE
+       ============================================ */
+    .login-form {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
 
-    {% if error %}
-    <p style="color: #ff4d4d; font-size: 0.9rem; margin-top: 15px;">{{ error }}</p>
-    {% endif %}
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #334155;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .form-group label .required {
+      color: #ef4444;
+      font-size: 16px;
+    }
+
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .input-wrapper .input-icon {
+      position: absolute;
+      left: 14px;
+      color: #94a3b8;
+      transition: color 0.3s ease;
+      pointer-events: none;
+    }
+
+    .input-wrapper .input-icon svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .input-wrapper .form-input {
+      width: 100%;
+      padding: 12px 16px 12px 46px;
+      font-size: 15px;
+      font-family: 'Inter', sans-serif;
+      color: #0f172a;
+      background: #f8fafc;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 14px;
+      transition: all 0.3s ease;
+      outline: none;
+    }
+
+    .input-wrapper .form-input::placeholder {
+      color: #94a3b8;
+      font-weight: 400;
+    }
+
+    .input-wrapper .form-input:focus {
+      background: #ffffff;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.08);
+    }
+
+    .input-wrapper .form-input:focus ~ .input-icon {
+      color: #2563eb;
+    }
+
+    .input-wrapper .form-input.error {
+      border-color: #ef4444;
+      background: #fef2f2;
+    }
+
+    .input-wrapper .form-input.error:focus {
+      box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.08);
+    }
+
+    /* ============================================
+       TOGGLE PASSWORD
+       ============================================ */
+    .toggle-password {
+      position: absolute;
+      right: 14px;
+      background: none;
+      border: none;
+      color: #94a3b8;
+      cursor: pointer;
+      padding: 4px;
+      transition: color 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .toggle-password:hover {
+      color: #2563eb;
+    }
+
+    .toggle-password svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    /* ============================================
+       OPTIONS
+       ============================================ */
+    .form-options {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 4px;
+    }
+
+    .form-options .remember-me {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: #475569;
+      cursor: pointer;
+    }
+
+    .form-options .remember-me input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      accent-color: #2563eb;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .form-options .forgot-link {
+      font-size: 13px;
+      color: #2563eb;
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.2s ease;
+    }
+
+    .form-options .forgot-link:hover {
+      color: #1d4ed8;
+      text-decoration: underline;
+    }
+
+    /* ============================================
+       BOUTON DE CONNEXION
+       ============================================ */
+    .btn-login-submit {
+      width: 100%;
+      padding: 14px;
+      font-size: 16px;
+      font-weight: 600;
+      font-family: 'Inter', sans-serif;
+      color: white;
+      background: linear-gradient(135deg, #2563eb, #4f46e5);
+      border: none;
+      border-radius: 14px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 16px rgba(37, 99, 235, 0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 4px;
+    }
+
+    .btn-login-submit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(37, 99, 235, 0.35);
+      background: linear-gradient(135deg, #1d4ed8, #4338ca);
+    }
+
+    .btn-login-submit:active {
+      transform: translateY(0);
+      box-shadow: 0 4px 16px rgba(37, 99, 235, 0.2);
+    }
+
+    .btn-login-submit svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .btn-login-submit .loading {
+      display: none;
+      animation: spin 0.8s linear infinite;
+    }
+
+    .btn-login-submit.loading .loading {
+      display: inline-block;
+    }
+
+    .btn-login-submit.loading .btn-text {
+      display: none;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* ============================================
+       MESSAGES D'ERREUR
+       ============================================ */
+    .error-message {
+      display: none;
+      padding: 12px 16px;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: 12px;
+      color: #991b1b;
+      font-size: 13px;
+      font-weight: 500;
+      align-items: center;
+      gap: 10px;
+      animation: slideDown 0.3s ease;
+    }
+
+    .error-message.show {
+      display: flex;
+    }
+
+    .error-message svg {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* ============================================
+       FOOTER
+       ============================================ */
+    .login-footer {
+      text-align: center;
+      margin-top: 28px;
+      padding-top: 20px;
+      border-top: 1px solid #f1f5f9;
+    }
+
+    .login-footer p {
+      font-size: 13px;
+      color: #94a3b8;
+    }
+
+    .login-footer p strong {
+      color: #2563eb;
+      font-weight: 600;
+    }
+
+    .login-footer .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      margin-top: 8px;
+    }
+
+    .login-footer .footer-links a {
+      font-size: 12px;
+      color: #94a3b8;
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+
+    .login-footer .footer-links a:hover {
+      color: #2563eb;
+    }
+
+    /* ============================================
+       RESPONSIVE
+       ============================================ */
+    @media (max-width: 640px) {
+      body {
+        padding: 12px;
+      }
+
+      .login-container {
+        padding: 32px 24px 28px;
+        border-radius: 24px;
+      }
+
+      .login-brand .brand-icon {
+        width: 48px;
+        height: 48px;
+      }
+
+      .login-brand .brand-icon svg {
+        width: 24px;
+        height: 24px;
+      }
+
+      .login-brand h1 {
+        font-size: 20px;
+      }
+
+      .form-title h2 {
+        font-size: 18px;
+      }
+
+      .input-wrapper .form-input {
+        font-size: 14px;
+        padding: 10px 14px 10px 42px;
+      }
+
+      .form-options {
+        flex-direction: column;
+        gap: 12px;
+        align-items: flex-start;
+      }
+
+      .btn-login-submit {
+        padding: 12px;
+        font-size: 15px;
+      }
+
+      .bg-shapes .shape-1 {
+        width: 200px;
+        height: 200px;
+        top: -60px;
+        right: -40px;
+      }
+
+      .bg-shapes .shape-2 {
+        width: 250px;
+        height: 250px;
+        bottom: -80px;
+        left: -60px;
+      }
+    }
+
+    @media (max-width: 400px) {
+      .login-container {
+        padding: 24px 16px 20px;
+        border-radius: 20px;
+      }
+
+      .login-brand .brand-icon {
+        width: 44px;
+        height: 44px;
+      }
+
+      .login-brand h1 {
+        font-size: 18px;
+      }
+
+      .login-brand p {
+        font-size: 12px;
+      }
+
+      .input-wrapper .form-input {
+        font-size: 13px;
+        padding: 10px 12px 10px 38px;
+      }
+
+      .input-wrapper .input-icon {
+        left: 12px;
+      }
+
+      .input-wrapper .input-icon svg {
+        width: 16px;
+        height: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ============================================
+     BACKGROUND SHAPES
+     ============================================ -->
+<div class="bg-shapes">
+  <div class="shape shape-1"></div>
+  <div class="shape shape-2"></div>
+  <div class="shape shape-3"></div>
 </div>
+
+<!-- ============================================
+     LOGIN CONTAINER
+     ============================================ -->
+<div class="login-container">
+
+  <!-- Brand -->
+    <div class="login-brand">
+      <div class="brand-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+          <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+        </svg>
+      </div>
+      <h1>SCHOOLAPP</h1>
+      <p>École Primaire</p>
+    </div>
+
+  <!-- Titre du formulaire -->
+  <div class="form-title">
+    <h2>Bienvenue !</h2>
+    <p>Connectez-vous pour accéder à votre espace</p>
+  </div>
+
+  <!-- Message d'erreur Django -->
+  {% if error %}
+  <div class="error-message show">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="10"/>
+      <line x1="12" y1="8" x2="12" y2="12"/>
+      <line x1="12" y1="16" x2="12.01" y2="16"/>
+    </svg>
+    {{ error }}
+  </div>
+  {% endif %}
+
+  <!-- Formulaire -->
+  <form method="POST" action="{% url 'accounts:login' %}" class="login-form" id="loginForm">
+    {% csrf_token %}
+
+    <!-- Champ Nom d'utilisateur -->
+    <div class="form-group">
+      <label for="username">
+        Nom d'utilisateur <span class="required">*</span>
+      </label>
+      <div class="input-wrapper">
+        <span class="input-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+        </span>
+        <input type="text" id="username" name="username" class="form-input {% if error %}error{% endif %}" 
+               placeholder="Entrez votre nom d'utilisateur" required autofocus>
+      </div>
+    </div>
+
+    <!-- Champ Mot de passe -->
+    <div class="form-group">
+      <label for="password">
+        Mot de passe <span class="required">*</span>
+      </label>
+      <div class="input-wrapper">
+        <span class="input-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+        </span>
+        <input type="password" id="password" name="password" class="form-input {% if error %}error{% endif %}" 
+               placeholder="Entrez votre mot de passe" required>
+        <button type="button" class="toggle-password" id="togglePassword" aria-label="Afficher le mot de passe">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Options -->
+    <div class="form-options">
+      <label class="remember-me">
+        <input type="checkbox" name="remember" checked>
+        Se souvenir de moi
+      </label>
+      <a href="#" class="forgot-link">Mot de passe oublié ?</a>
+    </div>
+
+    <!-- Bouton de connexion -->
+    <button type="submit" class="btn-login-submit" id="loginButton">
+      <span class="btn-text">Se connecter</span>
+      <svg class="loading" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+      </svg>
+      <svg class="btn-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4"/>
+        <polyline points="10 17 15 12 10 7"/>
+        <line x1="15" x2="3" y1="12" y2="12"/>
+      </svg>
+    </button>
+  </form>
+
+  <!-- Footer -->
+  <div class="login-footer">
+    <p>© 2026 <strong>SCHOOLAPP</strong> — Système de Gestion Scolaire</p>
+    <div class="footer-links">
+      <a href="#">Politique de confidentialité</a>
+      <a href="#">Mentions légales</a>
+      <a href="#">Contact</a>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================
+     JAVASCRIPT
+     ============================================ -->
+<script>
+  // Toggle password visibility
+  document.addEventListener('DOMContentLoaded', function() {
+    const togglePassword = document.getElementById('togglePassword');
+    const passwordInput = document.getElementById('password');
+
+    if (togglePassword && passwordInput) {
+      togglePassword.addEventListener('click', function() {
+        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
+        // Changer l'icône
+        const svg = this.querySelector('svg');
+        if (type === 'text') {
+          svg.innerHTML = '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>';
+        } else {
+          svg.innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
+        }
+      });
+    }
+
+    // Loading effect on submit
+    const form = document.getElementById('loginForm');
+    const button = document.getElementById('loginButton');
+
+    if (form && button) {
+      form.addEventListener('submit', function() {
+        button.classList.add('loading');
+        button.disabled = true;
+      });
+    }
+
+    // Auto-focus sur le champ username
+    const usernameInput = document.getElementById('username');
+    if (usernameInput) {
+      usernameInput.focus();
+    }
+  });
+</script>
+
+</body>
+</html>
