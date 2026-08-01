@@ -660,7 +660,7 @@
         <span>Élèves</span>
       </a>
 
-      <a href="{% url 'classes:list' %}" class="nav-item {% block nav_enseignant %}{% endblock %}">
+      <a href="{% url 'classes:list' %}" class="nav-item {% block nav_classes %}{% endblock %}">
         <span class="nav-icon" aria-hidden="true">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -671,7 +671,7 @@
         <span>Classes</span>
       </a>
 
-      <a href="{% url 'matieres:list' %}" class="nav-item {% block nav_classes %}{% endblock %}">
+      <a href="{% url 'matieres:list' %}" class="nav-item {% block nav_matieres %}{% endblock %}">
         <span class="nav-icon" aria-hidden="true">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -682,7 +682,7 @@
         <span>Matières</span>
       </a>
 
-      <a href="{% url 'accounts:teacher_list' %}" class="nav-item {% block nav_emploi %}{% endblock %}">
+      <a href="{% url 'accounts:teacher_list' %}" class="nav-item {% block nav_enseignants %}{% endblock %}">
         <span class="nav-icon" aria-hidden="true">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

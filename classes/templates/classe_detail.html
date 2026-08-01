@@ -1,0 +1,864 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Détail — {{ classe.nom }}{% endblock %}
+{% block meta_desc %}Détail de la classe {{ classe.nom }} avec la liste des élèves{% endblock %}
+{% block page_title %}Les classes{% endblock %}
+{% block search_placeholder %}Rechercher un élève...{% endblock %}
+{% block nav_classes %}active{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ============================================
+       STYLES POUR LE DÉTAIL DE CLASSE
+       Couleurs : #355394, #4a6091, nuances de bleu
+       ============================================ */
+
+    /* ===== PAGE HEADER ===== */
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .page-header-text h2 {
+        font-size: 24px;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 0;
+    }
+
+    .page-header-text p {
+        font-size: 14px;
+        color: #64748b;
+        margin: 4px 0 0;
+    }
+
+    .page-header-text p strong {
+        color: #355394;
+        font-weight: 600;
+    }
+
+    /* ===== BUTTONS ===== */
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        font-size: 14px;
+        font-weight: 600;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .btn-primary {
+        background: #355394;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #2a4378;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(53, 83, 148, 0.3);
+    }
+
+    .btn-secondary {
+        background: #f1f5f9;
+        color: #475569;
+    }
+
+    .btn-secondary:hover {
+        background: #e2e8f0;
+    }
+
+    .btn-success {
+        background: #4a6091;
+        color: white;
+    }
+
+    .btn-success:hover {
+        background: #3a507a;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(74, 96, 145, 0.3);
+    }
+
+    .btn-danger {
+        background: #dc2626;
+        color: white;
+    }
+
+    .btn-danger:hover {
+        background: #b91c1c;
+    }
+
+    /* ===== CLASS INFO CARD ===== */
+    .class-info-card {
+        background: white;
+        border-radius: 16px;
+        border: 1px solid #e5e7eb;
+        padding: 24px 28px;
+        margin-bottom: 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        transition: box-shadow 0.3s ease;
+    }
+
+    .class-info-card:hover {
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+    }
+
+    .class-info-left {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .class-info-icon {
+        width: 56px;
+        height: 56px;
+        background: linear-gradient(135deg, #355394, #4a6091);
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        flex-shrink: 0;
+    }
+
+    .class-info-icon svg {
+        width: 28px;
+        height: 28px;
+    }
+
+    .class-info-details h3 {
+        font-size: 20px;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 0;
+    }
+
+    .class-info-details .class-meta {
+        display: flex;
+        gap: 16px;
+        margin-top: 4px;
+        flex-wrap: wrap;
+    }
+
+    .class-meta-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+        color: #64748b;
+    }
+
+    .class-meta-item svg {
+        width: 16px;
+        height: 16px;
+        color: #94a3b8;
+    }
+
+    .class-meta-item strong {
+        color: #1e293b;
+        font-weight: 600;
+    }
+
+    .class-info-right {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    /* ===== STUDENTS TABLE ===== */
+    .students-section {
+        background: white;
+        border-radius: 16px;
+        border: 1px solid #e5e7eb;
+        overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    }
+
+    .students-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 18px 24px;
+        border-bottom: 1px solid #f1f5f9;
+        background: #fafcff;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .students-header h3 {
+        font-size: 16px;
+        font-weight: 600;
+        color: #1e293b;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .students-header h3 .count {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: #355394;
+        color: white;
+        font-size: 12px;
+        font-weight: 700;
+        padding: 0 10px;
+        border-radius: 20px;
+        height: 24px;
+        min-width: 24px;
+    }
+
+    .students-header .btn-sm {
+        padding: 6px 14px;
+        font-size: 12px;
+        border-radius: 8px;
+    }
+
+    .table-responsive {
+        overflow-x: auto;
+    }
+
+    .student-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+    }
+
+    .student-table thead {
+        background: #f8fafc;
+    }
+
+    .student-table th {
+        padding: 12px 16px;
+        text-align: left;
+        font-weight: 600;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #64748b;
+        border-bottom: 2px solid #e5e7eb;
+    }
+
+    .student-table td {
+        padding: 12px 16px;
+        border-bottom: 1px solid #f1f5f9;
+        vertical-align: middle;
+    }
+
+    .student-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .student-table tbody tr:hover {
+        background: #f8fafc;
+    }
+
+    /* ===== STUDENT CELL ===== */
+    .student-cell {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .student-avatar-sm {
+        width: 36px;
+        height: 36px;
+        background: linear-gradient(135deg, #dde3ed, #f0f4fb);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 13px;
+        color: #355394;
+        flex-shrink: 0;
+    }
+
+    .student-name {
+        font-weight: 500;
+        color: #0f172a;
+    }
+
+    .student-dob {
+        font-size: 12px;
+        color: #94a3b8;
+    }
+
+    /* ===== ACTION BUTTONS ===== */
+    .action-btns {
+        display: flex;
+        gap: 4px;
+    }
+
+    .action-btn {
+        width: 30px;
+        height: 30px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        background: transparent;
+        color: #94a3b8;
+    }
+
+    .action-btn svg {
+        width: 14px;
+        height: 14px;
+    }
+
+    .action-btn.view:hover {
+        background: #dbeafe;
+        color: #355394;
+    }
+
+    .action-btn.edit:hover {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .action-btn.delete:hover {
+        background: #fee2e2;
+        color: #dc2626;
+    }
+
+    /* ===== EMPTY STATE ===== */
+    .empty-state {
+        text-align: center;
+        padding: 50px 20px;
+    }
+
+    .empty-state-icon {
+        width: 64px;
+        height: 64px;
+        background: #f1f5f9;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 16px;
+        color: #94a3b8;
+    }
+
+    .empty-state-icon svg {
+        width: 32px;
+        height: 32px;
+    }
+
+    .empty-state h4 {
+        font-size: 18px;
+        font-weight: 600;
+        color: #0f172a;
+        margin: 0 0 6px;
+    }
+
+    .empty-state p {
+        color: #64748b;
+        margin: 0 0 20px;
+        font-size: 14px;
+    }
+
+    /* ===== MODAL ===== */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(15, 23, 42, 0.5);
+        backdrop-filter: blur(4px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        padding: 20px;
+    }
+
+    .modal-overlay.active {
+        display: flex;
+        animation: fadeIn 0.25s ease;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    .modal {
+        background: white;
+        border-radius: 20px;
+        max-width: 440px;
+        width: 100%;
+        padding: 32px 28px 28px;
+        text-align: center;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+        animation: slideUp 0.3s ease;
+    }
+
+    @keyframes slideUp {
+        from {
+            transform: translateY(20px);
+            opacity: 0;
+        }
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+
+    .modal-icon-wrap {
+        width: 56px;
+        height: 56px;
+        background: #fee2e2;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 12px;
+        color: #dc2626;
+    }
+
+    .modal h3 {
+        font-size: 18px;
+        font-weight: 600;
+        color: #0f172a;
+        margin: 0 0 8px;
+    }
+
+    .modal p {
+        font-size: 14px;
+        color: #475569;
+        margin: 0 0 20px;
+        line-height: 1.6;
+    }
+
+    .modal p strong {
+        color: #0f172a;
+    }
+
+    .modal-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+    }
+
+    .modal-actions .btn {
+        padding: 10px 24px;
+        font-size: 14px;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+        .page-header {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .page-header .btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .class-info-card {
+            flex-direction: column;
+            align-items: stretch;
+            padding: 20px;
+        }
+
+        .class-info-left {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .class-info-right {
+            flex-direction: column;
+        }
+
+        .class-info-right .btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .students-header {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .students-header .btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .student-table {
+            font-size: 12px;
+        }
+
+        .student-table th,
+        .student-table td {
+            padding: 8px 10px;
+        }
+
+        .student-avatar-sm {
+            width: 30px;
+            height: 30px;
+            font-size: 11px;
+        }
+
+        .modal-actions {
+            flex-direction: column;
+        }
+
+        .modal-actions .btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .class-info-card {
+            padding: 16px;
+        }
+
+        .class-info-icon {
+            width: 44px;
+            height: 44px;
+        }
+
+        .class-info-icon svg {
+            width: 22px;
+            height: 22px;
+        }
+
+        .class-info-details h3 {
+            font-size: 17px;
+        }
+
+        .student-table {
+            font-size: 11px;
+        }
+
+        .student-table th,
+        .student-table td {
+            padding: 6px 8px;
+        }
+
+        .student-name {
+            font-size: 12px;
+        }
+
+        .modal {
+            padding: 24px 20px 20px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Page header -->
+<div class="page-header">
+  <div class="page-header-text">
+    <h2>Détail de la classe</h2>
+    <p>Consultez les informations et les élèves de <strong>{{ classe.nom }}</strong>.</p>
+  </div>
+  <div>
+    <a href="{% url 'classes:modifier' classe.pk %}" class="btn btn-primary">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+           fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+      </svg>
+      Modifier
+    </a>
+    <a href="{% url 'classes:list' %}" class="btn btn-secondary" style="margin-left:8px;">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+           fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="19" y1="12" x2="5" y2="12"/>
+        <polyline points="12 19 5 12 12 5"/>
+      </svg>
+      Retour
+    </a>
+  </div>
+</div>
+
+<!-- Class Info Card -->
+<div class="class-info-card">
+  <div class="class-info-left">
+    <div class="class-info-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M19 21V5a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v5m-4 0h4"/>
+      </svg>
+    </div>
+    <div class="class-info-details">
+      <h3>{{ classe.nom }}</h3>
+      <div class="class-meta">
+        <span class="class-meta-item">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+          </svg>
+          Niveau : <strong>{{ classe.niveau }}{% if classe.niveau == 1 %}er{% else %}ème{% endif %}</strong>
+        </span>
+        <span class="class-meta-item">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+          Effectif : <strong>{{ eleves|length }}</strong> élève{{ eleves|pluralize }}
+        </span>
+        <span class="class-meta-item">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="16" x2="12" y2="12"/>
+            <line x1="12" y1="8" x2="12.01" y2="8"/>
+          </svg>
+          Créée le : <strong>{{ classe.date_creation|date:"d/m/Y" }}</strong>
+        </span>
+      </div>
+    </div>
+  </div>
+  <div class="class-info-right">
+    <a href="{% url 'students:create' %}?classroom={{ classe.pk }}" class="btn btn-success">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+           fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" x2="12" y1="5" y2="19"/>
+        <line x1="5" x2="19" y1="12" y2="12"/>
+      </svg>
+      Ajouter un élève
+    </a>
+  </div>
+</div>
+
+<!-- Students Section -->
+<div class="students-section">
+  <div class="students-header">
+    <h3>
+      Liste des élèves
+      <span class="count">{{ eleves|length }}</span>
+    </h3>
+    <a href="{% url 'students:create' %}?classroom={{ classe.pk }}" class="btn btn-primary btn-sm">
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+           fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" x2="12" y1="5" y2="19"/>
+        <line x1="5" x2="19" y1="12" y2="12"/>
+      </svg>
+      Ajouter
+    </a>
+  </div>
+
+  {% if eleves %}
+  <div class="table-responsive">
+    <table class="student-table" id="studentTable">
+      <thead>
+        <tr>
+          <th>Élève</th>
+          <th>Date de naissance</th>
+          <th>Âge</th>
+          <th>Parent / Tuteur</th>
+          <th>Contact</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for eleve in eleves %}
+        <tr>
+          <td>
+            <div class="student-cell">
+              <div class="student-avatar-sm">
+                {{ eleve.first_name|first|upper }}{{ eleve.last_name|first|upper }}
+              </div>
+              <div>
+                <div class="student-name">{{ eleve.first_name }} {{ eleve.last_name }}</div>
+                <div class="student-dob">ID: {{ eleve.identification_number|slice:":8" }}</div>
+              </div>
+            </div>
+          </td>
+          <td>{{ eleve.date_of_birth|date:"d/m/Y" }}</td>
+          <td>
+            {% if eleve.date_of_birth %}
+              {% with age=eleve.age %}
+                {{ age }} ans
+              {% endwith %}
+            {% else %}
+              —
+            {% endif %}
+          </td>
+          <td>
+            <div>
+              <div style="font-weight:500;color:#0f172a;font-size:13px;">
+                {{ eleve.parent.first_name }} {{ eleve.parent.last_name }}
+              </div>
+              <div style="font-size:11px;color:#94a3b8;">Parent</div>
+            </div>
+          </td>
+          <td>
+            <div style="display:flex;flex-direction:column;gap:2px;">
+              {% if eleve.parent.phone_number %}
+              <span style="display:flex;align-items:center;gap:4px;font-size:12px;color:#475569;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 5a2 2 0 0 1 2-2h3.28a1 1 0 0 1 .948.684l1.498 4.493a1 1 0 0 1-.502 1.21l-2.257 1.13a11.042 11.042 0 0 0 5.516 5.516l1.13-2.257a1 1 0 0 1 1.21-.502l4.493 1.498a1 1 0 0 1 .684.949V19a2 2 0 0 1-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                </svg>
+                {{ eleve.parent.phone_number }}
+              </span>
+              {% endif %}
+              {% if eleve.parent.email %}
+              <span style="display:flex;align-items:center;gap:4px;font-size:12px;color:#475569;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 8l7.89 5.26a2 2 0 0 0 2.22 0L21 8M5 19h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2z"/>
+                </svg>
+                {{ eleve.parent.email }}
+              </span>
+              {% endif %}
+            </div>
+          </td>
+          <td>
+            <div class="action-btns">
+              <a href="{% url 'students:detail' eleve.identification_number %}" class="action-btn view" title="Voir l'élève">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
+                  <path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                </svg>
+              </a>
+              <a href="{% url 'students:update' eleve.identification_number %}" class="action-btn edit" title="Modifier l'élève">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                </svg>
+              </a>
+              <button class="action-btn delete" title="Supprimer l'élève" onclick="confirmDelete('{{ eleve.identification_number }}', '{{ eleve.first_name }} {{ eleve.last_name }}')">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="3 6 5 6 21 6"/>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                </svg>
+              </button>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <!-- Empty state -->
+  <div class="empty-state">
+    <div class="empty-state-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+        <circle cx="9" cy="7" r="4"/>
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+      </svg>
+    </div>
+    <h4>Aucun élève dans cette classe</h4>
+    <p>Commencez par ajouter des élèves à la classe {{ classe.nom }}.</p>
+    <a href="{% url 'students:create' %}?classroom={{ classe.pk }}" class="btn btn-primary">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+           fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" x2="12" y1="5" y2="19"/>
+        <line x1="5" x2="19" y1="12" y2="12"/>
+      </svg>
+      Ajouter un élève
+    </a>
+  </div>
+  {% endif %}
+</div>
+
+<!-- Modal de confirmation de suppression -->
+<div class="modal-overlay" id="deleteModal" role="dialog" aria-modal="true">
+  <div class="modal">
+    <div class="modal-icon-wrap">
+      <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24"
+           fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+        <line x1="12" x2="12" y1="9" y2="13"/>
+        <line x1="12" x2="12.01" y1="17" y2="17"/>
+      </svg>
+    </div>
+    <h3>Confirmer la suppression</h3>
+    <p>
+      Êtes-vous sûr de vouloir supprimer <strong id="deleteStudentName"></strong> ?
+      Cette action est irréversible.
+    </p>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeDeleteModal()">Annuler</button>
+      <a href="#" class="btn btn-danger" id="confirmDeleteBtn">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="3 6 5 6 21 6"/>
+          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+        </svg>
+        Supprimer
+      </a>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Fonction de confirmation de suppression
+    function confirmDelete(id, name) {
+        const modal = document.getElementById('deleteModal');
+        const studentName = document.getElementById('deleteStudentName');
+        const confirmBtn = document.getElementById('confirmDeleteBtn');
+
+        studentName.textContent = name;
+        confirmBtn.href = '/students/' + id + '/delete/';
+        modal.classList.add('active');
+    }
+
+    function closeDeleteModal() {
+        document.getElementById('deleteModal').classList.remove('active');
+    }
+
+    // Fermer le modal en cliquant à l'extérieur
+    document.getElementById('deleteModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeDeleteModal();
+        }
+    });
+
+    // Fermer le modal avec la touche Escape
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeDeleteModal();
+        }
+    });
+
+    // Filtrage de la table
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                const query = this.value.toLowerCase();
+                const rows = document.querySelectorAll('#studentTable tbody tr');
+                rows.forEach(row => {
+                    const text = row.textContent.toLowerCase();
+                    row.style.display = text.includes(query) ? '' : 'none';
+                });
+            });
+        }
+    });
+</script>
+{% endblock %}

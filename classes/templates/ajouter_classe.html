@@ -7,6 +7,292 @@
 {% block search_placeholder %}Rechercher une classe...{% endblock %}
 {% block nav_classes %}active{% endblock %}
 
+{% block extra_css %}
+<style>
+    /* ============================================
+       STYLES POUR LA CRÉATION DE CLASSE
+       Couleurs : #355394, #4a6091, nuances de bleu
+       ============================================ */
+
+    /* ===== PAGE HEADER ===== */
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .page-header-text h2 {
+        font-size: 24px;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 0;
+    }
+
+    .page-header-text p {
+        font-size: 14px;
+        color: #64748b;
+        margin: 4px 0 0;
+    }
+
+    /* ===== BUTTONS ===== */
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        font-size: 14px;
+        font-weight: 600;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .btn-primary {
+        background: #355394;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #2a4378;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(53, 83, 148, 0.3);
+    }
+
+    .btn-secondary {
+        background: #f1f5f9;
+        color: #475569;
+    }
+
+    .btn-secondary:hover {
+        background: #e2e8f0;
+    }
+
+    /* ===== FORM PAGE ===== */
+    .form-page {
+        max-width: 680px;
+        margin: 0 auto;
+    }
+
+    .form-card {
+        background: white;
+        border-radius: 16px;
+        border: 1px solid #e5e7eb;
+        overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        transition: box-shadow 0.3s ease;
+    }
+
+    .form-card:hover {
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+    }
+
+    .form-card-header {
+        padding: 24px 28px 20px;
+        border-bottom: 1px solid #f1f5f9;
+        background: linear-gradient(135deg, #f8faff, #f0f4fb);
+    }
+
+    .form-card-header h2 {
+        font-size: 20px;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 0;
+    }
+
+    .form-card-header p {
+        font-size: 14px;
+        color: #64748b;
+        margin: 4px 0 0;
+    }
+
+    .form-card-body {
+        padding: 28px;
+    }
+
+    /* ===== FORM GROUPS ===== */
+    .form-group {
+        margin-bottom: 24px;
+    }
+
+    .form-group:last-of-type {
+        margin-bottom: 0;
+    }
+
+    .form-label {
+        display: block;
+        font-size: 13px;
+        font-weight: 600;
+        color: #334155;
+        margin-bottom: 6px;
+    }
+
+    .form-label .required {
+        color: #dc2626;
+        margin-left: 2px;
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 11px 16px;
+        font-size: 15px;
+        font-family: 'Inter', sans-serif;
+        color: #0f172a;
+        background: #fafcff;
+        border: 1.5px solid #dde3ed;
+        border-radius: 12px;
+        transition: all 0.2s ease;
+        outline: none;
+    }
+
+    .form-input::placeholder {
+        color: #94a3b8;
+    }
+
+    .form-input:focus {
+        border-color: #355394;
+        background: #ffffff;
+        box-shadow: 0 0 0 4px rgba(53, 83, 148, 0.08);
+    }
+
+    .form-input.is-error {
+        border-color: #dc2626;
+        background: #fef2f2;
+    }
+
+    .form-input.is-error:focus {
+        box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.08);
+    }
+
+    .form-input[type="number"] {
+        -moz-appearance: textfield;
+        appearance: textfield;
+    }
+
+    .form-input[type="number"]::-webkit-outer-spin-button,
+    .form-input[type="number"]::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    /* ===== FORM HINT & ERROR ===== */
+    .form-hint {
+        font-size: 12px;
+        color: #94a3b8;
+        margin: 6px 0 0;
+    }
+
+    .form-error {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+        font-weight: 500;
+        color: #dc2626;
+        margin: 6px 0 0;
+        animation: slideError 0.3s ease;
+    }
+
+    .form-error svg {
+        flex-shrink: 0;
+    }
+
+    @keyframes slideError {
+        from {
+            opacity: 0;
+            transform: translateY(-6px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* ===== FORM ACTIONS ===== */
+    .form-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+        padding-top: 24px;
+        margin-top: 24px;
+        border-top: 1px solid #f1f5f9;
+    }
+
+    .form-actions .btn {
+        padding: 11px 28px;
+        font-size: 14px;
+    }
+
+    .form-actions .btn-primary {
+        background: #355394;
+    }
+
+    .form-actions .btn-primary:hover {
+        background: #2a4378;
+        box-shadow: 0 4px 14px rgba(53, 83, 148, 0.35);
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+        .page-header {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .page-header .btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .form-card-header {
+            padding: 20px;
+        }
+
+        .form-card-body {
+            padding: 20px;
+        }
+
+        .form-actions {
+            flex-direction: column-reverse;
+        }
+
+        .form-actions .btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .form-card-header {
+            padding: 16px;
+        }
+
+        .form-card-header h2 {
+            font-size: 18px;
+        }
+
+        .form-card-body {
+            padding: 16px;
+        }
+
+        .form-input {
+            font-size: 14px;
+            padding: 10px 14px;
+        }
+
+        .form-actions {
+            padding-top: 16px;
+            margin-top: 16px;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 
 <!-- Page header -->
@@ -42,7 +328,9 @@
 
         <!-- Nom -->
         <div class="form-group">
-          <label class="form-label" for="id_nom">Nom de la classe</label>
+          <label class="form-label" for="id_nom">
+            Nom de la classe <span class="required">*</span>
+          </label>
           <input
             type="text"
             class="form-input {% if errors.nom %}is-error{% endif %}"
@@ -68,14 +356,16 @@
 
         <!-- Niveau -->
         <div class="form-group">
-          <label class="form-label" for="id_niveau">Niveau</label>
+          <label class="form-label" for="id_niveau">
+            Niveau <span class="required">*</span>
+          </label>
           <input
             type="number"
             class="form-input {% if errors.niveau %}is-error{% endif %}"
             id="id_niveau"
             name="niveau"
             value="{{ niveau|default:'' }}"
-            placeholder="Ex : 6  (pour 6ème)"
+            placeholder="Ex : 6 (pour 6ème)"
             min="1"
             required
           />
@@ -92,7 +382,17 @@
           </p>
           {% endif %}
         </div>
+       <label>Enseignant</label>
 
+<select name="enseignant">
+    <option value="">Choisir un enseignant</option>
+
+    {% for enseignant in enseignants %}
+        <option value="{{ enseignant.id }}">
+            {{ enseignant.get_full_name|default:enseignant.username }}
+        </option>
+    {% endfor %}
+</select>
         <!-- Actions -->
         <div class="form-actions">
           <a href="{% url 'classes:list' %}" class="btn btn-secondary">Annuler</a>
@@ -110,4 +410,63 @@
   </div><!-- /form-card -->
 </div><!-- /form-page -->
 
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Validation côté client
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('formAjouterClasse');
+        const nomInput = document.getElementById('id_nom');
+        const niveauInput = document.getElementById('id_niveau');
+
+        // Supprimer les espaces en début/fin du nom
+        if (nomInput) {
+            nomInput.addEventListener('blur', function() {
+                this.value = this.value.trim();
+            });
+        }
+
+        // Validation du niveau
+        if (niveauInput) {
+            niveauInput.addEventListener('input', function() {
+                if (this.value < 0) {
+                    this.value = 1;
+                }
+            });
+        }
+
+        // Validation avant soumission
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                let hasError = false;
+
+                // Vérifier le nom
+                if (nomInput && !nomInput.value.trim()) {
+                    nomInput.classList.add('is-error');
+                    hasError = true;
+                } else if (nomInput) {
+                    nomInput.classList.remove('is-error');
+                }
+
+                // Vérifier le niveau
+                if (niveauInput && (!niveauInput.value || niveauInput.value < 1)) {
+                    niveauInput.classList.add('is-error');
+                    hasError = true;
+                } else if (niveauInput) {
+                    niveauInput.classList.remove('is-error');
+                }
+
+                if (hasError) {
+                    e.preventDefault();
+                    // Scroll vers le premier champ en erreur
+                    const firstError = form.querySelector('.is-error');
+                    if (firstError) {
+                        firstError.focus();
+                    }
+                }
+            });
+        }
+    });
+</script>
 {% endblock %}
