@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Détails de la classe{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/class_detail.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="class-detail-demo">
+
+  <section class="stats-row">
+    <div class="stat-card">
+      <div class="stat-label">Total élèves</div>
+      <div class="stat-value">{{ selected_class.eleves.count|default:0 }}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Total filles</div>
+      <div class="stat-value">13</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Total garcon</div>
+      <div class="stat-value">21</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Enseignant</div>
+      <div class="stat-value">M. Santara Mamadou</div>
+    </div>
+  </section>
+
+  <section class="eleves-section">
+    <div class="section-header">
+      <h2>Liste des Élèves</h2>
+      <div class="section-actions">
+        <a class="btn btn-primary">+ Ajouter un étudiant</a>
+        <a class="btn btn-secondary">Voir l'emploi du temps</a>
+      </div>
+    </div>
+
+    <div class="eleves-table-wrap">
+      <table class="eleves-table">
+        <thead>
+          <tr><th>Nom</th><th>Prénom</th><th>Date de naissance</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+          {% for eleve in selected_class.eleves.all %}
+          <tr>
+            <td class="td-bold">{{ eleve.nom }}</td>
+            <td>{{ eleve.prenom }}</td>
+            <td>{{ eleve.telephone|default:'+223 00 00 00 00' }}</td>
+            <td class="td-actions">👁️ ✏️ 🗑️</td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="4">Aucun élève pour le moment.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="matieres-section">
+    <div class="section-header">
+      <h2>Les Matières</h2>
+      <div class="section-actions">
+        <a class="btn btn-primary">+ Ajouter une Matière</a>
+      </div>
+    </div>
+
+    <div class="matieres-grid">
+      {% for matiere in selected_class.matieres.all %}
+      <div class="matiere-card">
+        <div class="matiere-name">{{ matiere.nom }}</div>
+        <div class="matiere-coef">Coef : {{ matiere.coef }}</div>
+        <button class="more">⋮</button>
+      </div>
+      {% empty %}
+      <p class="empty">Aucune matière pour le moment.</p>
+      {% endfor %}
+    </div>
+  </section>
+
+</div>
+{% endblock %}

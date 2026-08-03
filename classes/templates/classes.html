@@ -1,6 +1,12 @@
 {% extends 'base.html' %}
 {% load static %}
 
+{% block extra_css %}
+{% if selected_class %}
+<link rel="stylesheet" href="{% static 'css/class_detail.css' %}">
+{% endif %}
+{% endblock %}
+
 {% block title %}Les Classes{% endblock %}
 {% block meta_desc %}Gestion et organisation des classes de l'établissement{% endblock %}
 {% block page_title %}Les classes{% endblock %}
@@ -24,6 +30,120 @@
     Créer une classe
   </a>
 </div>
+
+{% if selected_class %}
+<div class="class-detail-demo">
+  <div class="detail-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+    <div>
+      <h2 style="margin: 0; font-size: 24px; color: #1e293b;">Les classes</h2>
+    </div>
+    <a href="{% url 'classes_list' %}" class="btn btn-secondary" style="text-decoration: none;">Retour aux classes</a>
+  </div>
+
+  <section class="stats-row">
+    <div class="stat-card">
+      <div class="stat-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      </div>
+      <div>
+        <div class="stat-label">TOTAL ÉLÈVES</div>
+        <div class="stat-value">{{ selected_class.eleves.count|default:0 }}</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      </div>
+      <div>
+        <div class="stat-label">TOTAL FILLES</div>
+        <div class="stat-value">13</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      </div>
+      <div>
+        <div class="stat-label">TOTAL GARCON</div>
+        <div class="stat-value">21</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div>
+        <div class="stat-label">ENSEIGNANT</div>
+        <div class="stat-value" style="font-size: 14px;">M. SANTARA Mamadou</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="eleves-section">
+    <div class="section-header">
+      <h2>Liste des Éleves</h2>
+      <div class="section-actions">
+        <a href="{% url 'ajouter_eleve' %}" class="btn btn-primary">+ Ajouter un étudiant</a>
+        <a href="#" class="btn btn-secondary">Voir l'emploi du temps <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: text-bottom; margin-left: 4px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></a>
+      </div>
+    </div>
+
+    <div class="eleves-table-wrap">
+      <table class="eleves-table">
+        <thead>
+          <tr><th>NOM</th><th>PRÉNOM</th><th>DATE DE NAISSANCE</th><th>ACTIONS</th></tr>
+        </thead>
+        <tbody>
+          {% for eleve in selected_class.eleves.all %}
+          <tr>
+            <td class="td-bold">{{ eleve.nom }}</td>
+            <td>{{ eleve.prenom }}</td>
+            <td>{{ eleve.telephone|default:'+223 00 00 00 00' }}</td>
+            <td class="td-actions">
+              <a href="{% url 'detail_eleve' eleve.pk %}" style="text-decoration:none; color:inherit;">👁️</a>
+              <a href="{% url 'modifier_eleve' eleve.pk %}" style="text-decoration:none; color:inherit; margin: 0 8px;">✏️</a>
+              <a href="{% url 'supprimer_eleve' eleve.pk %}" style="text-decoration:none; color:inherit;">🗑️</a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="4">Aucun élève pour le moment.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="matieres-section">
+    <div class="section-header">
+      <h2>Les Matières</h2>
+      <div class="section-actions">
+        <button type="button" class="btn btn-primary" onclick="openAddMatiereModal({{ selected_class.pk }})">+ Ajouter une Matière</button>
+      </div>
+    </div>
+
+    <div class="matieres-grid">
+      {% for matiere in selected_class.matieres.all %}
+      <div class="matiere-card" id="matiere-{{ matiere.pk }}">
+        <div class="matiere-card-main" style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
+          <div>
+            <div class="matiere-name" style="font-weight: 600; font-size: 18px; margin-bottom: 8px;">{{ matiere.nom }}</div>
+            <div class="matiere-coef" style="color: #64748b; font-size: 15px;">Coef : {{ matiere.coef }}</div>
+          </div>
+          <div class="matiere-actions" style="position: relative;">
+            <button type="button" class="more-btn" onclick="toggleMatiereMenu({{ matiere.pk }})" aria-label="Plus d'actions" style="background: none; border: none; cursor: pointer; font-size: 20px;">
+              ⋮
+            </button>
+            <div class="more-menu" id="matiere-menu-{{ matiere.pk }}" hidden style="position: absolute; right: 0; top: 100%; background: white; border: 1px solid #e2e8f0; border-radius: 6px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); z-index: 10; min-width: 120px;">
+              <button type="button" onclick="openEditMatiereModal({{ matiere.pk }}, '{{ matiere.nom|escapejs }}', {{ matiere.coef }}, {{ selected_class.pk }})" style="display: block; width: 100%; text-align: left; padding: 8px 16px; background: none; border: none; cursor: pointer;">Modifier</button>
+              <button type="button" onclick="openDeleteMatiereModal({{ matiere.pk }}, '{{ matiere.nom|escapejs }}')" style="display: block; width: 100%; text-align: left; padding: 8px 16px; background: none; border: none; cursor: pointer; color: #ef4444;">Supprimer</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% empty %}
+      <p class="empty">Aucune matière pour le moment.</p>
+      {% endfor %}
+    </div>
+  </section>
+</div>
+{% else %}
 
 {% if classes %}
 <!-- Cards grid -->
@@ -72,7 +192,7 @@
           </span>
           <div class="info-content">
             <span class="info-label">Effectif</span>
-            <span class="info-value">— élèves</span>
+            <span class="info-value">{{ classe.eleves.count|default:0 }} élèves</span>
           </div>
         </div>
 
@@ -80,7 +200,7 @@
 
       <!-- Actions -->
       <div class="card-actions">
-        <a href="#" class="details-link" id="details-{{ classe.pk }}">Détails</a>
+        <a href="?selected={{ classe.pk }}" class="details-link" id="details-{{ classe.pk }}">Détails</a>
         <div class="card-btns">
           <a href="{% url 'classe_modifier' classe.pk %}"
              class="btn-icon btn-edit"
@@ -111,7 +231,6 @@
   </article>
   {% endfor %}
 
-  <!-- Ajouter une nouvelle card -->
   <a href="{% url 'classe_ajouter' %}"
      class="class-card add-card"
      id="addClassCard"
@@ -130,25 +249,54 @@
   </a>
 
 </div><!-- /classes-grid -->
+{% endif %}
 
-{% else %}
-<!-- Etat vide -->
-<div class="empty-state">
-  <svg xmlns="http://www.w3.org/2000/svg" width="72" height="72" viewBox="0 0 24 24"
-       fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-  </svg>
-  <h3>Aucune classe créée</h3>
-  <p>Commencez par ajouter votre première classe.</p>
-  <a href="{% url 'classe_ajouter' %}" class="btn btn-primary">
-    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
-         fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-      <line x1="12" x2="12" y1="5" y2="19"/>
-      <line x1="5"  x2="19" y1="12" y2="12"/>
-    </svg>
-    Créer une classe
-  </a>
+<div class="modal-overlay" id="matiereFormModal" role="dialog" aria-modal="true" aria-labelledby="matiereFormTitle" hidden>
+  <div class="modal">
+    <div class="modal-icon-wrap" aria-hidden="true">
+      <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24"
+           fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z"/>
+        <path d="M12 8v4l3 3"/>
+      </svg>
+    </div>
+    <h3 id="matiereFormTitle">Ajouter une matière</h3>
+    <form id="matiereForm" method="post" action="" novalidate>
+      {% csrf_token %}
+      <input type="hidden" id="matiereClasseId" name="classe_id" value="" />
+      <div class="form-group">
+        <label for="matiereName">Nom de la matière</label>
+        <input type="text" id="matiereName" name="nom" class="form-input" autocomplete="off" />
+      </div>
+      <div class="form-group">
+        <label for="matiereCoef">Coefficient</label>
+        <input type="number" id="matiereCoef" name="coef" class="form-input" min="1" />
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" onclick="closeMatiereFormModal()">Annuler</button>
+        <button type="submit" class="btn btn-primary">Enregistrer</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="modal-overlay" id="deleteMatiereModal" role="dialog" aria-modal="true" aria-labelledby="modalMatiereTitle" hidden>
+  <div class="modal">
+    <div class="modal-icon-wrap" aria-hidden="true">
+      <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24"
+           fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+        <line x1="12" x2="12" y1="9" y2="13"/>
+        <line x1="12" x2="12.01" y1="17" y2="17"/>
+      </svg>
+    </div>
+    <h3 id="modalMatiereTitle">Supprimer la matière</h3>
+    <p>Voulez-vous vraiment supprimer la matière <strong id="modalMatiereName"></strong> ?</p>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-secondary" onclick="closeDeleteMatiereModal()">Annuler</button>
+      <a href="#" class="btn btn-danger" id="btnConfirmDeleteMatiere">Supprimer</a>
+    </div>
+  </div>
 </div>
 {% endif %}
 
@@ -190,25 +338,36 @@
 {% block extra_js %}
 <script>
 /* ---- Delete modal ---- */
+function showModal(modal) {
+  modal.classList.add('active');
+  modal.removeAttribute('hidden');
+}
+
+function hideModal(modal) {
+  modal.classList.remove('active');
+  modal.setAttribute('hidden', '');
+}
+
 function confirmerSuppression(pk, nom) {
+  const modal = document.getElementById('deleteModal');
   document.getElementById('modalClassName').textContent = nom;
   document.getElementById('btnConfirmerSuppression').href = '/classes/supprimer/' + pk + '/';
-  document.getElementById('deleteModal').classList.add('active');
+  showModal(modal);
   document.getElementById('btnAnnuler').focus();
 }
 
 function fermerModal() {
-  document.getElementById('deleteModal').classList.remove('active');
+  hideModal(document.getElementById('deleteModal'));
 }
 
 // Close on overlay click
 document.getElementById('deleteModal').addEventListener('click', function (e) {
-  if (e.target === this) fermerModal();
+  if (e.target === this) hideModal(this);
 });
 
 // Close on Escape
 document.addEventListener('keydown', function (e) {
-  if (e.key === 'Escape') fermerModal();
+  if (e.key === 'Escape') hideModal(document.getElementById('deleteModal'));
 });
 
 /* ---- Live search filtering ---- */
@@ -226,5 +385,80 @@ if (searchInput) {
     });
   });
 }
+
+function toggleMatiereMenu(pk) {
+  const menu = document.getElementById('matiere-menu-' + pk);
+  if (!menu) return;
+  const isHidden = menu.hasAttribute('hidden');
+  document.querySelectorAll('.more-menu').forEach(el => el.setAttribute('hidden', ''));
+  if (isHidden) {
+    menu.removeAttribute('hidden');
+  }
+}
+
+function openAddMatiereModal(classePk) {
+  const modal = document.getElementById('matiereFormModal');
+  const title = document.getElementById('matiereFormTitle');
+  const action = document.getElementById('matiereForm');
+  const nameInput = document.getElementById('matiereName');
+  const coefInput = document.getElementById('matiereCoef');
+  const classInput = document.getElementById('matiereClasseId');
+  title.textContent = 'Ajouter une matière';
+  action.action = '/matieres/ajouter/';
+  nameInput.value = '';
+  coefInput.value = '';
+  classInput.value = classePk;
+  showModal(modal);
+}
+
+function openEditMatiereModal(pk, nom, coef, classePk) {
+  const modal = document.getElementById('matiereFormModal');
+  const title = document.getElementById('matiereFormTitle');
+  const action = document.getElementById('matiereForm');
+  const nameInput = document.getElementById('matiereName');
+  const coefInput = document.getElementById('matiereCoef');
+  const classInput = document.getElementById('matiereClasseId');
+  title.textContent = 'Modifier la matière';
+  action.action = '/matieres/modifier/' + pk + '/';
+  nameInput.value = nom;
+  coefInput.value = coef;
+  classInput.value = classePk || '';
+  showModal(modal);
+}
+
+function closeMatiereFormModal() {
+  hideModal(document.getElementById('matiereFormModal'));
+}
+
+function openDeleteMatiereModal(pk, nom) {
+  const modal = document.getElementById('deleteMatiereModal');
+  document.getElementById('modalMatiereName').textContent = nom;
+  document.getElementById('btnConfirmDeleteMatiere').href = '/matieres/supprimer/' + pk + '/';
+  showModal(modal);
+}
+
+function closeDeleteMatiereModal() {
+  hideModal(document.getElementById('deleteMatiereModal'));
+}
+
+document.addEventListener('click', function (event) {
+  if (!event.target.closest('.more-btn') && !event.target.closest('.more-menu')) {
+    document.querySelectorAll('.more-menu').forEach(el => el.setAttribute('hidden', ''));
+  }
+});
+
+document.querySelectorAll('.modal-overlay').forEach(modal => {
+  modal.addEventListener('click', function (e) {
+    if (e.target === this) {
+      hideModal(this);
+    }
+  });
+});
+
+document.addEventListener('keydown', function (e) {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.modal-overlay').forEach(modal => hideModal(modal));
+  }
+});
 </script>
 {% endblock %}

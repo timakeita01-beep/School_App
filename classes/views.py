@@ -5,8 +5,19 @@ from .models import Classe
 # Affichage de la liste des classes
 
 def voir(request):
-    classes = Classe.objects.all().order_by('-niveau')
-    return render(request, 'classes.html', {'classes': classes})
+    selected_pk = request.GET.get('selected')
+    classes = Classe.objects.prefetch_related('matieres', 'eleves').order_by('-niveau')
+    selected_class = None
+    if selected_pk:
+        try:
+            selected_class = classes.get(pk=selected_pk)
+        except Classe.DoesNotExist:
+            selected_class = None
+
+    return render(request, 'classes.html', {
+        'classes': classes,
+        'selected_class': selected_class,
+    })
 
 # Ajouter une nouvelle classe
 
