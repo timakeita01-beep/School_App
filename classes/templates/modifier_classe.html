@@ -402,13 +402,12 @@
             <select
                 class="form-input {% if errors.enseignant %}is-error{% endif %}"
                 id="id_enseignant"
-                name="enseignant"
-            >
-                <option value="">Aucun</option>
+                name="enseignant">
+                <option value="">Sélectionner un enseignant</option>
                 {% for enseignant in enseignants %}
-                <option value="{{ enseignant.id }}" {% if form_data.enseignant|default:data.enseignant.id == enseignant.id %}selected{% endif %}>
-                    {{ enseignant.get_full_name|default:enseignant.username }}
-                </option>
+                    <option value="{{ enseignant.pk }}" {% if form_data.enseignant|default:data.enseignant.pk == enseignant.pk %}selected{% endif %}>
+                        {{ enseignant.get_full_name|default:enseignant.username }}
+                    </option>
                 {% endfor %}
             </select>
             {% if errors.enseignant %}

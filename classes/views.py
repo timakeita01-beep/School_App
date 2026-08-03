@@ -61,48 +61,87 @@ def ajouter_classe(request):
             )
 
             messages.success(request, f'La classe « {nom} » a été créée avec succès.')
-            return redirect('classes_list')
+            return redirect('classes:list')
 
     return render(request, 'ajouter_classe.html', context)
 
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from django.contrib.auth.models import User
+from .models import Classe
 
-# Modifier une classe existante
 
 def modifier_classe(request, pk):
-    data = get_object_or_404(Classe, pk=pk)
-    errors    = {}
-    form_data = {'nom': data.nom, 'niveau': data.niveau, 'enseignant': data.enseignant.id if data.enseignant else None}
+    classe = get_object_or_404(Classe, pk=pk)
 
-    if request.method == 'POST':
-        nom        = request.POST.get('nom', '').strip()
-        niveau_str = request.POST.get('niveau', '').strip()
-        form_data  = {'nom': nom, 'niveau': niveau_str}
-        enseignant_id = request.POST.get('enseignant')
+    errors = {}
+
+    # Liste des enseignants
+    enseignants = User.objects.filter(groups__name="Teacher")
+
+    if request.method == "POST":
+        nom = request.POST.get("nom", "").strip()
+        niveau_str = request.POST.get("niveau", "").strip()
+        enseignant_id = request.POST.get("enseignant")
 
         # Validation
         if not nom:
-            errors['nom'] = "Le nom de la classe est requis."
+            errors["nom"] = "Le nom de la classe est requis."
+
         if not niveau_str:
-            errors['niveau'] = "Le niveau est requis."
+            errors["niveau"] = "Le niveau est requis."
         elif not niveau_str.isdigit() or int(niveau_str) < 1:
-            errors['niveau'] = "Le niveau doit être un nombre entier positif."
+            errors["niveau"] = "Le niveau doit être un nombre entier positif."
+
+        enseignant = None
+
         if enseignant_id:
             try:
-                enseignant = User.objects.get(id=enseignant_id)
-                data.enseignant = enseignant
+                enseignant = User.objects.get(
+                    id=enseignant_id,
+                    groups__name="Teacher"
+                )
             except User.DoesNotExist:
-                errors['enseignant'] = "Enseignant invalide."
+                errors["enseignant"] = "Enseignant invalide."
 
         if not errors:
-            data.nom    = nom
-            data.niveau = int(niveau_str)
-            data.enseignant = enseignant if enseignant_id else None
-            data.save()
-            messages.success(request, f'La classe « {nom} » a été modifiée avec succès.')
-            return redirect('classes_list')
+            classe.nom = nom
+            classe.niveau = int(niveau_str)
+            classe.enseignant = enseignant
+            classe.save()
 
-    context = {'data': data, 'errors': errors, 'form_data': form_data}
-    return render(request, 'modifier_classe.html', context)
+            messages.success(
+                request,
+                f"La classe « {classe.nom} » a été modifiée avec succès."
+            )
+            return redirect("classes:list")
+
+        context = {
+            "data": classe,
+            "enseignants": enseignants,
+            "errors": errors,
+            "form_data": {
+                "nom": nom,
+                "niveau": niveau_str,
+                "enseignant": enseignant_id,
+            },
+        }
+
+        return render(request, "modifier_classe.html", context)
+
+    # Affichage initial du formulaire
+    context = {
+        "data": classe,
+        "enseignants": enseignants,
+        "errors": {},
+        "form_data": {
+            "nom": classe.nom,
+            "niveau": classe.niveau,
+            "enseignant": classe.enseignant.id if classe.enseignant else "",
+        },
+    }
+
+    return render(request, "modifier_classe.html", context)
 
 # Supprimer une classe
 
@@ -111,4 +150,4 @@ def supprimer_classe(request, pk):
     nom  = data.nom
     data.delete()
     messages.success(request, f'La classe « {nom} » a été supprimée.')
-    return redirect('classes_list')
+    return redirect('classes:list')

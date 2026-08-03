@@ -384,7 +384,7 @@
         </div>
        <label>Enseignant</label>
 
-<select name="enseignant">
+<select name="enseignant" class="form-input {% if errors.enseignant %}is-error{% endif %}">
     <option value="">Choisir un enseignant</option>
 
     {% for enseignant in enseignants %}
