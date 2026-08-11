@@ -7,12 +7,548 @@
 {% block search_placeholder %}Rechercher un élève...{% endblock %}
 {% block nav_eleves %}active{% endblock %}
 
+{% block extra_css %}
+<style>
+    /* ============================================
+       STYLES POUR LE DÉTAIL DE L'ÉLÈVE
+       Couleurs : #355394, #4a6091, nuances de bleu
+       ============================================ */
+
+    .student-detail-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px 16px 40px;
+    }
+
+    .student-detail-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        border: 1px solid #e5e7eb;
+        overflow: hidden;
+    }
+
+    /* ===== HEADER ===== */
+    .detail-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        padding: 24px 28px 20px;
+        border-bottom: 1px solid #f1f5f9;
+        flex-wrap: wrap;
+        gap: 16px;
+        background: #fafcff;
+    }
+
+    .detail-header-left {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .student-avatar {
+        width: 64px;
+        height: 64px;
+        background: linear-gradient(135deg, #355394, #4a6091);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .avatar-initials {
+        font-size: 24px;
+        font-weight: 700;
+        color: white;
+        letter-spacing: -1px;
+    }
+
+    .student-title {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .student-name {
+        font-size: 22px;
+        font-weight: 700;
+        color: #0f172a;
+        margin: 0;
+        letter-spacing: -0.3px;
+    }
+
+    .student-badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    .badge {
+        font-size: 11px;
+        font-weight: 600;
+        padding: 2px 12px;
+        border-radius: 20px;
+        display: inline-block;
+    }
+
+    .badge-class {
+        background: #dbeafe;
+        color: #355394;
+    }
+
+    .badge-status {
+        background: #d1fae5;
+        color: #065f46;
+    }
+
+    .badge-id {
+        background: #f1f5f9;
+        color: #64748b;
+    }
+
+    .detail-header-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 16px;
+        font-size: 13px;
+        font-weight: 500;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .btn-edit {
+        background: #eef2ff;
+        color: #355394;
+    }
+
+    .btn-edit:hover {
+        background: #dbeafe;
+        transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+        background: #f1f5f9;
+        color: #475569;
+    }
+
+    .btn-secondary:hover {
+        background: #e2e8f0;
+    }
+
+    .btn-danger {
+        background: #fee2e2;
+        color: #dc2626;
+    }
+
+    .btn-danger:hover {
+        background: #fecaca;
+    }
+
+    /* ===== APERÇU TABS ===== */
+    .apercu-tabs {
+        display: flex;
+        gap: 0;
+        padding: 16px 28px 0;
+        border-bottom: 1px solid #f1f5f9;
+        background: #fafcff;
+    }
+
+    .apercu-tab {
+        padding: 10px 20px;
+        font-size: 14px;
+        font-weight: 500;
+        color: #64748b;
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+        transition: all 0.2s ease;
+        text-decoration: none;
+    }
+
+    .apercu-tab:hover {
+        color: #355394;
+    }
+
+    .apercu-tab.active {
+        color: #355394;
+        border-bottom-color: #355394;
+    }
+
+    /* ===== GRID ===== */
+    .detail-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0;
+        padding: 0;
+    }
+
+    .detail-section {
+        padding: 24px 28px;
+        border-right: 1px solid #f1f5f9;
+    }
+
+    .detail-section:last-child {
+        border-right: none;
+    }
+
+    .section-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: #0f172a;
+        margin: 0 0 16px 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .section-title .title-icon {
+        width: 18px;
+        height: 18px;
+        color: #355394;
+    }
+
+    /* ===== INFO GRID ===== */
+    .info-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px 24px;
+    }
+
+    .info-item {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .info-item.full-width {
+        grid-column: 1 / -1;
+    }
+
+    .info-label {
+        font-size: 11px;
+        font-weight: 500;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+    }
+
+    .info-value {
+        font-size: 15px;
+        font-weight: 500;
+        color: #0f172a;
+    }
+
+    .info-value .highlight {
+        color: #355394;
+        font-weight: 600;
+    }
+
+    .info-class {
+        display: inline-block;
+        background: #dbeafe;
+        color: #355394;
+        padding: 2px 14px;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 14px;
+    }
+
+    /* ===== RECAPITULATIF ===== */
+    .recap-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px 24px;
+        background: #f8fafc;
+        padding: 16px 20px;
+        border-radius: 12px;
+        border: 1px solid #f1f5f9;
+    }
+
+    .recap-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 4px 0;
+    }
+
+    .recap-item .recap-label {
+        font-size: 12px;
+        color: #64748b;
+        font-weight: 500;
+    }
+
+    .recap-item .recap-value {
+        font-size: 13px;
+        font-weight: 600;
+        color: #0f172a;
+    }
+
+    .recap-item .recap-value.highlight {
+        color: #355394;
+    }
+
+    /* ===== PARENT CARD ===== */
+    .parent-card {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        background: #f8fafc;
+        border-radius: 14px;
+        padding: 16px 20px;
+        border: 1px solid #f1f5f9;
+    }
+
+    .parent-card-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .parent-avatar {
+        width: 44px;
+        height: 44px;
+        background: linear-gradient(135deg, #dbeafe, #e0e7ff);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .parent-initials {
+        font-size: 16px;
+        font-weight: 700;
+        color: #355394;
+    }
+
+    .parent-name {
+        font-size: 15px;
+        font-weight: 600;
+        color: #0f172a;
+        margin: 0;
+    }
+
+    .parent-details {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        padding-left: 4px;
+    }
+
+    .parent-detail {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        color: #475569;
+    }
+
+    .parent-detail .detail-icon {
+        width: 14px;
+        height: 14px;
+        color: #94a3b8;
+        flex-shrink: 0;
+    }
+
+    /* ===== ACTIONS ===== */
+    .detail-actions {
+        padding: 20px 28px 24px;
+        border-top: 1px solid #f1f5f9;
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        background: #fafcff;
+    }
+
+    .action-btn-custom {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        border-radius: 10px;
+        font-size: 13px;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        border: 1px solid #e5e7eb;
+        background: white;
+        color: #475569;
+        cursor: pointer;
+    }
+
+    .action-btn-custom:hover {
+        border-color: #355394;
+        color: #355394;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(53, 83, 148, 0.06);
+    }
+
+    .action-btn-custom .btn-icon {
+        width: 16px;
+        height: 16px;
+    }
+
+    .action-btn-custom.danger {
+        color: #dc2626;
+        border-color: #fecaca;
+    }
+
+    .action-btn-custom.danger:hover {
+        background: #fee2e2;
+        border-color: #dc2626;
+    }
+
+    .action-btn-custom.primary {
+        background: #355394;
+        color: white;
+        border-color: #355394;
+    }
+
+    .action-btn-custom.primary:hover {
+        background: #2a4378;
+        border-color: #2a4378;
+        box-shadow: 0 4px 12px rgba(53, 83, 148, 0.3);
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 1024px) {
+        .detail-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .detail-section {
+            border-right: none;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .detail-section:last-child {
+            border-bottom: none;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .detail-header {
+            flex-direction: column;
+            align-items: stretch;
+            padding: 20px;
+        }
+
+        .detail-header-left {
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .student-title {
+            align-items: center;
+        }
+
+        .student-badges {
+            justify-content: center;
+        }
+
+        .detail-header-actions {
+            justify-content: center;
+        }
+
+        .apercu-tabs {
+            padding: 12px 16px 0;
+            overflow-x: auto;
+        }
+
+        .apercu-tab {
+            padding: 8px 14px;
+            font-size: 13px;
+            white-space: nowrap;
+        }
+
+        .detail-section {
+            padding: 20px;
+        }
+
+        .info-grid {
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+
+        .recap-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .detail-actions {
+            padding: 16px 20px;
+            flex-direction: column;
+        }
+
+        .action-btn-custom {
+            justify-content: center;
+            width: 100%;
+        }
+
+        .parent-card {
+            padding: 14px 16px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .student-detail-container {
+            padding: 12px 8px 24px;
+        }
+
+        .student-detail-card {
+            border-radius: 16px;
+        }
+
+        .student-name {
+            font-size: 18px;
+        }
+
+        .student-avatar {
+            width: 52px;
+            height: 52px;
+        }
+
+        .avatar-initials {
+            font-size: 20px;
+        }
+
+        .badge {
+            font-size: 10px;
+            padding: 2px 10px;
+        }
+
+        .detail-section {
+            padding: 16px;
+        }
+
+        .recap-item .recap-label {
+            font-size: 11px;
+        }
+
+        .recap-item .recap-value {
+            font-size: 12px;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 
 <div class="student-detail-container">
     <div class="student-detail-card">
         
-        <!-- En-tête avec le nom de l'élève -->
+        <!-- En-tête -->
         <div class="detail-header">
             <div class="detail-header-left">
                 <div class="student-avatar">
@@ -22,7 +558,7 @@
                     <h1 class="student-name">{{ student.first_name }} {{ student.last_name }}</h1>
                     <div class="student-badges">
                         <span class="badge badge-class">{{ student.classroom.nom }}</span>
-                        <span class="badge badge-status status-regular">Régulier</span>
+                        <span class="badge badge-status">Régulier</span>
                         <span class="badge badge-id">ID: {{ student.identification_number }}</span>
                     </div>
                 </div>
@@ -43,13 +579,21 @@
             </div>
         </div>
 
+        <!-- Aperçu Tabs -->
+        <div class="apercu-tabs">
+            <a href="#" class="apercu-tab active">Aperçu</a>
+            <a href="#" class="apercu-tab">Notes</a>
+            <a href="#" class="apercu-tab">Absences</a>
+            <a href="#" class="apercu-tab">Emploi du temps</a>
+        </div>
+
         <!-- Grille d'informations -->
         <div class="detail-grid">
             
             <!-- Colonne gauche : Informations personnelles -->
             <div class="detail-section">
                 <h2 class="section-title">
-                    <svg class="section-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="title-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                     </svg>
                     Informations personnelles
@@ -57,629 +601,143 @@
                 
                 <div class="info-grid">
                     <div class="info-item">
-                        <span class="info-label">Prénom</span>
-                        <span class="info-value">{{ student.first_name }}</span>
-                    </div>
-                    <div class="info-item">
                         <span class="info-label">Nom</span>
                         <span class="info-value">{{ student.last_name }}</span>
                     </div>
                     <div class="info-item">
-                        <span class="info-label">Date de naissance</span>
-                        <span class="info-value">{{ student.date_of_birth|date:"d/m/Y" }}</span>
+                        <span class="info-label">Prénom</span>
+                        <span class="info-value">{{ student.first_name }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Sexe</span>
+                        <span class="info-value">{{ student.sexe|default:"Féminin" }}</span>
                     </div>
                     <div class="info-item">
                         <span class="info-label">Âge</span>
-                        <span class="info-value">
-                            {{ student.age_display }}
-                        </span>
+                        <span class="info-value">{{ student.age_display }}</span>
                     </div>
                     <div class="info-item">
-                        <span class="info-label">Lieu de naissance</span>
-                        <span class="info-value">{{ student.lieu_de_naissance|default:"Non renseigné" }}</span>
+                        <span class="info-label">Date de naissance</span>
+                        <span class="info-value">{{ student.date_of_birth|date:"d F Y" }}</span>
                     </div>
                     <div class="info-item">
-                        <span class="info-label">Date d'inscription</span>
-                        <span class="info-value">{{ student.inscription_date|date:"d/m/Y" }}</span>
+                        <span class="info-label">Statut</span>
+                        <span class="info-value"><span class="highlight">Régulier</span></span>
                     </div>
                     <div class="info-item full-width">
                         <span class="info-label">Classe</span>
                         <span class="info-value info-class">{{ student.classroom.nom }}</span>
                     </div>
+                    <div class="info-item full-width">
+                        <span class="info-label">ID Élève</span>
+                        <span class="info-value">{{ student.identification_number }}</span>
+                    </div>
                 </div>
             </div>
 
-            <!-- Colonne droite : Informations du parent -->
+            <!-- Colonne droite : Récapitulatif et Parent -->
             <div class="detail-section">
                 <h2 class="section-title">
-                    <svg class="section-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="title-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                    Récapitulatif
+                </h2>
+
+                <div class="recap-grid">
+                    <div class="recap-item">
+                        <span class="recap-label">Nom</span>
+                        <span class="recap-value">{{ student.last_name }}</span>
+                    </div>
+                    <div class="recap-item">
+                        <span class="recap-label">Prénom</span>
+                        <span class="recap-value">{{ student.first_name }}</span>
+                    </div>
+                    <div class="recap-item">
+                        <span class="recap-label">Sexe</span>
+                        <span class="recap-value">{{ student.sexe|default:"Féminin" }}</span>
+                    </div>
+                    <div class="recap-item">
+                        <span class="recap-label">Âge</span>
+                        <span class="recap-value">{{ student.age_display }}</span>
+                    </div>
+                    <div class="recap-item">
+                        <span class="recap-label">Statut</span>
+                        <span class="recap-value highlight">Régulier</span>
+                    </div>
+                    <div class="recap-item">
+                        <span class="recap-label">ID</span>
+                        <span class="recap-value">{{ student.identification_number }}</span>
+                    </div>
+                    <div class="recap-item" style="grid-column: 1 / -1;">
+                        <span class="recap-label">Classe</span>
+                        <span class="recap-value highlight">{{ student.classroom.nom }}</span>
+                    </div>
+                </div>
+
+                <!-- Parent / Tuteur -->
+                <h2 class="section-title" style="margin-top: 20px;">
+                    <svg class="title-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
                     </svg>
-                    Parent / Tuteur
+                    Tuteur / Parent
                 </h2>
-                
+
                 <div class="parent-card">
-                    <div class="parent-avatar">
-                        <span class="parent-initials">{{ student.parent.first_name|first }}{{ student.parent.last_name|first }}</span>
-                    </div>
-                    <div class="parent-info">
-                        <h3 class="parent-name">{{ student.parent.first_name }} {{ student.parent.last_name }}</h3>
-                        
-                        <div class="parent-details">
-                            <div class="parent-detail">
-                                <svg class="detail-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
-                                </svg>
-                                <span>{{ student.parent.phone_number|default:"Non renseigné" }}</span>
-                            </div>
-                            {% if student.parent.email %}
-                            <div class="parent-detail">
-                                <svg class="detail-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-                                </svg>
-                                <span>{{ student.parent.email }}</span>
-                            </div>
-                            {% endif %}
-                            {% if student.parent.profession %}
-                            <div class="parent-detail">
-                                <svg class="detail-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-                                </svg>
-                                <span>{{ student.parent.profession }}</span>
-                            </div>
-                            {% endif %}
-                            {% if student.parent.address %}
-                            <div class="parent-detail">
-                                <svg class="detail-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                </svg>
-                                <span>{{ student.parent.address }}</span>
-                            </div>
-                            {% endif %}
+                    <div class="parent-card-header">
+                        <div class="parent-avatar">
+                            <span class="parent-initials">{{ student.parent.first_name|first }}{{ student.parent.last_name|first }}</span>
                         </div>
+                        <div>
+                            <h3 class="parent-name">{{ student.parent.first_name }} {{ student.parent.last_name }}</h3>
+                        </div>
+                    </div>
+                    <div class="parent-details">
+                        {% if student.parent.email %}
+                        <div class="parent-detail">
+                            <svg class="detail-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                            </svg>
+                            <span>{{ student.parent.email }}</span>
+                        </div>
+                        {% endif %}
+                        {% if student.parent.phone_number %}
+                        <div class="parent-detail">
+                            <svg class="detail-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                            </svg>
+                            <span>{{ student.parent.phone_number }}</span>
+                        </div>
+                        {% endif %}
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Section des actions supplémentaires -->
+        <!-- Actions -->
         <div class="detail-actions">
-            <h2 class="section-title">
-                <svg class="section-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            <a href="{% url 'update' student.id %}" class="action-btn-custom primary">
+                <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                 </svg>
-                Actions
-            </h2>
-            
-            <div class="actions-grid">
-                <a href="#" class="action-card">
-                    <div class="action-icon bg-blue">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                        </svg>
-                    </div>
-                    <div class="action-content">
-                        <h4>Bulletin</h4>
-                        <p>Voir le bulletin de l'élève</p>
-                    </div>
-                </a>
-                
-                <a href="#" class="action-card">
-                    <div class="action-icon bg-green">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-                        </svg>
-                    </div>
-                    <div class="action-content">
-                        <h4>Notes</h4>
-                        <p>Consulter les notes</p>
-                    </div>
-                </a>
-                
-                <a href="#" class="action-card">
-                    <div class="action-icon bg-purple">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
-                        </svg>
-                    </div>
-                    <div class="action-content">
-                        <h4>Notifications</h4>
-                        <p>Envoyer une notification</p>
-                    </div>
-                </a>
-                
-                <a href="#" class="action-card">
-                    <div class="action-icon bg-orange">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                        </svg>
-                    </div>
-                    <div class="action-content">
-                        <h4>Historique</h4>
-                        <p>Voir l'historique scolaire</p>
-                    </div>
-                </a>
-            </div>
+                Modifier le profil
+            </a>
+            <a href="{% url 'contact_parents' student.id %}" class="action-btn-custom">
+                <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                </svg>
+                Contacter parents
+            </a>
+            <a href="{% url 'delete_student' student.id %}" class="action-btn-custom danger">
+                <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <polyline points="3 6 5 6 21 6"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
+                </svg>
+                Supprimer
+            </a>
         </div>
 
-        <!-- Pied de page -->
-        <div class="detail-footer">
-            <p class="footer-text">
-                <span class="footer-dot"></span>
-                Dernière mise à jour : {% now "d/m/Y à H:i" %}
-            </p>
-        </div>
     </div>
 </div>
 
-<style>
-/* ============================================
-   STYLES POUR LE DÉTAIL DE L'ÉLÈVE
-   ============================================ */
-
-.student-detail-container {
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 20px 16px 40px;
-}
-
-.student-detail-card {
-    background: white;
-    border-radius: 24px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 10px 40px -12px rgba(0,0,0,0.08);
-    border: 1px solid #eef2f6;
-    overflow: hidden;
-}
-
-/* ===== HEADER ===== */
-.detail-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    padding: 28px 32px 24px;
-    border-bottom: 1px solid #f0f4f8;
-    flex-wrap: wrap;
-    gap: 16px;
-}
-
-.detail-header-left {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-}
-
-.student-avatar {
-    width: 72px;
-    height: 72px;
-    background: linear-gradient(135deg, #eef2ff, #e0e7ff);
-    border-radius: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-
-.avatar-initials {
-    font-size: 28px;
-    font-weight: 700;
-    color: #4f46e5;
-    letter-spacing: -1px;
-}
-
-.student-title {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
-.student-name {
-    font-size: 24px;
-    font-weight: 700;
-    color: #0f172a;
-    margin: 0;
-    letter-spacing: -0.3px;
-}
-
-.student-badges {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-}
-
-.badge {
-    font-size: 11px;
-    font-weight: 600;
-    padding: 3px 12px;
-    border-radius: 20px;
-    display: inline-block;
-}
-
-.badge-class {
-    background: #eef2ff;
-    color: #4f46e5;
-}
-
-.badge-status {
-    background: #dcfce7;
-    color: #166534;
-}
-
-.badge-id {
-    background: #f1f5f9;
-    color: #64748b;
-}
-
-.detail-header-actions {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-}
-
-.btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 16px;
-    font-size: 13px;
-    font-weight: 500;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    text-decoration: none;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-}
-
-.btn .btn-icon {
-    width: 16px;
-    height: 16px;
-}
-
-.btn-edit {
-    background: #eef2ff;
-    color: #4f46e5;
-}
-
-.btn-edit:hover {
-    background: #e0e7ff;
-    transform: translateY(-1px);
-}
-
-.btn-secondary {
-    background: #f1f5f9;
-    color: #334155;
-}
-
-.btn-secondary:hover {
-    background: #e2e8f0;
-}
-
-/* ===== GRID ===== */
-.detail-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0;
-    padding: 0;
-}
-
-.detail-section {
-    padding: 28px 32px;
-    border-right: 1px solid #f0f4f8;
-}
-
-.detail-section:last-child {
-    border-right: none;
-}
-
-.section-title {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 16px;
-    font-weight: 600;
-    color: #0f172a;
-    margin: 0 0 20px 0;
-}
-
-.section-icon {
-    width: 20px;
-    height: 20px;
-    color: #4f46e5;
-}
-
-/* ===== INFO GRID ===== */
-.info-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px 24px;
-}
-
-.info-item {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-
-.info-item.full-width {
-    grid-column: 1 / -1;
-}
-
-.info-label {
-    font-size: 11px;
-    font-weight: 500;
-    color: #94a3b8;
-    text-transform: uppercase;
-    letter-spacing: 0.3px;
-}
-
-.info-value {
-    font-size: 15px;
-    font-weight: 500;
-    color: #0f172a;
-}
-
-.info-class {
-    display: inline-block;
-    background: #eef2ff;
-    color: #4f46e5;
-    padding: 2px 14px;
-    border-radius: 12px;
-    font-weight: 600;
-    font-size: 14px;
-}
-
-/* ===== PARENT CARD ===== */
-.parent-card {
-    display: flex;
-    gap: 16px;
-    background: #f8fafc;
-    border-radius: 16px;
-    padding: 16px 20px;
-    border: 1px solid #eef2f6;
-}
-
-.parent-avatar {
-    width: 52px;
-    height: 52px;
-    background: linear-gradient(135deg, #dcfce7, #5ad3f4);
-    border-radius: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-
-.parent-initials {
-    font-size: 20px;
-    font-weight: 700;
-    color: #0d39ca;
-}
-
-.parent-info {
-    flex: 1;
-    min-width: 0;
-}
-
-.parent-name {
-    font-size: 16px;
-    font-weight: 600;
-    color: #0f172a;
-    margin: 0 0 8px 0;
-}
-
-.parent-details {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
-.parent-detail {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 13px;
-    color: #475569;
-}
-
-.detail-icon {
-    width: 14px;
-    height: 14px;
-    color: #94a3b8;
-    flex-shrink: 0;
-}
-
-/* ===== ACTIONS ===== */
-.detail-actions {
-    padding: 28px 32px;
-    border-top: 1px solid #f0f4f8;
-}
-
-.actions-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 16px;
-    margin-top: 16px;
-}
-
-.action-card {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    padding: 16px 20px;
-    background: #f8fafc;
-    border-radius: 14px;
-    border: 1px solid #eef2f6;
-    text-decoration: none;
-    transition: all 0.2s ease;
-}
-
-.action-card:hover {
-    background: white;
-    border-color: #e2e8f0;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.04);
-}
-
-.action-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-
-.action-icon svg {
-    width: 20px;
-    height: 20px;
-    color: white;
-}
-
-.bg-blue { background: #4f46e5; }
-.bg-green { background: #059669; }
-.bg-purple { background: #4f46e5; }
-.bg-orange { background: #4f46e5; }
-
-.action-content h4 {
-    font-size: 14px;
-    font-weight: 600;
-    color: #0f172a;
-    margin: 0 0 2px;
-}
-
-.action-content p {
-    font-size: 12px;
-    color: #94a3b8;
-    margin: 0;
-}
-
-/* ===== FOOTER ===== */
-.detail-footer {
-    padding: 16px 32px;
-    border-top: 1px solid #f0f4f8;
-}
-
-.footer-text {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 12px;
-    color: #94a3b8;
-    margin: 0;
-}
-
-.footer-dot {
-    display: inline-block;
-    width: 6px;
-    height: 6px;
-    background: #22c55e;
-    border-radius: 50%;
-}
-
-/* ===== RESPONSIVE ===== */
-@media (max-width: 900px) {
-    .detail-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .detail-section {
-        border-right: none;
-        border-bottom: 1px solid #f0f4f8;
-    }
-    
-    .detail-section:last-child {
-        border-bottom: none;
-    }
-}
-
-@media (max-width: 768px) {
-    .detail-header {
-        flex-direction: column;
-        align-items: stretch;
-        padding: 20px;
-    }
-    
-    .detail-header-left {
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-    }
-    
-    .student-title {
-        align-items: center;
-    }
-    
-    .student-badges {
-        justify-content: center;
-    }
-    
-    .detail-header-actions {
-        justify-content: center;
-    }
-    
-    .detail-section {
-        padding: 20px;
-    }
-    
-    .detail-actions {
-        padding: 20px;
-    }
-    
-    .info-grid {
-        grid-template-columns: 1fr;
-        gap: 12px;
-    }
-    
-    .parent-card {
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-    }
-    
-    .parent-details {
-        align-items: center;
-    }
-    
-    .actions-grid {
-        grid-template-columns: 1fr 1fr;
-    }
-    
-    .detail-footer {
-        padding: 14px 20px;
-    }
-}
-
-@media (max-width: 480px) {
-    .student-detail-container {
-        padding: 12px 8px 24px;
-    }
-    
-    .student-detail-card {
-        border-radius: 16px;
-    }
-    
-    .student-name {
-        font-size: 20px;
-    }
-    
-    .student-avatar {
-        width: 60px;
-        height: 60px;
-    }
-    
-    .avatar-initials {
-        font-size: 22px;
-    }
-    
-    .actions-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .action-card {
-        padding: 14px 16px;
-    }
-}
-</style>
 {% endblock %}

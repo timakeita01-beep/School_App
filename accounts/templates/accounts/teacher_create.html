@@ -1,0 +1,596 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Ajouter un Enseignant{% endblock %}
+{% block meta_desc %}Créer un nouvel enseignant dans l'établissement{% endblock %}
+{% block page_title %}Enseignants{% endblock %}
+{% block search_placeholder %}Rechercher un enseignant...{% endblock %}
+{% block nav_emploi %}active{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ============================================
+       STYLES POUR L'AJOUT D'ENSEIGNANT
+       Couleurs : #355394, #4a6091, nuances de bleu
+       ============================================ */
+
+    .teacher-create-container {
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 20px 16px 40px;
+    }
+
+    /* ===== PAGE HEADER ===== */
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .page-header-text h2 {
+        font-size: 24px;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 0;
+    }
+
+    .page-header-text p {
+        font-size: 14px;
+        color: #64748b;
+        margin: 4px 0 0;
+    }
+
+    /* ===== BUTTONS ===== */
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        font-size: 14px;
+        font-weight: 600;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .btn-primary {
+        background: #355394;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #2a4378;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(53, 83, 148, 0.3);
+    }
+
+    .btn-secondary {
+        background: #f1f5f9;
+        color: #475569;
+    }
+
+    .btn-secondary:hover {
+        background: #e2e8f0;
+    }
+
+    /* ===== FORM CARD ===== */
+    .form-card {
+        background: white;
+        border-radius: 16px;
+        border: 1px solid #e5e7eb;
+        overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        transition: box-shadow 0.3s ease;
+    }
+
+    .form-card:hover {
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+    }
+
+    .form-card-header {
+        padding: 24px 28px 20px;
+        border-bottom: 1px solid #f1f5f9;
+        background: linear-gradient(135deg, #f8faff, #f0f4fb);
+        border-radius: 16px 16px 0 0;
+    }
+
+    .form-card-header h2 {
+        font-size: 20px;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .form-card-header h2 .header-icon {
+        width: 28px;
+        height: 28px;
+        color: #355394;
+    }
+
+    .form-card-header p {
+        font-size: 14px;
+        color: #64748b;
+        margin: 4px 0 0 38px;
+    }
+
+    .form-card-body {
+        padding: 28px;
+    }
+
+    /* ===== FORM GROUPS ===== */
+    .form-group {
+        margin-bottom: 22px;
+    }
+
+    .form-group:last-of-type {
+        margin-bottom: 0;
+    }
+
+    .form-label {
+        display: block;
+        font-size: 13px;
+        font-weight: 600;
+        color: #334155;
+        margin-bottom: 6px;
+    }
+
+    .form-label .required {
+        color: #dc2626;
+        margin-left: 2px;
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 11px 16px;
+        font-size: 15px;
+        font-family: 'Inter', sans-serif;
+        color: #0f172a;
+        background: #fafcff;
+        border: 1.5px solid #dde3ed;
+        border-radius: 12px;
+        transition: all 0.2s ease;
+        outline: none;
+    }
+
+    .form-input::placeholder {
+        color: #94a3b8;
+    }
+
+    .form-input:focus {
+        border-color: #355394;
+        background: #ffffff;
+        box-shadow: 0 0 0 4px rgba(53, 83, 148, 0.08);
+    }
+
+    .form-input.is-error {
+        border-color: #dc2626;
+        background: #fef2f2;
+    }
+
+    .form-input.is-error:focus {
+        box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.08);
+    }
+
+    .form-hint {
+        font-size: 12px;
+        color: #94a3b8;
+        margin: 6px 0 0;
+    }
+
+    .form-error {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+        font-weight: 500;
+        color: #dc2626;
+        margin: 6px 0 0;
+        animation: slideError 0.3s ease;
+    }
+
+    .form-error svg {
+        flex-shrink: 0;
+    }
+
+    @keyframes slideError {
+        from {
+            opacity: 0;
+            transform: translateY(-6px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* ===== FORM ACTIONS ===== */
+    .form-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+        padding-top: 24px;
+        margin-top: 24px;
+        border-top: 1px solid #f1f5f9;
+    }
+
+    .form-actions .btn {
+        padding: 11px 28px;
+        font-size: 14px;
+    }
+
+    .form-actions .btn-primary {
+        background: #355394;
+    }
+
+    .form-actions .btn-primary:hover {
+        background: #2a4378;
+        box-shadow: 0 4px 14px rgba(53, 83, 148, 0.35);
+    }
+
+    /* ===== MESSAGES ===== */
+    .messages-list {
+        list-style: none;
+        padding: 0;
+        margin: 0 0 1rem 0;
+    }
+
+    .message {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 16px;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 500;
+        margin-bottom: 8px;
+        animation: slideDown 0.3s ease;
+    }
+
+    .message-error {
+        background: #fee2e2;
+        color: #991b1b;
+        border: 1px solid #fecaca;
+    }
+
+    .message-success {
+        background: #d1fae5;
+        color: #065f46;
+        border: 1px solid #a7f3d0;
+    }
+
+    .message-warning {
+        background: #fef3c7;
+        color: #92400e;
+        border: 1px solid #fde68a;
+    }
+
+    .message-info {
+        background: #dbeafe;
+        color: #1e40af;
+        border: 1px solid #bfdbfe;
+    }
+
+    .message svg {
+        width: 18px;
+        height: 18px;
+        flex-shrink: 0;
+    }
+
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-8px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+        .page-header {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .page-header .btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .form-card-header {
+            padding: 20px;
+        }
+
+        .form-card-header h2 {
+            font-size: 18px;
+        }
+
+        .form-card-header p {
+            margin-left: 0;
+        }
+
+        .form-card-body {
+            padding: 20px;
+        }
+
+        .form-actions {
+            flex-direction: column-reverse;
+        }
+
+        .form-actions .btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .teacher-create-container {
+            padding: 12px 8px 24px;
+        }
+
+        .form-card-header {
+            padding: 16px;
+        }
+
+        .form-card-header h2 {
+            font-size: 16px;
+        }
+
+        .form-card-body {
+            padding: 16px;
+        }
+
+        .form-input {
+            font-size: 14px;
+            padding: 10px 14px;
+        }
+
+        .form-actions {
+            padding-top: 16px;
+            margin-top: 16px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="teacher-create-container">
+
+    <!-- Page header -->
+    <div class="page-header">
+        <div class="page-header-text">
+            <h2>Ajouter un enseignant</h2>
+            <p>Remplissez les informations pour créer un nouvel enseignant.</p>
+        </div>
+        <a href="{% url 'accounts:teacher_list' %}" class="btn btn-secondary" id="btnRetour">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="19" y1="12" x2="5" y2="12"/>
+                <polyline points="12 19 5 12 12 5"/>
+            </svg>
+            Retour
+        </a>
+    </div>
+
+    <!-- Messages -->
+    {% if messages %}
+    <ul class="messages-list">
+        {% for message in messages %}
+        <li class="message message-{{ message.tags }}">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                {% if message.tags == 'error' %}
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
+                {% elif message.tags == 'success' %}
+                <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
+                <polyline points="22 4 12 14.01 9 11.01"/>
+                {% else %}
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
+                {% endif %}
+            </svg>
+            {{ message }}
+        </li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    <!-- Form card -->
+    <div class="form-card">
+
+        <!-- Header -->
+        <div class="form-card-header">
+            <h2>
+                <svg class="header-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                </svg>
+                Nouvel enseignant
+            </h2>
+            <p>Créez un compte enseignant avec ses informations personnelles</p>
+        </div>
+
+        <!-- Body -->
+        <div class="form-card-body">
+            <form method="post" action="{% url 'accounts:teacher_create' %}" id="formAjouterEnseignant" novalidate>
+                {% csrf_token %}
+
+                <!-- Nom d'utilisateur -->
+                <div class="form-group">
+                    <label class="form-label" for="username">
+                        Nom d'utilisateur <span class="required">*</span>
+                    </label>
+                    <input
+                        type="text"
+                        class="form-input"
+                        id="username"
+                        name="username"
+                        value="{{ request.POST.username|default:'' }}"
+                        placeholder="Ex : professeur.keita"
+                        required
+                        autocomplete="off"
+                    />
+                    <p class="form-hint">Identifiant unique pour la connexion.</p>
+                </div>
+
+                <!-- Prénom et Nom -->
+                <div class="form-group" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                    <div>
+                        <label class="form-label" for="first_name">Prénom</label>
+                        <input
+                            type="text"
+                            class="form-input"
+                            id="first_name"
+                            name="first_name"
+                            value="{{ request.POST.first_name|default:'' }}"
+                            placeholder="Ex : Fatou"
+                        />
+                    </div>
+                    <div>
+                        <label class="form-label" for="last_name">Nom</label>
+                        <input
+                            type="text"
+                            class="form-input"
+                            id="last_name"
+                            name="last_name"
+                            value="{{ request.POST.last_name|default:'' }}"
+                            placeholder="Ex : KEITA"
+                        />
+                    </div>
+                </div>
+
+                <!-- Email -->
+                <div class="form-group">
+                    <label class="form-label" for="email">Email</label>
+                    <input
+                        type="email"
+                        class="form-input"
+                        id="email"
+                        name="email"
+                        value="{{ request.POST.email|default:'' }}"
+                        placeholder="Ex : fatou.keita@school.edu"
+                    />
+                    <p class="form-hint">L'email sera utilisé pour les communications.</p>
+                </div>
+
+                <!-- Mot de passe -->
+                <div class="form-group" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                    <div>
+                        <label class="form-label" for="password">
+                            Mot de passe <span class="required">*</span>
+                        </label>
+                        <input
+                            type="password"
+                            class="form-input"
+                            id="password"
+                            name="password"
+                            placeholder="••••••••"
+                            required
+                        />
+                        <p class="form-hint">Minimum 8 caractères.</p>
+                    </div>
+                    <div>
+                        <label class="form-label" for="password_confirm">
+                            Confirmer le mot de passe <span class="required">*</span>
+                        </label>
+                        <input
+                            type="password"
+                            class="form-input"
+                            id="password_confirm"
+                            name="password_confirm"
+                            placeholder="••••••••"
+                            required
+                        />
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="form-actions">
+                    <a href="{% url 'accounts:teacher_list' %}" class="btn btn-secondary">Annuler</a>
+                    <button type="submit" class="btn btn-primary" id="btnSoumettre">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                             fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                        Ajouter l'enseignant
+                    </button>
+                </div>
+
+            </form>
+        </div><!-- /form-card-body -->
+    </div><!-- /form-card -->
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Validation côté client
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('formAjouterEnseignant');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        const passwordConfirmInput = document.getElementById('password_confirm');
+
+        // Supprimer les espaces du nom d'utilisateur
+        if (usernameInput) {
+            usernameInput.addEventListener('blur', function() {
+                this.value = this.value.trim().toLowerCase();
+            });
+        }
+
+        // Validation du mot de passe avant soumission
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                let hasError = false;
+
+                // Vérifier le nom d'utilisateur
+                if (usernameInput && !usernameInput.value.trim()) {
+                    usernameInput.classList.add('is-error');
+                    hasError = true;
+                } else if (usernameInput) {
+                    usernameInput.classList.remove('is-error');
+                }
+
+                // Vérifier le mot de passe
+                if (passwordInput && passwordInput.value.length > 0 && passwordInput.value.length < 8) {
+                    passwordInput.classList.add('is-error');
+                    hasError = true;
+                } else if (passwordInput) {
+                    passwordInput.classList.remove('is-error');
+                }
+
+                // Vérifier la confirmation du mot de passe
+                if (passwordConfirmInput && passwordInput && passwordInput.value !== passwordConfirmInput.value) {
+                    passwordConfirmInput.classList.add('is-error');
+                    hasError = true;
+                } else if (passwordConfirmInput) {
+                    passwordConfirmInput.classList.remove('is-error');
+                }
+
+                if (hasError) {
+                    e.preventDefault();
+                    const firstError = form.querySelector('.is-error');
+                    if (firstError) {
+                        firstError.focus();
+                    }
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

@@ -1,663 +1,640 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Tableau de bord{% endblock %}
-{% block meta_desc %}Vue d'ensemble de votre école{% endblock %}
+{% block title %}Tableau de bord — SchoolApp{% endblock %}
+{% block meta_desc %}Tableau de bord administrateur du système de gestion scolaire{% endblock %}
 {% block page_title %}Tableau de bord{% endblock %}
-{% block search_placeholder %}Rechercher...{% endblock %}
-{% block nav_dashboard %}active{% endblock %}
-{% block content %}
+{% block search_placeholder %}Rechercher un élève, une classe...{% endblock %}
+{% block nav_accueil %}active{% endblock %}
 
-<div class="dashboard-container">
-    <!-- En-tête du tableau de bord -->
-    <div class="dashboard-header">
-        <div class="dashboard-header-left">
-            <div class="dashboard-header-icon">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <rect x="3" y="3" width="7" height="7" rx="1"/>
-                    <rect x="14" y="3" width="7" height="7" rx="1"/>
-                    <rect x="14" y="14" width="7" height="7" rx="1"/>
-                    <rect x="3" y="14" width="7" height="7" rx="1"/>
-                </svg>
-            </div>
-            <div>
-                <h1 class="dashboard-title">Tableau de bord</h1>
-                <p class="dashboard-subtitle">Vue d'ensemble de votre école</p>
-            </div>
-        </div>
-        <div class="dashboard-header-actions">
-            <span class="date-display">{% now "l d/m/Y" %}</span>
-        </div>
-    </div>
-
-    <!-- Cartes de statistiques -->
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-card-icon blue">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
-                    <circle cx="9" cy="7" r="4"/>
-                    <path d="M23 21v-2a4 4 0 00-3-3.87"/>
-                    <path d="M16 3.13a4 4 0 010 7.75"/>
-                </svg>
-            </div>
-            <div class="stat-card-content">
-                <span class="stat-number">{{ total_eleves|default:"0" }}</span>
-                <span class="stat-label">Total Élèves</span>
-            </div>
-        </div>
-
-        <div class="stat-card">
-            <div class="stat-card-icon green">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
-                    <circle cx="12" cy="7" r="4"/>
-                </svg>
-            </div>
-            <div class="stat-card-content">
-                <span class="stat-number">{{ total_enseignants|default:"0" }}</span>
-                <span class="stat-label">Enseignants</span>
-            </div>
-        </div>
-
-        <div class="stat-card">
-            <div class="stat-card-icon purple">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
-                </svg>
-            </div>
-            <div class="stat-card-content">
-                <span class="stat-number">{{ total_classes|default:"0" }}</span>
-                <span class="stat-label">Classes</span>
-            </div>
-        </div>
-
-        <div class="stat-card">
-            <div class="stat-card-icon orange">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
-                </svg>
-            </div>
-            <div class="stat-card-content">
-                <span class="stat-number">{{ total_matieres|default:"0" }}</span>
-                <span class="stat-label">Matières</span>
-            </div>
-        </div>
-    </div>
-
-    <!-- Grille des sections -->
-    <div class="dashboard-grid">
-        <!-- Dernières inscriptions -->
-        <div class="dashboard-card">
-            <div class="card-header-dashboard">
-                <div class="card-header-left">
-                    <div class="card-header-icon-dashboard blue-light">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                        </svg>
-                    </div>
-                    <h3 class="card-title-dashboard">Dernières inscriptions</h3>
-                </div>
-                <a href="{% url 'students:list' %}" class="card-link">Voir tout →</a>
-            </div>
-            <div class="card-body-dashboard">
-                {% if derniers_eleves %}
-                <ul class="activity-list">
-                    {% for eleve in derniers_eleves %}
-                    <li class="activity-item">
-                        <div class="activity-avatar">
-                            <span class="activity-initials">{{ eleve.first_name|first }}{{ eleve.last_name|first }}</span>
-                        </div>
-                        <div class="activity-info">
-                            <span class="activity-name">{{ eleve.first_name }} {{ eleve.last_name }}</span>
-                            <span class="activity-detail">{{ eleve.classroom.nom }} • {{ eleve.inscription_date|date:"d/m/Y" }}</span>
-                        </div>
-                        <span class="activity-time">Regulier</span>
-                    </li>
-                    {% endfor %}
-                </ul>
-                {% else %}
-                <p class="empty-text">Aucune inscription récente</p>
-                {% endif %}
-            </div>
-        </div>
-
-        <!-- Répartition des classes -->
-        <div class="dashboard-card">
-            <div class="card-header-dashboard">
-                <div class="card-header-left">
-                    <div class="card-header-icon-dashboard green-light">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-                        </svg>
-                    </div>
-                    <h3 class="card-title-dashboard">Répartition des classes</h3>
-                </div>
-            </div>
-            <div class="card-body-dashboard">
-                {% if repartition_classes %}
-                <div class="class-distribution">
-                    {% for classe in repartition_classes %}
-                    <div class="distribution-item">
-                        <div class="distribution-header">
-                            <span class="distribution-name">{{ classe.nom }}</span>
-                            <span class="distribution-count">{{ classe.total }} élèves</span>
-                        </div>
-                        <div class="distribution-bar">
-                            <div class="distribution-fill" ></div>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-                {% else %}
-                <p class="empty-text">Aucune classe disponible</p>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-
-    <!-- Actions rapides -->
-    <div class="quick-actions">
-        <h3 class="quick-actions-title">Actions rapides</h3>
-        <div class="quick-actions-grid">
-            <a href="{% url 'students:create' %}" class="quick-action-card">
-                <div class="quick-action-icon blue">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-                    </svg>
-                </div>
-                <div>
-                    <h4>Nouvel élève</h4>
-                    <p>Inscrire un élève</p>
-                </div>
-            </a>
-            <a href="{% url 'classes:ajouter' %}" class="quick-action-card">
-                <div class="quick-action-icon green">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
-                    </svg>
-                </div>
-                <div>
-                    <h4>Nouvelle classe</h4>
-                    <p>Créer une classe</p>
-                </div>
-            </a>
-            <a href="#" class="quick-action-card">
-                <div class="quick-action-icon purple">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                    </svg>
-                </div>
-                <div>
-                    <h4>Bulletin</h4>
-                    <p>Générer un bulletin</p>
-                </div>
-            </a>
-            <a href="#" class="quick-action-card">
-                <div class="quick-action-icon orange">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
-                    </svg>
-                </div>
-                <div>
-                    <h4>Notification</h4>
-                    <p>Envoyer une notification</p>
-                </div>
-            </a>
-        </div>
-    </div>
-</div>
-
+{% block extra_css %}
 <style>
-/* ============================================
-   STYLES UNIFORMES - TABLEAU DE BORD
-   ============================================ */
-
-.dashboard-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px 16px 40px;
-}
-
-/* ===== HEADER ===== */
-.dashboard-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 28px;
-    flex-wrap: wrap;
-    gap: 16px;
-}
-
-.dashboard-header-left {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-}
-
-.dashboard-header-icon {
-    width: 48px;
-    height: 48px;
-    background: #dbeafe;
-    border-radius: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #2563eb;
-}
-
-.dashboard-header-icon svg {
-    width: 24px;
-    height: 24px;
-}
-
-.dashboard-title {
-    font-size: 24px;
-    font-weight: 700;
-    color: #1e293b;
-    margin: 0;
-}
-
-.dashboard-subtitle {
-    font-size: 14px;
-    color: #64748b;
-    margin: 2px 0 0;
-}
-
-.date-display {
-    font-size: 14px;
-    color: #64748b;
-    background: #f1f5f9;
-    padding: 8px 16px;
-    border-radius: 10px;
-    font-weight: 500;
-}
-
-/* ===== STATS CARDS ===== */
-.stats-grid {
+  /* ============================================
+     DASHBOARD CARDS
+     ============================================ */
+  .stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px;
-    margin-bottom: 28px;
-}
+    gap: 1.25rem;
+    margin-bottom: 2rem;
+  }
 
-.stat-card {
-    background: white;
-    border-radius: 14px;
-    padding: 20px 24px;
-    border: 1px solid #e5e7eb;
+  .stat-card {
+    background:linear-gradient(135deg, #152a58 0%, #334b80 100%);
+    border-radius: 16px;
+    padding: 1.25rem 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s ease;
     display: flex;
     align-items: center;
-    gap: 16px;
-    transition: all 0.2s ease;
-}
+    gap: 1rem;
+  }
 
-.stat-card:hover {
-    border-color: #cbd5e1;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.04);
-}
+  .stat-card:hover {
+    box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+    transform: translateY(-2px);
+  }
 
-.stat-card-icon {
+  .stat-icon {
     width: 48px;
     height: 48px;
-    border-radius: 12px;
+    border-radius: 14px;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-}
+    font-size: 20px;
+  }
 
-.stat-card-icon.blue {
+  .stat-icon.blue {
     background: #dbeafe;
-    color: #2563eb;
-}
+    color: #1d4497;
+  }
 
-.stat-card-icon.green {
-    background: #d1fae5;
-    color: #059669;
-}
+  .stat-icon.green {
+    background: #d1eafa;
+    color: #055596;
+  }
 
-.stat-card-icon.purple {
-    background: #ede9fe;
-    color: #3e5e8e;
-}
+  .stat-icon.purple {
+    background: #e0e7ff;
+    color: #4f46e5;
+  }
 
-.stat-card-icon.orange {
-    background: #9cc2f8;
-    color: #150666;
-}
+  .stat-icon.orange {
+    background: #c7d5fe;
+    color: #0606d9;
+  }
 
-.stat-card-content {
-    display: flex;
-    flex-direction: column;
-}
+  .stat-content {
+    flex: 1;
+    min-width: 0;
+  }
 
-.stat-number {
+  .stat-number {
     font-size: 28px;
-    font-weight: 700;
-    color: #0f172a;
+    font-weight: 800;
+    color: #f4f6f8;
     line-height: 1.2;
-}
+    letter-spacing: -0.5px;
+  }
 
-.stat-label {
+  .stat-label {
     font-size: 13px;
-    color: #64748b;
-}
+    font-weight: 500;
+    color: #ffffff;
+  }
 
-/* ===== DASHBOARD GRID ===== */
-.dashboard-grid {
+  /* ============================================
+     QUICK ACTIONS
+     ============================================ */
+  .quick-actions {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 24px;
-    margin-bottom: 28px;
-}
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
 
-/* ===== DASHBOARD CARD ===== */
-.dashboard-card {
+  .quick-action {
     background: white;
     border-radius: 14px;
-    border: 1px solid #e5e7eb;
-    overflow: hidden;
-}
-
-.card-header-dashboard {
+    padding: 1.25rem 1.5rem;
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    color: #0f172a;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 16px 20px;
-    border-bottom: 1px solid #f1f5f9;
-}
+    flex-direction: column;
+    gap: 6px;
+  }
 
-.card-header-left {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
+  .quick-action:hover {
+    border-color: #1d4497;
+    box-shadow: 0 4px 20px rgba(29, 68, 151, 0.08);
+    transform: translateY(-2px);
+  }
 
-.card-header-icon-dashboard {
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
+  .quick-action .qa-icon {
+    font-size: 20px;
+    color: #1d4497;
+    margin-bottom: 4px;
+  }
 
-.card-header-icon-dashboard.blue-light {
-    background: #dbeafe;
-    color: #2563eb;
-}
-
-.card-header-icon-dashboard.green-light {
-    background: #d1fae5;
-    color: #059669;
-}
-
-.card-title-dashboard {
+  .quick-action .qa-title {
     font-size: 15px;
     font-weight: 600;
-    color: #1e293b;
-    margin: 0;
-}
-
-.card-link {
-    font-size: 13px;
-    color: #2563eb;
-    text-decoration: none;
-    font-weight: 500;
-}
-
-.card-link:hover {
-    text-decoration: underline;
-}
-
-.card-body-dashboard {
-    padding: 16px 20px;
-}
-
-/* ===== ACTIVITY LIST ===== */
-.activity-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.activity-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 10px 0;
-    border-bottom: 1px solid #f1f5f9;
-}
-
-.activity-item:last-child {
-    border-bottom: none;
-}
-
-.activity-avatar {
-    width: 36px;
-    height: 36px;
-    background: #dbeafe;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-
-.activity-initials {
-    font-size: 13px;
-    font-weight: 700;
-    color: #2563eb;
-}
-
-.activity-info {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-}
-
-.activity-name {
-    font-size: 14px;
-    font-weight: 500;
     color: #0f172a;
-}
+  }
 
-.activity-detail {
-    font-size: 12px;
+  .quick-action .qa-desc {
+    font-size: 13px;
     color: #64748b;
-}
+    line-height: 1.4;
+  }
 
-.activity-time {
-    font-size: 11px;
-    font-weight: 500;
-    color: #051896;
-    background: #79dbf9;
-    padding: 2px 10px;
-    border-radius: 12px;
-}
+  .quick-action .qa-link {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1d4497;
+    margin-top: 4px;
+  }
 
-/* ===== CLASS DISTRIBUTION ===== */
-.class-distribution {
+  /* ============================================
+     SECTION TITLE
+     ============================================ */
+  .section-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 1rem;
+    letter-spacing: -0.3px;
     display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
+    align-items: center;
+    gap: 8px;
+  }
 
-.distribution-item {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
+  .section-title i {
+    color: #64748b;
+    font-size: 14px;
+  }
 
-.distribution-header {
+  /* ============================================
+     TWO COLUMN LAYOUT
+     ============================================ */
+  .dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  @media (max-width: 900px) {
+    .dashboard-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .panel {
+    background: white;
+    border-radius: 16px;
+    padding: 1.25rem 1.5rem;
+    border: 1px solid #e2e8f0;
+  }
+
+  .panel-header {
     display: flex;
     justify-content: space-between;
-    font-size: 13px;
-}
-
-.distribution-name {
-    color: #475569;
-}
-
-.distribution-count {
-    font-weight: 500;
-    color: #0f172a;
-}
-
-.distribution-bar {
-    width: 100%;
-    height: 6px;
-    background: #f1f5f9;
-    border-radius: 10px;
-    overflow: hidden;
-}
-
-.distribution-fill {
-    height: 100%;
-    background: #2563eb;
-    border-radius: 10px;
-    transition: width 0.6s ease;
-}
-
-/* ===== QUICK ACTIONS ===== */
-.quick-actions {
-    background: white;
-    border-radius: 14px;
-    border: 1px solid #e5e7eb;
-    padding: 20px 24px 24px;
-}
-
-.quick-actions-title {
-    font-size: 16px;
-    font-weight: 600;
-    color: #1e293b;
-    margin: 0 0 16px 0;
-}
-
-.quick-actions-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 16px;
-}
-
-.quick-action-card {
-    display: flex;
     align-items: center;
-    gap: 14px;
-    padding: 14px 18px;
-    background: #f8fafc;
-    border-radius: 12px;
-    border: 1px solid #e5e7eb;
-    text-decoration: none;
-    transition: all 0.2s ease;
-}
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
 
-.quick-action-card:hover {
-    background: white;
-    border-color: #2563eb;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.08);
-}
-
-.quick-action-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-
-.quick-action-icon.blue {
-    background: #dbeafe;
-    color: #2563eb;
-}
-
-.quick-action-icon.green {
-    background: #d1fae5;
-    color: #059669;
-}
-
-.quick-action-icon.purple {
-    background: #ede9fe;
-    color: #3e5e8e;
-}
-
-.quick-action-icon.orange {
-    background: #9cc2f8;
-    color: #150666;
-}
-
-.quick-action-card h4 {
+  .panel-title {
     font-size: 14px;
     font-weight: 600;
     color: #0f172a;
     margin: 0;
-}
+  }
 
-.quick-action-card p {
+  .panel-link {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1d4497;
+    text-decoration: none;
+  }
+
+  .panel-link:hover {
+    text-decoration: underline;
+  }
+
+  /* ============================================
+     STUDENT LIST
+     ============================================ */
+  .student-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid #f1f5f9;
+  }
+
+  .student-item:last-child {
+    border-bottom: none;
+  }
+
+  .student-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .student-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 13px;
+    flex-shrink: 0;
+  }
+
+  .student-avatar.blue {
+    background: #dbeafe;
+    color: #1d4497;
+  }
+
+  .student-avatar.green {
+    background: #d1eefa;
+    color: #054196;
+  }
+
+  .student-avatar.purple {
+    background: #e0e7ff;
+    color: #4f46e5;
+  }
+
+  .student-avatar.orange {
+    background: #c7c8fe;
+    color: #060ad9;
+  }
+
+  .student-avatar.pink {
+    background: #e7f6fc;
+    color: #27bddb;
+  }
+
+  .student-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: #0f172a;
+  }
+
+  .student-class {
     font-size: 12px;
     color: #64748b;
-    margin: 0;
-}
+  }
 
-/* ===== EMPTY TEXT ===== */
-.empty-text {
-    text-align: center;
+  .student-date {
+    font-size: 12px;
     color: #94a3b8;
-    padding: 20px 0;
+  }
+
+  /* ============================================
+     CLASS CHART / REPARTITION
+     ============================================ */
+  .class-bar-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .class-bar-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .class-bar-label {
+    width: 100px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #0f172a;
+    flex-shrink: 0;
+  }
+
+  .class-bar-track {
+    flex: 1;
+    height: 8px;
+    background: #f1f5f9;
+    border-radius: 6px;
+    overflow: hidden;
+    min-width: 60px;
+  }
+
+  .class-bar-fill {
+    height: 100%;
+    border-radius: 6px;
+    transition: width 0.6s ease;
+  }
+
+  .class-bar-fill.blue {
+    background: #012d8d;
+  }
+
+  .class-bar-fill.green {
+    background: #1f1fc9;
+  }
+
+  .class-bar-fill.purple {
+    background: #0d53bd;
+  }
+
+  .class-bar-fill.orange {
+    background: #2482ef;
+  }
+
+  .class-bar-fill.pink {
+    background: #3aa8f2;
+  }
+
+  .class-bar-count {
+    font-size: 13px;
+    font-weight: 600;
+    color: #0f172a;
+    width: 32px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  /* ============================================
+     SCHOOL SLOGAN
+     ============================================ */
+  .school-slogan {
+    background: linear-gradient(135deg, #152a58 0%, #334b80 100%);
+    border-radius: 16px;
+    padding: 1.5rem 2rem;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 0.5rem;
+  }
+
+  .school-slogan h3 {
+    font-size: 18px;
+    font-weight: 700;
     margin: 0;
-}
+  }
 
-/* ===== RESPONSIVE ===== */
-@media (max-width: 1024px) {
-    .dashboard-grid {
-        grid-template-columns: 1fr;
-    }
-}
+  .school-slogan p {
+    font-size: 14px;
+    opacity: 0.85;
+    margin: 4px 0 0;
+  }
 
-@media (max-width: 768px) {
-    .dashboard-header {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-    
+  .school-slogan .slogan-icon {
+    font-size: 36px;
+    opacity: 0.3;
+  }
+
+  /* ============================================
+     RESPONSIVE
+     ============================================ */
+  @media (max-width: 768px) {
     .stats-grid {
-        grid-template-columns: 1fr 1fr;
+      grid-template-columns: 1fr 1fr;
     }
-    
-    .quick-actions-grid {
-        grid-template-columns: 1fr 1fr;
-    }
-}
 
-@media (max-width: 480px) {
-    .stats-grid {
-        grid-template-columns: 1fr;
+    .quick-actions {
+      grid-template-columns: 1fr 1fr;
     }
-    
-    .quick-actions-grid {
-        grid-template-columns: 1fr;
+
+    .stat-card {
+      padding: 1rem;
     }
-    
-    .dashboard-title {
-        font-size: 20px;
-    }
-    
+
     .stat-number {
-        font-size: 22px;
+      font-size: 22px;
     }
-    
-    .dashboard-card {
-        border-radius: 12px;
-    }
-    
-    .card-body-dashboard {
-        padding: 12px 16px;
-    }
-}
-</style>
 
+    .stat-icon {
+      width: 40px;
+      height: 40px;
+      font-size: 16px;
+    }
+
+    .class-bar-label {
+      width: 70px;
+      font-size: 12px;
+    }
+
+    .school-slogan {
+      padding: 1.25rem;
+      flex-direction: column;
+      text-align: center;
+    }
+
+    .school-slogan .slogan-icon {
+      display: none;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .stats-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .quick-actions {
+      grid-template-columns: 1fr;
+    }
+
+    .panel {
+      padding: 1rem;
+    }
+
+    .student-item {
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    .student-date {
+      width: 100%;
+      padding-left: 48px;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- ============================================
+     STATISTIQUES
+     ============================================ -->
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-icon blue">
+      <i class="fas fa-user-graduate"></i>
+    </div>
+    <div class="stat-content">
+      <div class="stat-number">{{ total_eleves }}</div>
+      <div class="stat-label">Total Élèves</div>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-icon green">
+      <i class="fas fa-chalkboard-teacher"></i>
+    </div>
+    <div class="stat-content">
+      <div class="stat-number">{{ total_enseignants }}</div>
+      <div class="stat-label">Total Enseignants</div>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-icon purple">
+      <i class="fas fa-school"></i>
+    </div>
+    <div class="stat-content">
+      <div class="stat-number">{{ total_classes }}</div>
+      <div class="stat-label">Total Classes Activées</div>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-icon orange">
+      <i class="fas fa-book"></i>
+    </div>
+    <div class="stat-content">
+      <div class="stat-number">{{ total_matieres }}</div>
+      <div class="stat-label">Total Matières</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================
+     ACTIONS RAPIDES
+     ============================================ -->
+<div class="quick-actions">
+  <a href="{% url 'students:list' %}" class="quick-action">
+    <div class="qa-icon"><i class="fas fa-user-plus"></i></div>
+    <div class="qa-title">Élèves</div>
+    <div class="qa-desc">Ajouter des élèves dans votre école, définissez sa classe et ses anciennes notes.</div>
+    <div class="qa-link">Gérer les élèves →</div>
+  </a>
+
+  <a href="#" class="quick-action">
+    <div class="qa-icon"><i class="fas fa-bell"></i></div>
+    <div class="qa-title">Notifications</div>
+    <div class="qa-desc">Notifier les parents ou tuteur d'élève par rapport aux Bulletins - Statistiques - Retard - Paiements...</div>
+    <div class="qa-link">Envoyer une notification →</div>
+  </a>
+
+  <a href="#" class="quick-action">
+    <div class="qa-icon"><i class="fas fa-file-pdf"></i></div>
+    <div class="qa-title">Bulletin</div>
+    <div class="qa-desc">Télécharger les bulletins des élèves sous format PDF, ou concevez les bulletins des élèves pour le trimestre.</div>
+    <div class="qa-link">Gérer les bulletins →</div>
+  </a>
+
+  <a href="{% url 'classes:list' %}" class="quick-action">
+    <div class="qa-icon"><i class="fas fa-plus-circle"></i></div>
+    <div class="qa-title">Classes</div>
+    <div class="qa-desc">Ajouter une classe dans votre école. Nom - Niveau - Emploi du temps ...</div>
+    <div class="qa-link">Gérer les classes →</div>
+  </a>
+</div>
+
+<!-- ============================================
+     DEUX COLONNES : DERNIERS ÉLÈVES + RÉPARTITION
+     ============================================ -->
+<div class="dashboard-grid">
+  <!-- Derniers élèves inscrits -->
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-title">
+        <i class="fas fa-clock" style="color: #64748b; margin-right: 6px;"></i>
+        Derniers élèves inscrits
+      </div>
+      <a href="{% url 'students:list' %}" class="panel-link">
+        Voir tout <i class="fas fa-arrow-right" style="font-size: 12px;"></i>
+      </a>
+    </div>
+
+    <div>
+      {% if derniers_eleves %}
+        {% for eleve in derniers_eleves %}
+        <div class="student-item">
+          <div class="student-info">
+            <div class="student-avatar {% cycle 'blue' 'green' 'purple' 'orange' 'pink' %}">
+              {{ eleve.first_name|first|upper }}{{ eleve.last_name|first|upper }}
+            </div>
+            <div>
+              <div class="student-name">{{ eleve.first_name }} {{ eleve.last_name }}</div>
+              <div class="student-class">{{ eleve.classe.nom|default:"Non affecté" }}</div>
+            </div>
+          </div>
+          <div class="student-date">
+            {{ eleve.inscription_date|date:"d/m/Y" }}
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}
+        <p style="color: #94a3b8; font-size: 14px; text-align: center; padding: 1.5rem 0;">
+          <i class="fas fa-inbox" style="display: block; font-size: 24px; margin-bottom: 8px;"></i>
+          Aucun élève inscrit pour le moment.
+        </p>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Répartition des classes -->
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-title">
+        <i class="fas fa-chart-bar" style="color: #64748b; margin-right: 6px;"></i>
+        Répartition des classes
+      </div>
+      <a href="{% url 'classes:list' %}" class="panel-link">
+        Gérer <i class="fas fa-arrow-right" style="font-size: 12px;"></i>
+      </a>
+    </div>
+
+    <div class="class-bar-wrapper">
+      {% for classe in repartition_classes %}
+      <div class="class-bar-item">
+        <span class="class-bar-label">{{ classe.nom|default:"Sans nom" }}</span>
+        <div class="class-bar-track">
+         <div class="class-bar-fill {% cycle 'blue' 'green' 'purple' 'orange' 'pink' %}"
+              style="width: {{ classe.pourcentage|floatformat:0 }}%;">
+           </div>
+        </div>
+        <span class="class-bar-count">{{ classe.total }}</span>
+      </div>
+      {% empty %}
+      <p style="color: #94a3b8; font-size: 14px; text-align: center; padding: 1.5rem 0;">
+        <i class="fas fa-school" style="display: block; font-size: 24px; margin-bottom: 8px;"></i>
+        Aucune classe n'a été créée.
+      </p>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- ============================================
+     BANNIÈRE "VOTRE ÉCOLE DANS UN SEUL LOGICIEL"
+     ============================================ -->
+<div class="school-slogan">
+  <div>
+    <h3><i class="fas fa-gem" style="margin-right: 10px;"></i>Votre école dans un seul logiciel</h3>
+    <p>Gérez les élèves, les classes, les bulletins et les notifications depuis une interface unique et intuitive.</p>
+  </div>
+  <div class="slogan-icon">
+    <i class="fas fa-school"></i>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Animation au chargement des barres de répartition
+  document.addEventListener('DOMContentLoaded', function() {
+    const bars = document.querySelectorAll('.class-bar-fill');
+    bars.forEach(bar => {
+      // La largeur est déjà définie inline, on force une petite animation
+      const width = bar.style.width;
+      bar.style.width = '0%';
+      setTimeout(() => {
+        bar.style.width = width;
+      }, 100);
+    });
+  });
+</script>
 {% endblock %}

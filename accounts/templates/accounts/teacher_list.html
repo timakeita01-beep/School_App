@@ -1,0 +1,646 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Répertoire des Enseignants{% endblock %}
+{% block meta_desc %}Gestion des enseignants de l'établissement{% endblock %}
+{% block page_title %}Enseignants{% endblock %}
+{% block search_placeholder %}Rechercher un enseignant...{% endblock %}
+{% block nav_emploi %}active{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ============================================
+       STYLES POUR LA LISTE DES ENSEIGNANTS
+       Couleurs : #355394, #4a6091, nuances de bleu
+       ============================================ */
+
+    .teachers-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px 16px 40px;
+    }
+
+    /* ===== PAGE HEADER ===== */
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .page-header-text h2 {
+        font-size: 24px;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 0;
+    }
+
+    .page-header-text p {
+        font-size: 14px;
+        color: #64748b;
+        margin: 4px 0 0;
+    }
+
+    /* ===== BUTTONS ===== */
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        font-size: 14px;
+        font-weight: 600;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .btn-primary {
+        background: #355394;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #2a4378;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(53, 83, 148, 0.3);
+    }
+
+    .btn-secondary {
+        background: #f1f5f9;
+        color: #475569;
+    }
+
+    .btn-secondary:hover {
+        background: #e2e8f0;
+    }
+
+    /* ===== STATS ===== */
+    .stats-bar {
+        display: flex;
+        align-items: center;
+        gap: 24px;
+        padding: 14px 20px;
+        background: white;
+        border-radius: 14px;
+        border: 1px solid #e5e7eb;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .stat-item {
+        display: flex;
+        align-items: baseline;
+        gap: 6px;
+    }
+
+    .stat-number {
+        font-size: 20px;
+        font-weight: 700;
+        color: #0f172a;
+    }
+
+    .stat-label {
+        font-size: 13px;
+        color: #64748b;
+    }
+
+    .stat-divider {
+        width: 1px;
+        height: 24px;
+        background: #e2e8f0;
+    }
+
+    /* ===== TEACHERS GRID ===== */
+    .teachers-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+    }
+
+    .teacher-card {
+        background: white;
+        border-radius: 16px;
+        border: 1px solid #e5e7eb;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .teacher-card:hover {
+        transform: translateY(-4px);
+        border-color: #355394;
+        box-shadow: 0 8px 30px rgba(53, 83, 148, 0.08);
+    }
+
+    .teacher-card-header {
+        padding: 20px 20px 16px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .teacher-avatar {
+        width: 52px;
+        height: 52px;
+        background: linear-gradient(135deg, #355394, #4a6091);
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .teacher-avatar .avatar-initials {
+        font-size: 18px;
+        font-weight: 700;
+        color: white;
+    }
+
+    .teacher-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .teacher-info .teacher-name {
+        font-size: 16px;
+        font-weight: 700;
+        color: #0f172a;
+        margin: 0 0 2px;
+    }
+
+    .teacher-info .teacher-username {
+        font-size: 13px;
+        color: #94a3b8;
+        font-weight: 500;
+    }
+
+    .teacher-card-body {
+        padding: 14px 20px 16px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .teacher-detail {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        color: #475569;
+    }
+
+    .teacher-detail .detail-icon {
+        width: 16px;
+        height: 16px;
+        color: #94a3b8;
+        flex-shrink: 0;
+    }
+
+    .teacher-detail .detail-value {
+        font-weight: 500;
+        color: #0f172a;
+    }
+
+    .teacher-card-actions {
+        display: flex;
+        gap: 8px;
+        padding: 12px 20px 16px;
+        border-top: 1px solid #f1f5f9;
+        margin-top: auto;
+    }
+
+    .btn-action {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        font-size: 12px;
+        font-weight: 500;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .btn-action-outline {
+        background: transparent;
+        color: #355394;
+        border: 1px solid #355394;
+    }
+
+    .btn-action-outline:hover {
+        background: #355394;
+        color: white;
+    }
+
+    .btn-action-ghost {
+        background: #f1f5f9;
+        color: #475569;
+    }
+
+    .btn-action-ghost:hover {
+        background: #e2e8f0;
+    }
+
+    /* ===== ADD CARD ===== */
+    .add-card {
+        border: 2px dashed #d1d5db;
+        background: transparent;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 200px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        text-decoration: none;
+        border-radius: 16px;
+    }
+
+    .add-card:hover {
+        border-color: #355394;
+        background: #f8fafc;
+        transform: translateY(-4px);
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+    }
+
+    .add-card-content {
+        text-align: center;
+        padding: 20px;
+    }
+
+    .add-icon {
+        width: 48px;
+        height: 48px;
+        background: #eef2ff;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 12px;
+        color: #355394;
+        transition: all 0.3s ease;
+    }
+
+    .add-card:hover .add-icon {
+        background: #355394;
+        color: white;
+        transform: scale(1.05);
+    }
+
+    .add-card-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #0f172a;
+        margin: 0 0 4px;
+    }
+
+    .add-card-desc {
+        font-size: 13px;
+        color: #94a3b8;
+        margin: 0;
+    }
+
+    /* ===== EMPTY STATE ===== */
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        background: white;
+        border-radius: 16px;
+        border: 1px solid #e5e7eb;
+        grid-column: 1 / -1;
+    }
+
+    .empty-state-icon {
+        width: 64px;
+        height: 64px;
+        background: #f1f5f9;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 16px;
+        color: #94a3b8;
+    }
+
+    .empty-state-icon svg {
+        width: 32px;
+        height: 32px;
+    }
+
+    .empty-state h3 {
+        font-size: 20px;
+        font-weight: 600;
+        color: #0f172a;
+        margin: 0 0 6px;
+    }
+
+    .empty-state p {
+        color: #64748b;
+        margin: 0 0 20px;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+        .page-header {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .page-header .btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .stats-bar {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 8px;
+            padding: 12px 16px;
+        }
+
+        .stat-divider {
+            display: none;
+        }
+
+        .teachers-grid {
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+
+        .teacher-card-header {
+            padding: 16px;
+        }
+
+        .teacher-avatar {
+            width: 44px;
+            height: 44px;
+        }
+
+        .teacher-avatar .avatar-initials {
+            font-size: 15px;
+        }
+
+        .teacher-info .teacher-name {
+            font-size: 15px;
+        }
+
+        .teacher-card-body {
+            padding: 12px 16px 14px;
+        }
+
+        .teacher-card-actions {
+            padding: 10px 16px 14px;
+            flex-wrap: wrap;
+        }
+
+        .btn-action {
+            flex: 1;
+            justify-content: center;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .teachers-container {
+            padding: 12px 8px 24px;
+        }
+
+        .stat-number {
+            font-size: 17px;
+        }
+
+        .teacher-card {
+            border-radius: 12px;
+        }
+
+        .teacher-card-actions {
+            flex-direction: column;
+        }
+
+        .btn-action {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .add-card {
+            min-height: 150px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="teachers-container">
+    <!-- Page header -->
+    <div class="page-header">
+        <div class="page-header-text">
+            <h2>Répertoire des Enseignants</h2>
+            <p>Gérez les profils, les matières et les affectations des classes.</p>
+        </div>
+        <a href="{% url 'accounts:teacher_create' %}" class="btn btn-primary" id="btnAjouterEnseignant">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" x2="12" y1="5" y2="19"/>
+                <line x1="5" x2="19" y1="12" y2="12"/>
+            </svg>
+            Nouvel Enseignant
+        </a>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-bar">
+        <div class="stat-item">
+            <span class="stat-number">{{ teachers|length }}</span>
+            <span class="stat-label">Enseignants</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+            <span class="stat-number">{{ teachers|length }}</span>
+            <span class="stat-label">Classes affectées</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+            <span class="stat-number">{{ teachers|length }}</span>
+            <span class="stat-label">Disponibles</span>
+        </div>
+    </div>
+
+    <!-- Teachers Grid -->
+    <div class="teachers-grid" id="teachersGrid">
+
+        {% for teacher in teachers %}
+        <article class="teacher-card" id="card-{{ teacher.id }}">
+
+            <!-- Header -->
+            <div class="teacher-card-header">
+                <div class="teacher-avatar">
+                    <span class="avatar-initials">
+                        {% if teacher.first_name and teacher.last_name %}
+                            {{ teacher.first_name|first|upper }}{{ teacher.last_name|first|upper }}
+                        {% else %}
+                            {{ teacher.username|first|upper }}
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="teacher-info">
+                    <h3 class="teacher-name">
+                        {% if teacher.get_full_name %}
+                            {{ teacher.get_full_name }}
+                        {% else %}
+                            {{ teacher.username }}
+                        {% endif %}
+                    </h3>
+                    <span class="teacher-username">@{{ teacher.username }}</span>
+                </div>
+            </div>
+
+            <!-- Body -->
+            <div class="teacher-card-body">
+                <!-- Classe (si disponible via une relation) -->
+                <div class="teacher-detail">
+                    <svg class="detail-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                    </svg>
+                    <span>Classe :</span>
+                    <span class="detail-value">
+                        {% if teacher.classe_set.all %}
+                            {% for classe in teacher.classe_set.all %}
+                                {{ classe.nom }}{% if not forloop.last %}, {% endif %}
+                            {% endfor %}
+                        {% else %}
+                            Non affecté
+                        {% endif %}
+                    </span>
+                </div>
+
+                <!-- Email -->
+                <div class="teacher-detail">
+                    <svg class="detail-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                    </svg>
+                    <span class="detail-value">{{ teacher.email|default:"Aucun email renseigné" }}</span>
+                </div>
+
+                <!-- Matières enseignées (si disponible) -->
+                {% if teacher.matiere_set.all %}
+                <div class="teacher-detail">
+                    <svg class="detail-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 19.5A2.5 2.5 0 016.5 17H20"/>
+                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>
+                    </svg>
+                    <span>Matières :</span>
+                    <span class="detail-value">
+                        {% for matiere in teacher.matiere_set.all %}
+                            {{ matiere.nom }}{% if not forloop.last %}, {% endif %}
+                        {% endfor %}
+                    </span>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Actions -->
+            <div class="teacher-card-actions">
+                <a href="{% url 'accounts:teacher_profile' pk=teacher.pk %}" class="btn-action btn-action-outline">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        <path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                    </svg>
+                    Profil
+                </a>
+                <a href="#" class="btn-action btn-action-ghost">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    Planning
+                </a>
+            </div>
+        </article>
+        {% empty %}
+        <!-- Empty state -->
+        <div class="empty-state">
+            <div class="empty-state-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                </svg>
+            </div>
+            <h3>Aucun enseignant</h3>
+            <p>Commencez par ajouter votre premier enseignant.</p>
+            <a href="#" class="btn btn-primary">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" x2="12" y1="5" y2="19"/>
+                    <line x1="5" x2="19" y1="12" y2="12"/>
+                </svg>
+                Ajouter un enseignant
+            </a>
+        </div>
+        {% endfor %}
+
+        <!-- Ajouter un nouvel enseignant (carte) -->
+        <a href="{% url 'accounts:teacher_create' %}" class="add-card" id="addTeacherCard" aria-label="Ajouter un nouvel enseignant">
+            <div class="add-card-content">
+                <div class="add-icon" aria-hidden="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" x2="12" y1="5" y2="19"/>
+                        <line x1="5" x2="19" y1="12" y2="12"/>
+                    </svg>
+                </div>
+                <p class="add-card-title">Nouvel Enseignant</p>
+                <p class="add-card-desc">Ajouter un enseignant à votre établissement</p>
+            </div>
+        </a>
+
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Filtrage de la liste des enseignants
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                const query = this.value.toLowerCase().trim();
+                const cards = document.querySelectorAll('#teachersGrid .teacher-card');
+                let visibleCount = 0;
+
+                cards.forEach(card => {
+                    const name = card.querySelector('.teacher-name');
+                    const username = card.querySelector('.teacher-username');
+                    const email = card.querySelector('.teacher-detail .detail-value');
+                    const text = (name ? name.textContent.toLowerCase() : '') + 
+                                 (username ? username.textContent.toLowerCase() : '') +
+                                 (email ? email.textContent.toLowerCase() : '');
+                    
+                    if (text.includes(query)) {
+                        card.style.display = '';
+                        visibleCount++;
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+
+                // Mettre à jour le compteur dans la barre de stats
+                const statNumber = document.querySelector('.stat-item .stat-number');
+                if (statNumber) {
+                    statNumber.textContent = visibleCount;
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

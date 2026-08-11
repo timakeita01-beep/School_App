@@ -1,7 +1,8 @@
-from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from django.db import models
 from eleves.models import Student
 from classes.models import Classe
@@ -22,8 +23,14 @@ def admin_dashboard(request):
     derniers_eleves = Student.objects.all().order_by('-inscription_date')[:5]
     
     # Répartition des classes
-    repartition_classes = Classe.objects.annotate(total=models.Count('students'))
-    max_eleves = repartition_classes.aggregate(models.Max('total'))['total__max'] or 1
+    repartition_classes = Classe.objects.annotate(
+    total=models.Count('students'))
+    max_eleves = repartition_classes.aggregate(
+    models.Max('total')
+    )['total__max'] or 1
+
+    for classe in repartition_classes:
+      classe.pourcentage = (classe.total / max_eleves) * 100
     
     context = {
         'total_eleves': total_eleves,
@@ -84,6 +91,215 @@ def teacher_dashboard(request):
 
 
 def teacher_list(request):
-    # Logique pour récupérer la liste des enseignants
-    teachers = User.objects.filter(groups__name='Teacher')
-    return render(request, 'accounts/teacher_list.html', {'teachers': teachers})
+    teachers = User.objects.filter(
+        groups__name="Teacher"
+    ).distinct()
+
+    return render(request, "accounts/teacher_list.html", {
+        "teachers": teachers
+    })
+
+
+# AJOUTER UN ENSEIGNANT
+def teacher_create(request):
+
+    if request.method == "POST":
+
+        username = request.POST.get("username", "").strip()
+        first_name = request.POST.get("first_name", "").strip()
+        last_name = request.POST.get("last_name", "").strip()
+        email = request.POST.get("email", "").strip()
+        password = request.POST.get("password", "")
+        password_confirm = request.POST.get("password_confirm", "")
+
+        # Vérification du nom d'utilisateur
+        if not username:
+            messages.error(
+                request,
+                "Le nom d'utilisateur est obligatoire."
+            )
+            return redirect("accounts:teacher_create")
+
+        if User.objects.filter(username=username).exists():
+            messages.error(
+                request,
+                "Ce nom d'utilisateur existe déjà."
+            )
+            return redirect("accounts:teacher_create")
+
+        # Vérification du mot de passe
+        if not password:
+            messages.error(
+                request,
+                "Le mot de passe est obligatoire."
+            )
+            return redirect("accounts:teacher_create")
+
+        if password != password_confirm:
+            messages.error(
+                request,
+                "Les mots de passe ne correspondent pas."
+            )
+            return redirect("accounts:teacher_create")
+
+        # Création de l'utilisateur
+        teacher = User.objects.create_user(
+            username=username,
+            first_name=first_name,
+            last_name=last_name,
+            email=email,
+            password=password,
+        )
+
+        # Récupération/création du groupe Teacher
+        teacher_group, created = Group.objects.get_or_create(
+            name="Teacher"
+        )
+
+        # Ajout automatique au groupe Teacher
+        teacher.groups.add(teacher_group)
+
+        messages.success(
+            request,
+            f"L'enseignant « {teacher.get_full_name() or teacher.username} » "
+            "a été ajouté avec succès."
+        )
+
+        return redirect("accounts:teacher_list")
+
+    return render(
+        request,
+        "accounts/teacher_create.html"
+    )
+
+# MODIFIER UN ENSEIGNANT
+def teacher_update(request, pk):
+
+    teacher = get_object_or_404(
+        User.objects.filter(groups__name="Teacher").distinct(),
+        pk=pk
+    )
+
+    if request.method == "POST":
+
+        username = request.POST.get("username", "").strip()
+        first_name = request.POST.get("first_name", "").strip()
+        last_name = request.POST.get("last_name", "").strip()
+        email = request.POST.get("email", "").strip()
+        password = request.POST.get("password", "")
+        password_confirm = request.POST.get("password_confirm", "")
+
+        # Vérification du nom d'utilisateur
+        if not username:
+            messages.error(
+                request,
+                "Le nom d'utilisateur est obligatoire."
+            )
+            return redirect(
+                "accounts:teacher_update",
+                pk=teacher.pk
+            )
+
+        # Vérifier que le username n'est pas déjà utilisé
+        if User.objects.filter(
+            username=username
+        ).exclude(pk=teacher.pk).exists():
+
+            messages.error(
+                request,
+                "Ce nom d'utilisateur est déjà utilisé."
+            )
+
+            return redirect(
+                "accounts:teacher_update",
+                pk=teacher.pk
+            )
+
+        # Vérifier les mots de passe seulement si l'utilisateur
+        # souhaite modifier le mot de passe
+        if password:
+
+            if password != password_confirm:
+                messages.error(
+                    request,
+                    "Les mots de passe ne correspondent pas."
+                )
+
+                return redirect(
+                    "accounts:teacher_update",
+                    pk=teacher.pk
+                )
+
+            teacher.set_password(password)
+
+        # Modification des informations
+        teacher.username = username
+        teacher.first_name = first_name
+        teacher.last_name = last_name
+        teacher.email = email
+
+        teacher.save()
+
+        # S'assurer qu'il appartient toujours au groupe Teacher
+        teacher_group, created = Group.objects.get_or_create(
+            name="Teacher"
+        )
+
+        teacher.groups.add(teacher_group)
+
+        messages.success(
+            request,
+            f"L'enseignant « {teacher.get_full_name() or teacher.username} » "
+            "a été modifié avec succès."
+        )
+
+        return redirect("accounts:teacher_list")
+
+    return render(
+        request,
+        "accounts/teacher_update.html",
+        {
+            "teacher": teacher
+        }
+    )
+# SUPPRIMER UN ENSEIGNANT
+def teacher_delete(request, pk):
+
+    teacher = get_object_or_404(
+        User.objects.filter(groups__name="Teacher").distinct(),
+        pk=pk
+    )
+
+    nom = teacher.get_full_name() or teacher.username
+
+    teacher.delete()
+
+    messages.success(
+        request,
+        f"L'enseignant « {nom} » a été supprimé avec succès."
+    )
+
+    return redirect("accounts:teacher_list")
+
+
+def teacher_profile(request, pk):
+    teacher = get_object_or_404(
+        User.objects.filter(groups__name="Teacher").distinct(),
+        pk=pk
+    )
+
+    # Classes affectées à cet enseignant
+    classes = Classe.objects.filter(
+        enseignant=teacher
+    ).order_by("-niveau")
+
+    context = {
+        "teacher": teacher,
+        "classes": classes,
+    }
+
+    return render(
+        request,
+        "accounts/teacher_profile.html",
+        context
+    )
