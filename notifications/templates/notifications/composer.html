@@ -1,0 +1,294 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Notifications{% endblock %}
+{% block meta_desc %}Envoyer un message aux parents{% endblock %}
+{% block page_title %}Notifier les parents{% endblock %}
+{% block nav_notifications %}active{% endblock %}
+
+{% block extra_css %}
+<style>
+  .page-layout {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+
+  .card {
+    background: white;
+    border-radius: 16px;
+    border: 1px solid #e5e7eb;
+    padding: 24px;
+  }
+
+  .card h3 {
+    font-size: 15px;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0 0 14px;
+  }
+
+  .target-banner {
+    background: #eef2ff;
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 13px;
+    color: #12254e;
+    margin-bottom: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .target-banner a {
+    color: #2563eb;
+    font-weight: 600;
+    text-decoration: none;
+    font-size: 12px;
+  }
+
+  .templates-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+
+  .template-btn {
+    padding: 7px 14px;
+    border-radius: 20px;
+    border: 1.5px solid #e2e8f0;
+    background: white;
+    color: #475569;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .template-btn:hover {
+    border-color: #2563eb;
+    color: #2563eb;
+  }
+
+  textarea.message-input {
+    width: 100%;
+    min-height: 140px;
+    padding: 12px 14px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    resize: vertical;
+    outline: none;
+    margin-bottom: 18px;
+  }
+
+  textarea.message-input:focus {
+    border-color: #2563eb;
+  }
+
+  .classes-picker {
+    margin-bottom: 18px;
+  }
+
+  .toutes-classes-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    background: #f8fafc;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #0f172a;
+  }
+
+  .classes-grid-check {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 8px;
+  }
+
+  .classe-check-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #334155;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 22px;
+    font-size: 14px;
+    font-weight: 600;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    background: #213561;
+    color: white;
+  }
+
+  .btn:hover { background: #374970; }
+
+  /* ===== HISTORIQUE ===== */
+  .historique-item {
+    padding: 12px 0;
+    border-bottom: 1px solid #f1f5f9;
+  }
+
+  .historique-item:last-child { border-bottom: none; }
+
+  .historique-meta {
+    font-size: 11px;
+    color: #94a3b8;
+    margin-bottom: 4px;
+  }
+
+  .historique-target {
+    font-size: 12px;
+    font-weight: 600;
+    color: #12254e;
+    margin-bottom: 4px;
+  }
+
+  .historique-message {
+    font-size: 13px;
+    color: #334155;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .empty-hist {
+    font-size: 13px;
+    color: #94a3b8;
+  }
+
+  @media (max-width: 900px) {
+    .page-layout {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="page-layout">
+
+  <div class="card">
+    <h3>Rédiger un message</h3>
+
+    {% if parent_selectionne %}
+    <div class="target-banner">
+      <span>Message ciblé à <strong>{{ parent_selectionne.first_name }} {{ parent_selectionne.last_name }}</strong> ({{ parent_selectionne.email|default:"aucun e-mail renseigné" }})</span>
+      <a href="{% url 'notifications:composer' %}">Changer de destinataire</a>
+    </div>
+    {% endif %}
+
+    <div class="templates-row">
+      <button type="button" class="template-btn" onclick="useTemplate('paiement')">Rappel de paiement</button>
+      <button type="button" class="template-btn" onclick="useTemplate('sortie')">Sortie scolaire</button>
+      <button type="button" class="template-btn" onclick="useTemplate('trimestre')">Fin de trimestre</button>
+      <button type="button" class="template-btn" onclick="useTemplate('composition')">Date de composition</button>
+    </div>
+
+    <form method="post">
+      {% csrf_token %}
+      {% if parent_selectionne %}
+      <input type="hidden" name="parent" value="{{ parent_selectionne.pk }}">
+      {% endif %}
+
+      <textarea name="message" id="messageInput" class="message-input"
+                placeholder="Écrivez votre message aux parents..." required></textarea>
+
+      {% if not parent_selectionne %}
+      <div class="classes-picker">
+        <label class="toutes-classes-row">
+          <input type="checkbox" name="toutes_les_classes" id="toutesClasses" value="on">
+          Toutes les classes de l'établissement
+        </label>
+
+        <div class="classes-grid-check" id="classesGrid">
+          {% for classe in classes %}
+          <label class="classe-check-item">
+            <input type="checkbox" name="classes" value="{{ classe.pk }}" class="classe-check">
+            {{ classe.nom }}
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+      <button type="submit" class="btn">
+        {% if parent_selectionne %}Envoyer au parent{% else %}Notifier les parents{% endif %}
+      </button>
+    </form>
+  </div>
+
+  <div class="card">
+    <h3>Historique récent</h3>
+    {% if historique %}
+      {% for notif in historique %}
+      <div class="historique-item">
+        <div class="historique-meta">{{ notif.date_envoi|date:"d/m/Y H:i" }} — {{ notif.envoye_par|default:"—" }}</div>
+        <div class="historique-target">
+          {% if notif.parent %}
+            Parent : {{ notif.parent.first_name }} {{ notif.parent.last_name }}
+          {% elif notif.toutes_les_classes %}
+            Toutes les classes
+          {% else %}
+            {{ notif.classes.all|join:", " }}
+          {% endif %}
+          — {{ notif.nb_destinataires }} destinataire{{ notif.nb_destinataires|pluralize }}
+        </div>
+        <div class="historique-message">{{ notif.message }}</div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <p class="empty-hist">Aucune notification envoyée pour le moment.</p>
+    {% endif %}
+  </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const TEMPLATES = {
+  paiement: "Nous vous rappelons que les frais de scolarité doivent être réglés avant la fin du mois. Merci de régulariser votre situation auprès de l'administration.",
+  sortie: "Une sortie scolaire est organisée prochainement pour les classes concernées. Plus de détails (date, lieu, matériel à prévoir) suivront très bientôt.",
+  trimestre: "Le trimestre en cours touche à sa fin. Les bulletins seront disponibles prochainement. Merci de votre confiance.",
+  composition: "Nous vous informons que la composition est prévue prochainement. Nous vous invitons à accompagner votre enfant dans ses révisions à la maison.",
+};
+
+function useTemplate(key) {
+  const textarea = document.getElementById('messageInput');
+  textarea.value = TEMPLATES[key];
+  textarea.focus();
+}
+
+// Décocher les classes individuelles si "toutes les classes" est cochée
+const toutesCheckbox = document.getElementById('toutesClasses');
+if (toutesCheckbox) {
+  toutesCheckbox.addEventListener('change', function () {
+    document.querySelectorAll('.classe-check').forEach(function (cb) {
+      cb.disabled = toutesCheckbox.checked;
+      if (toutesCheckbox.checked) cb.checked = false;
+    });
+  });
+}
+</script>
+{% endblock %}

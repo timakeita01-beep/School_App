@@ -552,7 +552,12 @@
         <div class="detail-header">
             <div class="detail-header-left">
                 <div class="student-avatar">
+                    {% if student.photo %}
+                    <img src="{{ student.photo.url }}" alt="{{ student.first_name }} {{ student.last_name }}"
+                         style="width:100%; height:100%; object-fit:cover; border-radius:16px;">
+                    {% else %}
                     <span class="avatar-initials">{{ student.first_name|first }}{{ student.last_name|first }}</span>
+                    {% endif %}
                 </div>
                 <div class="student-title">
                     <h1 class="student-name">{{ student.first_name }} {{ student.last_name }}</h1>
@@ -610,7 +615,7 @@
                     </div>
                     <div class="info-item">
                         <span class="info-label">Sexe</span>
-                        <span class="info-value">{{ student.sexe|default:"Féminin" }}</span>
+                        <span class="info-value">{{ student.get_sexe_display|default:"Non renseigné" }}</span>
                     </div>
                     <div class="info-item">
                         <span class="info-label">Âge</span>
@@ -631,6 +636,20 @@
                     <div class="info-item full-width">
                         <span class="info-label">ID Élève</span>
                         <span class="info-value">{{ student.identification_number }}</span>
+                    </div>
+                    <div class="info-item full-width">
+                        <span class="info-label">Documents</span>
+                        <span class="info-value" style="display:flex; gap:14px; flex-wrap:wrap;">
+                            {% if student.acte_naissance %}
+                            <a href="{{ student.acte_naissance.url }}" target="_blank" style="color:#355394; font-weight:600; font-size:13px;">Acte de naissance</a>
+                            {% endif %}
+                            {% if student.photo_identite %}
+                            <a href="{{ student.photo_identite.url }}" target="_blank" style="color:#355394; font-weight:600; font-size:13px;">Photo d'identité</a>
+                            {% endif %}
+                            {% if not student.acte_naissance and not student.photo_identite %}
+                            <span style="color:#94a3b8; font-size:13px;">Aucun document</span>
+                            {% endif %}
+                        </span>
                     </div>
                 </div>
             </div>
@@ -716,19 +735,19 @@
 
         <!-- Actions -->
         <div class="detail-actions">
-            <a href="{% url 'update' student.id %}" class="action-btn-custom primary">
+            <a href="{% url 'students:update' student.identification_number %}" class="action-btn-custom primary">
                 <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                 </svg>
                 Modifier le profil
             </a>
-            <a href="{% url 'contact_parents' student.id %}" class="action-btn-custom">
+            <a href="{% url 'notifications:composer' %}?parent={{ student.parent.pk }}" class="action-btn-custom">
                 <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
                 </svg>
                 Contacter parents
             </a>
-            <a href="{% url 'delete_student' student.id %}" class="action-btn-custom danger">
+            <a href="{% url 'students:delete' student.identification_number %}" class="action-btn-custom danger">
                 <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <polyline points="3 6 5 6 21 6"/>
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/>

@@ -149,18 +149,18 @@
     }
 
     .stat-icon.green {
-        background: #d1fae5;
-        color: #059669;
+        background: #7fc7f4;
+        color: #054496;
     }
 
     .stat-icon.purple {
-        background: #ede9fe;
-        color: #7c3aed;
+        background: #e9e9fe;
+        color: #3826ae;
     }
 
     .stat-icon.orange {
-        background: #fed7aa;
-        color: #ea580c;
+        background: #b8c3e8;
+        color: #26146d;
     }
 
     .stat-icon svg {
@@ -209,7 +209,7 @@
     .class-info-icon {
         width: 48px;
         height: 48px;
-        background: linear-gradient(135deg, #355394, #4a6091);
+        background: linear-gradient(135deg, #0d2862, #4a6091);
         border-radius: 12px;
         display: flex;
         align-items: center;
@@ -889,9 +889,7 @@
           <td>{{ eleve.date_of_birth|date:"d/m/Y" }}</td>
           <td>
             {% if eleve.date_of_birth %}
-              {% with age=eleve.age %}
-                {{ age }} ans
-              {% endwith %}
+              {{ eleve.age_display }}
             {% else %}
               —
             {% endif %}

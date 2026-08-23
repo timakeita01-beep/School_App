@@ -7,6 +7,7 @@ from django.db import models
 from eleves.models import Student
 from classes.models import Classe
 from matieres.models import Matiere
+from .models import EcoleConfig
 
 @login_required
 def admin_dashboard(request):
@@ -87,7 +88,48 @@ def teacher_dashboard(request):
     if request.user.is_staff:
         return redirect("accounts:admin_dashboard")
 
-    return render(request, "accounts/teacher_dashboard.html")
+    from bulletins.models import Note
+    from bulletins.utils import mois_courant, mois_label, ANNEE_SCOLAIRE_DEFAUT
+
+    classes = Classe.objects.filter(enseignant=request.user).order_by("-niveau", "nom")
+
+    mois = mois_courant()
+    annee_scolaire = ANNEE_SCOLAIRE_DEFAUT
+
+    classes_info = []
+
+    for classe in classes:
+        total_eleves = classe.students.count()
+        matieres = classe.matieres.all()
+        total_matieres = matieres.count()
+
+        matieres_completes = 0
+        for matiere in matieres:
+            notes_count = Note.objects.filter(
+                matiere=matiere,
+                mois=mois,
+                annee_scolaire=annee_scolaire,
+                student__classroom=classe,
+            ).count()
+            if total_eleves and notes_count == total_eleves:
+                matieres_completes += 1
+
+        classes_info.append({
+            "classe": classe,
+            "total_eleves": total_eleves,
+            "total_matieres": total_matieres,
+            "matieres_completes": matieres_completes,
+            "matieres_restantes": total_matieres - matieres_completes,
+        })
+
+    context = {
+        "classes_info": classes_info,
+        "mois": mois,
+        "mois_label": mois_label(mois),
+        "annee_scolaire": annee_scolaire,
+    }
+
+    return render(request, "accounts/teacher_dashboard.html", context)
 
 
 def teacher_list(request):
@@ -280,6 +322,27 @@ def teacher_delete(request, pk):
     )
 
     return redirect("accounts:teacher_list")
+
+
+@login_required
+def parametres(request):
+    if not request.user.is_staff:
+        messages.error(request, "Seul l'administrateur peut modifier ces paramètres.")
+        return redirect("accounts:dashboard")
+
+    ecole = EcoleConfig.get_solo()
+
+    if request.method == "POST":
+        ecole.nom = request.POST.get("nom", "").strip()
+        ecole.adresse = request.POST.get("adresse", "").strip()
+        ecole.contact = request.POST.get("contact", "").strip()
+        ecole.nom_directeur = request.POST.get("nom_directeur", "").strip()
+        ecole.save()
+
+        messages.success(request, "Les paramètres de l'établissement ont été enregistrés.")
+        return redirect("accounts:parametres")
+
+    return render(request, "accounts/parametres.html", {"ecole": ecole})
 
 
 def teacher_profile(request, pk):

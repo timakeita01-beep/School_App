@@ -53,12 +53,12 @@
     }
 
     .btn-primary {
-        background: #033fc0;
+        background: #213561;
         color: white;
     }
 
     .btn-primary:hover {
-        background: #033fc0;
+        background: #374970;
         transform: translateY(-1px);
         box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
     }
@@ -102,11 +102,11 @@
     .class-card:hover {
         transform: translateY(-4px);
         box-shadow: 0 12px 40px rgba(0, 0, 0, 0.06);
-        border-color: #2563eb;
+        border-color: #173a86;
     }
 
     .card-header {
-        background: linear-gradient(135deg, #355394, #4a6091);
+        background: linear-gradient(135deg, #1b2e56, #2c4780);
         padding: 16px 20px;
         color: rgb(247, 245, 245);
         position: relative;
@@ -540,7 +540,7 @@
           </span>
           <div class="info-content">
             <span class="info-label">Effectif</span>
-            <span class="info-value">— élèves</span>
+            <span class="info-value">{{ classe.students.count }} élève{{ classe.students.count|pluralize }}</span>
           </div>
         </div>
 

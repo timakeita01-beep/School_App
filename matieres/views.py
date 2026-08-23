@@ -13,12 +13,6 @@ def matiere_list(request):
  
  
 
-def matiere_detail(request, pk):
-    matiere = get_object_or_404(Matiere, pk=pk)
-    return render(request, "matiere_detail.html", {"matiere": matiere})
- 
- 
-
 def matiere_create(request):
     if request.method == "POST":
         form = MatiereForm(request.POST)

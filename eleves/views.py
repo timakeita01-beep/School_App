@@ -19,6 +19,7 @@ def student_update(request, identification_number):
     if request.method == 'POST':
         student.first_name = request.POST['first_name']
         student.last_name = request.POST['last_name']
+        student.sexe = request.POST.get('sexe') or None
         student.date_of_birth = request.POST['date_of_birth']
         student.lieu_de_naissance = request.POST['lieu_de_naissance']
         parent_id = request.POST['parent']
@@ -28,8 +29,16 @@ def student_update(request, identification_number):
         student.parent = Parent.objects.get(id=parent_id)
         student.classroom = Classe.objects.get(id=classroom_id)
 
+        if request.FILES.get('photo'):
+            student.photo = request.FILES['photo']
+        if request.FILES.get('photo_identite'):
+            student.photo_identite = request.FILES['photo_identite']
+        if request.FILES.get('acte_naissance'):
+            student.acte_naissance = request.FILES['acte_naissance']
+
         student.save()
-        return redirect('student_list')
+        messages.success(request, "Les informations de l'élève ont été mises à jour.")
+        return redirect('students:detail', identification_number=student.identification_number)
     else:
         parents = Parent.objects.all()
         classrooms = Classe.objects.all()
@@ -38,7 +47,8 @@ def student_update(request, identification_number):
 def student_delete(request, identification_number):
     student = Student.objects.get(identification_number=identification_number)
     student.delete()
-    return redirect('student_list')
+    messages.success(request, "L'élève a été supprimé.")
+    return redirect('students:list')
 
 def parent_list(request):  
     parent_list = Parent.objects.all()
@@ -65,35 +75,6 @@ def parent_delete(request, parent_id):
     parent.delete()
     return redirect('parent_list')
 
-def student_create(request):
-    if request.method == 'POST':
-        first_name = request.POST['first_name']
-        last_name = request.POST['last_name']
-        date_of_birth = request.POST['date_of_birth']
-        lieu_de_naissance = request.POST['lieu_de_naissance']
-        parent_id = request.POST['parent']
-        classroom_id = request.POST['classroom']
-        inscription_date = request.POST['inscription_date']
-
-        parent = Parent.objects.get(id=parent_id)
-        classroom = Classe.objects.get(id=classroom_id)
-
-        student = Student(
-            first_name=first_name,
-            last_name=last_name,
-            date_of_birth=date_of_birth,
-            lieu_de_naissance=lieu_de_naissance,
-            parent=parent,
-            classroom=classroom,
-            inscription_date=inscription_date
-        )
-        student.save()
-        return redirect('student_list')
-    else:
-        parents = Parent.objects.all()
-        classrooms = Classe.objects.all()
-        return render(request, 'student_create.html', {'parents': parents, 'classrooms': classrooms})
-
 def parent_create(request):
     if request.method == 'POST':
         first_name = request.POST['first_name']
@@ -119,6 +100,25 @@ def parent_create(request):
 def student_create(request):
 
     if request.method == "POST":
+        errors = {}
+
+        if not request.FILES.get("acte_naissance"):
+            errors["acte_naissance"] = "L'acte de naissance est obligatoire."
+
+        if not request.FILES.get("photo_identite"):
+            errors["photo_identite"] = "La photo d'identité est obligatoire."
+
+        if errors:
+            for message in errors.values():
+                messages.error(request, message)
+
+            classrooms = Classe.objects.all()
+            return render(
+                request,
+                "student_create.html",
+                {"classrooms": classrooms},
+            )
+
         # Informations du parent
         parent = Parent.objects.create(
             first_name=request.POST.get("parent_first_name"),
@@ -136,12 +136,16 @@ def student_create(request):
         Student.objects.create(
             first_name=request.POST.get("student_first_name"),
             last_name=request.POST.get("student_last_name"),
+            sexe=request.POST.get("sexe") or None,
             date_of_birth=request.POST.get("date_of_birth"),
             lieu_de_naissance=request.POST.get("lieu_de_naissance"),
             classroom=classroom,
             inscription_date=request.POST.get("inscription_date"),
             parent=parent,
-        ) 
+            acte_naissance=request.FILES.get("acte_naissance"),
+            photo_identite=request.FILES.get("photo_identite"),
+            photo=request.FILES.get("photo"),
+        )
 
         messages.success(request, "L'élève a été inscrit avec succès.")
 

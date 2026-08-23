@@ -121,7 +121,17 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+
+MEDIA_URL = 'media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
 LOGIN_URL = "accounts:login"
 LOGIN_REDIRECT_URL = "accounts:admin_dashboard"
 LOGOUT_URL = "accounts:logout"
 LOGOUT_REDIRECT_URL = "accounts:login"
+
+# E-mail : backend console pour le développement (les messages s'affichent
+# dans le terminal au lieu d'être réellement envoyés). À remplacer par un
+# vrai backend SMTP en production.
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+DEFAULT_FROM_EMAIL = "no-reply@schoolapp.local"

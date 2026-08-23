@@ -3,6 +3,7 @@ from django.contrib import messages
 from .models import Classe
 from django.contrib.auth.models import User
 
+
 # Affichage de la liste des classes
 
 def voir(request):
@@ -14,9 +15,19 @@ def classe_detail(request, pk):
     classe = get_object_or_404(Classe, pk=pk)
     # Tous les élèves de cette classe
     eleves = classe.students.all()
+    matieres = classe.matieres.all()
+
+    enseignant = None
+    if classe.enseignant:
+        enseignant = classe.enseignant.get_full_name() or classe.enseignant.username
+
     context = {
         "classe": classe,
         "eleves": eleves,
+        "matieres": matieres,
+        "enseignant": enseignant,
+        "eleves_filles": eleves.filter(sexe="F").count(),
+        "eleves_garcons": eleves.filter(sexe="M").count(),
     }
     return render(request, "classe_detail.html", context)
 

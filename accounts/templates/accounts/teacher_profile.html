@@ -621,7 +621,9 @@
                     </svg>
                     Modifier
                 </a>
-                <button class="btn btn-danger" onclick="confirmDelete('{{ teacher.pk }}', '{{ teacher.get_full_name|default:teacher.username }}')">
+                <button class="btn btn-danger"
+                        data-delete-url="{% url 'accounts:teacher_delete' teacher.pk %}"
+                        onclick="confirmDelete(this.dataset.deleteUrl, '{{ teacher.get_full_name|default:teacher.username|escapejs }}')">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <polyline points="3 6 5 6 21 6"/>
                         <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
@@ -815,13 +817,13 @@
 {% block extra_js %}
 <script>
     /* ---- Delete modal ---- */
-    function confirmDelete(pk, nom) {
+    function confirmDelete(url, nom) {
         const modal = document.getElementById('deleteModal');
         const deleteName = document.getElementById('deleteTeacherName');
         const deleteForm = document.getElementById('deleteForm');
 
         deleteName.textContent = nom;
-        deleteForm.action = '/accounts/teacher/' + pk + '/delete/';
+        deleteForm.action = url;
         modal.classList.add('active');
         document.getElementById('btnAnnuler').focus();
     }

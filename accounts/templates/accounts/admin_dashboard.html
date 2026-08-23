@@ -509,14 +509,14 @@
     <div class="qa-link">Gérer les élèves →</div>
   </a>
 
-  <a href="#" class="quick-action">
+  <a href="{% url 'notifications:composer' %}" class="quick-action">
     <div class="qa-icon"><i class="fas fa-bell"></i></div>
     <div class="qa-title">Notifications</div>
     <div class="qa-desc">Notifier les parents ou tuteur d'élève par rapport aux Bulletins - Statistiques - Retard - Paiements...</div>
     <div class="qa-link">Envoyer une notification →</div>
   </a>
 
-  <a href="#" class="quick-action">
+  <a href="{% url 'bulletin:liste' %}" class="quick-action">
     <div class="qa-icon"><i class="fas fa-file-pdf"></i></div>
     <div class="qa-title">Bulletin</div>
     <div class="qa-desc">Télécharger les bulletins des élèves sous format PDF, ou concevez les bulletins des élèves pour le trimestre.</div>
@@ -557,7 +557,7 @@
             </div>
             <div>
               <div class="student-name">{{ eleve.first_name }} {{ eleve.last_name }}</div>
-              <div class="student-class">{{ eleve.classe.nom|default:"Non affecté" }}</div>
+              <div class="student-class">{{ eleve.classroom.nom|default:"Non affecté" }}</div>
             </div>
           </div>
           <div class="student-date">

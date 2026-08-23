@@ -39,7 +39,7 @@
         </div>
 
         <!-- Formulaire -->
-        <form method="POST" action="{% url 'students:update' student.identification_number %}" class="update-form">
+        <form method="POST" action="{% url 'students:update' student.identification_number %}" class="update-form" enctype="multipart/form-data">
             {% csrf_token %}
             
             <!-- Grille des cartes -->
@@ -87,6 +87,27 @@
                             </div>
                             
                             <div class="form-group">
+                                <label class="form-label">Sexe <span class="required">*</span></label>
+                                <div class="input-wrapper select-wrapper">
+                                    <span class="input-icon">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                                        </svg>
+                                    </span>
+                                    <select name="sexe" id="sexe" required class="form-input form-select">
+                                        <option value="">Sélectionner</option>
+                                        <option value="M" {% if student.sexe == "M" %}selected{% endif %}>M (Garçon)</option>
+                                        <option value="F" {% if student.sexe == "F" %}selected{% endif %}>F (Fille)</option>
+                                    </select>
+                                    <span class="select-arrow">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M19 9l-7 7-7-7"/>
+                                        </svg>
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
                                 <label class="form-label">Date de naissance <span class="required">*</span></label>
                                 <div class="input-wrapper">
                                     <span class="input-icon">
@@ -99,7 +120,7 @@
                                            class="form-input datepicker" placeholder="JJ/MM/AAAA">
                                 </div>
                             </div>
-                            
+
                             <div class="form-group">
                                 <label class="form-label">Lieu de naissance <span class="required">*</span></label>
                                 <div class="input-wrapper">
@@ -234,8 +255,61 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Carte 3 : Documents -->
+                <div class="update-card full-width-card">
+                    <div class="card-header">
+                        <div class="card-header-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                <polyline points="14 2 14 8 20 8"/>
+                            </svg>
+                        </div>
+                        <h2 class="card-title">Documents</h2>
+                    </div>
+
+                    <div class="card-body">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label">
+                                    Acte de naissance
+                                    {% if student.acte_naissance %}
+                                    <a href="{{ student.acte_naissance.url }}" target="_blank" style="font-weight:400; color:#2563eb; margin-left:6px;">(voir le fichier actuel)</a>
+                                    {% endif %}
+                                </label>
+                                <input type="file" name="acte_naissance" id="acte_naissance"
+                                       accept=".pdf,.jpg,.jpeg,.png" class="form-input file-input">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">
+                                    Photo d'identité
+                                    {% if student.photo_identite %}
+                                    <a href="{{ student.photo_identite.url }}" target="_blank" style="font-weight:400; color:#2563eb; margin-left:6px;">(voir le fichier actuel)</a>
+                                    {% endif %}
+                                </label>
+                                <input type="file" name="photo_identite" id="photo_identite"
+                                       accept=".jpg,.jpeg,.png" class="form-input file-input">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">
+                                    Photo de l'élève <span style="color:#94a3b8;">(facultatif)</span>
+                                    {% if student.photo %}
+                                    <a href="{{ student.photo.url }}" target="_blank" style="font-weight:400; color:#2563eb; margin-left:6px;">(voir le fichier actuel)</a>
+                                    {% endif %}
+                                </label>
+                                <input type="file" name="photo" id="photo"
+                                       accept=".jpg,.jpeg,.png" class="form-input file-input">
+                            </div>
+                        </div>
+                        <p style="font-size:12px; color:#94a3b8; margin-top:8px;">
+                            Laisser un champ vide pour conserver le fichier déjà enregistré.
+                        </p>
+                    </div>
+                </div>
             </div>
-            
+
             <!-- Actions du formulaire -->
             <div class="form-actions">
                 <button type="submit" class="btn btn-primary">
@@ -313,12 +387,12 @@ document.addEventListener('DOMContentLoaded', function() {
 .update-header-icon {
     width: 44px;
     height: 44px;
-    background: #dbeafe;
+    background: #1a3e6e;
     border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #2563eb;
+    color: #c8d8fc;
 }
 
 .update-header-icon svg {
@@ -371,12 +445,12 @@ document.addEventListener('DOMContentLoaded', function() {
 }
 
 .btn-primary {
-    background: #2563eb;
-    color: white;
+    background: #1a3e6e;
+    color: #ffffff;
 }
 
 .btn-primary:hover {
-    background: #1d4ed8;
+    background: #051f68;
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
 }
@@ -423,12 +497,12 @@ document.addEventListener('DOMContentLoaded', function() {
 .card-header-icon {
     width: 32px;
     height: 32px;
-    background: #dbeafe;
+    background: #1a3e6e;
     border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #2563eb;
+    color: #c8d8fc;
 }
 
 .card-header-icon svg {
@@ -461,6 +535,27 @@ document.addEventListener('DOMContentLoaded', function() {
 
 .form-group.full-width {
     grid-column: 1 / -1;
+}
+
+.full-width-card {
+    grid-column: 1 / -1;
+}
+
+.file-input {
+    padding: 8px 12px;
+    cursor: pointer;
+}
+
+.file-input::file-selector-button {
+    padding: 6px 12px;
+    margin-right: 10px;
+    border: none;
+    border-radius: 8px;
+    background: #1a3e6e;
+    color: white;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
 }
 
 .form-label {
