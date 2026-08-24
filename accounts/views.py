@@ -7,19 +7,21 @@ from django.db import models
 from eleves.models import Student
 from classes.models import Classe
 from matieres.models import Matiere
+from presences.models import Presence
 from .models import EcoleConfig
 
 @login_required
 def admin_dashboard(request):
     if not request.user.is_staff:
         return redirect("accounts:dashboard")
-    
+
     # Statistiques
     total_eleves = Student.objects.count()
     total_enseignants = User.objects.filter(groups__name='Teacher').count()
     total_classes = Classe.objects.count()
     total_matieres = Matiere.objects.count()
-    
+    absences_non_notifiees = Presence.objects.filter(present=False, parent_notifie=False).count()
+
     # Derniers élèves inscrits
     derniers_eleves = Student.objects.all().order_by('-inscription_date')[:5]
     
@@ -38,6 +40,7 @@ def admin_dashboard(request):
         'total_enseignants': total_enseignants,
         'total_classes': total_classes,
         'total_matieres': total_matieres,
+        'absences_non_notifiees': absences_non_notifiees,
         'derniers_eleves': derniers_eleves,
         'repartition_classes': repartition_classes,
         'max_eleves': max_eleves,
@@ -88,13 +91,17 @@ def teacher_dashboard(request):
     if request.user.is_staff:
         return redirect("accounts:admin_dashboard")
 
+    from datetime import date
+
     from bulletins.models import Note
     from bulletins.utils import mois_courant, mois_label, ANNEE_SCOLAIRE_DEFAUT
+    from presences.models import Presence
 
     classes = Classe.objects.filter(enseignant=request.user).order_by("-niveau", "nom")
 
     mois = mois_courant()
     annee_scolaire = ANNEE_SCOLAIRE_DEFAUT
+    aujourdhui = date.today()
 
     classes_info = []
 
@@ -114,12 +121,17 @@ def teacher_dashboard(request):
             if total_eleves and notes_count == total_eleves:
                 matieres_completes += 1
 
+        appel_fait_aujourdhui = Presence.objects.filter(
+            classe=classe, date=aujourdhui
+        ).exists()
+
         classes_info.append({
             "classe": classe,
             "total_eleves": total_eleves,
             "total_matieres": total_matieres,
             "matieres_completes": matieres_completes,
             "matieres_restantes": total_matieres - matieres_completes,
+            "appel_fait_aujourdhui": appel_fait_aujourdhui,
         })
 
     context = {

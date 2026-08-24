@@ -28,6 +28,7 @@ urlpatterns = [
     path('',include('eleves.urls')),
     path('bulletins/', include('bulletins.urls')),
     path('notifications/', include('notifications.urls')),
+    path('presences/', include('presences.urls')),
 ]
 
 if settings.DEBUG:

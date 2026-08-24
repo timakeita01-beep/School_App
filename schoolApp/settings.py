@@ -41,8 +41,9 @@ INSTALLED_APPS = [
     'bulletins',
     'classes',
     'eleves',
-    'matieres', 
+    'matieres',
     'notifications',
+    'presences',
 ]
 
 MIDDLEWARE = [

@@ -1,0 +1,254 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Feuille de présence{% endblock %}
+{% block meta_desc %}Appel — {{ classe.nom }}{% endblock %}
+{% block page_title %}Appel — {{ classe.nom }}{% endblock %}
+{% block search_placeholder %}Rechercher un élève...{% endblock %}
+{% block nav_presences %}active{% endblock %}
+{% block nav_bulletins_prof %}active{% endblock %}
+
+{% block extra_css %}
+<style>
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .page-header-text h2 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0;
+  }
+
+  .page-header-text p {
+    font-size: 14px;
+    color: #64748b;
+    margin: 4px 0 0;
+  }
+
+  .period-form {
+    display: flex;
+    gap: 8px;
+  }
+
+  .period-form input[type="date"] {
+    padding: 8px 12px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    background: white;
+    color: #0f172a;
+  }
+
+  .banner {
+    padding: 12px 18px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 1.25rem;
+    background: #dbeafe;
+    color: #12254e;
+    border: 1px solid #bfdbfe;
+  }
+
+  .presence-table-wrap {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    overflow: hidden;
+  }
+
+  table.presence-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .presence-table th {
+    text-align: left;
+    font-size: 12px;
+    text-transform: uppercase;
+    color: #94a3b8;
+    padding: 14px 20px;
+    border-bottom: 1px solid #f1f5f9;
+    background: #f8fafc;
+  }
+
+  .presence-table td {
+    padding: 12px 20px;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 14px;
+    color: #0f172a;
+  }
+
+  .presence-table tr:last-child td {
+    border-bottom: none;
+  }
+
+  .etat-choice {
+    display: inline-flex;
+    gap: 12px;
+  }
+
+  .etat-choice label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    border: 1.5px solid #e2e8f0;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .etat-choice input[type="radio"] {
+    accent-color: #2563eb;
+  }
+
+  .etat-choice label.present {
+    color: #059669;
+  }
+
+  .etat-choice label.absent {
+    color: #dc2626;
+  }
+
+  .remarque-input {
+    width: 100%;
+    min-width: 200px;
+    padding: 8px 10px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 8px;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+  }
+
+  .remarque-input:focus {
+    border-color: #2563eb;
+    outline: none;
+  }
+
+  .table-footer {
+    padding: 16px 20px;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 22px;
+    font-size: 14px;
+    font-weight: 600;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    text-decoration: none;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .btn-primary {
+    background: #213561;
+    color: white;
+  }
+
+  .btn-primary:hover {
+    background: #374970;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    background: white;
+    border-radius: 16px;
+    border: 1px solid #e5e7eb;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+  <div class="page-header-text">
+    <h2>{{ classe.nom }}</h2>
+    <p>{{ total_eleves }} élève(s) — {{ jour|date:"l d F Y" }}</p>
+  </div>
+
+  <form class="period-form" method="get">
+    <input type="date" name="date" value="{{ jour|date:'Y-m-d' }}" onchange="this.form.submit()">
+  </form>
+</div>
+
+{% if appel_deja_fait %}
+<div class="banner">
+  L'appel a déjà été fait pour ce jour. Vous pouvez le modifier ci-dessous.
+</div>
+{% endif %}
+
+{% if lignes %}
+<form method="post" action="{% url 'presences:appel_bulk_save' classe.pk %}">
+  {% csrf_token %}
+  <input type="hidden" name="date" value="{{ jour|date:'Y-m-d' }}">
+
+  <div class="presence-table-wrap">
+    <table class="presence-table">
+      <thead>
+        <tr>
+          <th>Élève</th>
+          <th>Présence</th>
+          <th>Remarque <span style="text-transform:none; font-weight:400;">(facultatif)</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for ligne in lignes %}
+        <tr>
+          <td>{{ ligne.eleve.first_name }} {{ ligne.eleve.last_name }}</td>
+          <td>
+            <div class="etat-choice">
+              <label class="present">
+                <input type="radio" name="etat_{{ ligne.eleve.pk }}" value="present" {% if ligne.present %}checked{% endif %}>
+                Présent
+              </label>
+              <label class="absent">
+                <input type="radio" name="etat_{{ ligne.eleve.pk }}" value="absent" {% if not ligne.present %}checked{% endif %}>
+                Absent
+              </label>
+            </div>
+          </td>
+          <td>
+            <input
+              class="remarque-input"
+              type="text"
+              name="remarque_{{ ligne.eleve.pk }}"
+              value="{{ ligne.remarque }}"
+              placeholder="Ex : Absence justifiée..."
+            >
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <div class="table-footer">
+      <button type="submit" class="btn btn-primary">
+        Enregistrer l'appel du {{ jour|date:"d/m/Y" }}
+      </button>
+    </div>
+  </div>
+</form>
+{% else %}
+<div class="empty-state">
+  <h3>Aucun élève dans cette classe</h3>
+  <p>Demandez à l'administrateur d'inscrire des élèves dans « {{ classe.nom }} ».</p>
+</div>
+{% endif %}
+
+{% endblock %}

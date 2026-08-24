@@ -453,6 +453,15 @@
 
 {% block content %}
 
+{% if absences_non_notifiees %}
+<div style="background:#fee2e2; border:1px solid #fecaca; color:#991b1b; padding:14px 20px; border-radius:12px; margin-bottom:1.5rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+  <span><i class="fas fa-triangle-exclamation" style="margin-right:8px;"></i>
+    {{ absences_non_notifiees }} absence{{ absences_non_notifiees|pluralize }} non notifiée{{ absences_non_notifiees|pluralize }} aux parents.
+  </span>
+  <a href="{% url 'presences:alertes_absences' %}" style="color:#991b1b; font-weight:700; text-decoration:underline;">Voir les alertes →</a>
+</div>
+{% endif %}
+
 <!-- ============================================
      STATISTIQUES
      ============================================ -->
@@ -523,11 +532,11 @@
     <div class="qa-link">Gérer les bulletins →</div>
   </a>
 
-  <a href="{% url 'classes:list' %}" class="quick-action">
-    <div class="qa-icon"><i class="fas fa-plus-circle"></i></div>
-    <div class="qa-title">Classes</div>
-    <div class="qa-desc">Ajouter une classe dans votre école. Nom - Niveau - Emploi du temps ...</div>
-    <div class="qa-link">Gérer les classes →</div>
+  <a href="{% url 'presences:alertes_absences' %}" class="quick-action">
+    <div class="qa-icon"><i class="fas fa-clipboard-check"></i></div>
+    <div class="qa-title">Présences</div>
+    <div class="qa-desc">Voir les élèves marqués absents par leurs enseignants et notifier les parents sur WhatsApp.</div>
+    <div class="qa-link">Voir les alertes d'absences →</div>
   </a>
 </div>
 

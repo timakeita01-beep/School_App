@@ -233,6 +233,9 @@
       <a href="{% url 'bulletin:notes_classe' info.classe.pk mois %}" class="btn btn-primary">
         Noter mes élèves
       </a>
+      <a href="{% url 'presences:appel_classe' info.classe.pk %}" class="btn btn-primary" style="margin-top: 8px; background: {% if info.appel_fait_aujourdhui %}#059669{% else %}#213561{% endif %};">
+        {% if info.appel_fait_aujourdhui %}Modifier l'appel du jour{% else %}Faire l'appel du jour{% endif %}
+      </a>
     </div>
   </article>
   {% endfor %}

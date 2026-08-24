@@ -1,0 +1,231 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Alertes d'absences{% endblock %}
+{% block meta_desc %}Élèves absents à notifier aux parents{% endblock %}
+{% block page_title %}Alertes d'absences{% endblock %}
+{% block search_placeholder %}Rechercher un élève...{% endblock %}
+{% block nav_presences %}active{% endblock %}
+
+{% block extra_css %}
+<style>
+  .page-header {
+    margin-bottom: 1.5rem;
+  }
+
+  .page-header h2 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0;
+  }
+
+  .page-header p {
+    font-size: 14px;
+    color: #64748b;
+    margin: 4px 0 0;
+  }
+
+  .section-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 1.75rem 0 1rem;
+  }
+
+  .alert-table-wrap {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    overflow: hidden;
+  }
+
+  table.alert-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .alert-table th {
+    text-align: left;
+    font-size: 12px;
+    text-transform: uppercase;
+    color: #94a3b8;
+    padding: 14px 20px;
+    border-bottom: 1px solid #f1f5f9;
+    background: #f8fafc;
+  }
+
+  .alert-table td {
+    padding: 12px 20px;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 14px;
+    color: #0f172a;
+    vertical-align: middle;
+  }
+
+  .alert-table tr:last-child td {
+    border-bottom: none;
+  }
+
+  .badge-absent {
+    display: inline-block;
+    background: #fee2e2;
+    color: #991b1b;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 20px;
+  }
+
+  .badge-traite {
+    display: inline-block;
+    background: #d1fae5;
+    color: #065f46;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 20px;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    text-decoration: none;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .btn-whatsapp {
+    background: #25d366;
+    color: white;
+  }
+
+  .btn-whatsapp:hover {
+    background: #1eb559;
+  }
+
+  .btn-secondary {
+    background: #f1f5f9;
+    color: #475569;
+  }
+
+  .btn-secondary:hover {
+    background: #e2e8f0;
+  }
+
+  .btn-group {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    background: white;
+    border-radius: 16px;
+    border: 1px solid #e5e7eb;
+  }
+
+  .empty-state h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #0f172a;
+    margin: 0 0 6px;
+  }
+
+  .empty-state p {
+    color: #64748b;
+    margin: 0;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+  <h2>Alertes d'absences</h2>
+  <p>Élèves marqués absents par leur enseignant, en attente de notification au parent.</p>
+</div>
+
+{% if alertes %}
+<div class="alert-table-wrap">
+  <table class="alert-table">
+    <thead>
+      <tr>
+        <th>Élève</th>
+        <th>Classe</th>
+        <th>Date</th>
+        <th>Remarque</th>
+        <th>Parent</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for alerte in alertes %}
+      <tr>
+        <td>{{ alerte.presence.student.first_name }} {{ alerte.presence.student.last_name }} <span class="badge-absent">Absent</span></td>
+        <td>{{ alerte.presence.classe.nom }}</td>
+        <td>{{ alerte.presence.date|date:"d/m/Y" }}</td>
+        <td>{{ alerte.presence.remarque|default:"—" }}</td>
+        <td>{{ alerte.presence.student.parent.first_name }} {{ alerte.presence.student.parent.last_name }}</td>
+        <td>
+          <div class="btn-group">
+            {% if alerte.whatsapp_url %}
+            <a href="{{ alerte.whatsapp_url }}" target="_blank" rel="noopener" class="btn btn-whatsapp">
+              <i class="fab fa-whatsapp"></i> Notifier
+            </a>
+            {% else %}
+            <span style="font-size:12px; color:#94a3b8;">Aucun numéro</span>
+            {% endif %}
+            <form method="post" action="{% url 'presences:marquer_notifie' alerte.presence.pk %}">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-secondary">Marquer comme traité</button>
+            </form>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="empty-state">
+  <h3>Aucune alerte en attente</h3>
+  <p>Tous les parents des élèves absents ont déjà été notifiés.</p>
+</div>
+{% endif %}
+
+{% if historique %}
+<div class="section-title">Historique récent (déjà traité)</div>
+<div class="alert-table-wrap">
+  <table class="alert-table">
+    <thead>
+      <tr>
+        <th>Élève</th>
+        <th>Classe</th>
+        <th>Date</th>
+        <th>Statut</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for presence in historique %}
+      <tr>
+        <td>{{ presence.student.first_name }} {{ presence.student.last_name }}</td>
+        <td>{{ presence.classe.nom }}</td>
+        <td>{{ presence.date|date:"d/m/Y" }}</td>
+        <td><span class="badge-traite">Parent notifié</span></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+
+{% endblock %}
