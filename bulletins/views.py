@@ -10,9 +10,10 @@ from django.urls import reverse
 
 from accounts.models import EcoleConfig
 from classes.models import Classe
+from eleves.models import Parent
 
 from .models import Note, Bulletin
-from .utils import MOIS_SCOLAIRE, ANNEE_SCOLAIRE_DEFAUT, mois_courant, mois_label
+from .utils import MOIS_SCOLAIRE, ANNEE_SCOLAIRE_DEFAUT, mois_courant, mois_label, lien_whatsapp
 
 
 # ============================================================
@@ -341,7 +342,27 @@ def bulletin_list(request):
 
             for eleve in eleves:
                 bulletin = bulletins_par_eleve.get(eleve.pk)
-                eleves_rows.append({"eleve": eleve, "bulletin": bulletin})
+                whatsapp_url = None
+
+                if bulletin and eleve.parent:
+                    lien = request.build_absolute_uri(
+                        reverse(
+                            "bulletin:bulletin_public",
+                            args=[eleve.parent.portal_token, bulletin.pk],
+                        )
+                    )
+                    message = (
+                        f"Bonjour, le bulletin de {eleve.first_name} {eleve.last_name} "
+                        f"({mois_label(mois)} {annee_scolaire}) est disponible. "
+                        f"Vous pouvez le télécharger ici : {lien}"
+                    )
+                    whatsapp_url = lien_whatsapp(eleve.parent.phone_number, message)
+
+                eleves_rows.append({
+                    "eleve": eleve,
+                    "bulletin": bulletin,
+                    "whatsapp_url": whatsapp_url,
+                })
                 if bulletin:
                     eleves_complets += 1
         else:
@@ -475,7 +496,7 @@ def notifier_parents(request, classe_id):
             continue
 
         lien = request.build_absolute_uri(
-            reverse("bulletin:detail", args=[bulletin.pk])
+            reverse("bulletin:bulletin_public", args=[parent.portal_token, bulletin.pk])
         )
 
         send_mail(
@@ -505,15 +526,9 @@ def notifier_parents(request, classe_id):
     return redirect(redirect_url)
 
 
-@login_required
-def bulletin_detail(request, pk):
-    bulletin = get_object_or_404(
-        Bulletin.objects.select_related("student", "classe"), pk=pk
-    )
-
-    if est_enseignant(request.user) and bulletin.classe.enseignant != request.user:
-        messages.error(request, "Vous n'avez pas accès à ce bulletin.")
-        return redirect("accounts:dashboard")
+def _contexte_bulletin(bulletin):
+    """Construit le contexte d'affichage d'un bulletin (utilisé par la vue
+    admin/enseignant connectée et par le portail parent public)."""
 
     matieres = bulletin.classe.matieres.all()
 
@@ -557,7 +572,7 @@ def bulletin_detail(request, pk):
             "moyenne_classe": moyenne_classe_sur_10,
         })
 
-    context = {
+    return {
         "bulletin": bulletin,
         "eleve": bulletin.student,
         "classe": bulletin.classe,
@@ -567,4 +582,71 @@ def bulletin_detail(request, pk):
         "ecole": EcoleConfig.get_solo(),
     }
 
-    return render(request, "bulletin/bulletin_detail.html", context)
+
+@login_required
+def bulletin_detail(request, pk):
+    bulletin = get_object_or_404(
+        Bulletin.objects.select_related("student", "classe"), pk=pk
+    )
+
+    if est_enseignant(request.user) and bulletin.classe.enseignant != request.user:
+        messages.error(request, "Vous n'avez pas accès à ce bulletin.")
+        return redirect("accounts:dashboard")
+
+    return render(request, "bulletin/bulletin_detail.html", _contexte_bulletin(bulletin))
+
+
+# ============================================================
+# 3. PORTAIL PARENT (accès public, sans connexion, via jeton)
+# ============================================================
+
+def portail_parent(request, token):
+    """Page publique (aucune connexion requise) : un parent accède, via son
+    lien personnel (WhatsApp/e-mail), à la liste des bulletins validés de
+    tous ses enfants."""
+
+    parent = get_object_or_404(Parent, portal_token=token)
+
+    enfants = parent.students.select_related("classroom").order_by("first_name")
+
+    fiches = []
+
+    for enfant in enfants:
+        bulletins = Bulletin.objects.filter(
+            student=enfant, valide=True
+        ).order_by("-annee_scolaire", "-mois")
+
+        fiches.append({
+            "eleve": enfant,
+            "bulletins": [
+                {"bulletin": b, "mois_label": mois_label(b.mois)} for b in bulletins
+            ],
+        })
+
+    context = {
+        "parent": parent,
+        "fiches": fiches,
+        "ecole": EcoleConfig.get_solo(),
+    }
+
+    return render(request, "bulletin/portail_parent.html", context)
+
+
+def bulletin_public(request, token, pk):
+    """Version imprimable d'un bulletin, accessible sans connexion au parent
+    concerné (le jeton doit correspondre au parent de l'élève du bulletin)."""
+
+    bulletin = get_object_or_404(
+        Bulletin.objects.select_related("student", "classe"), pk=pk, valide=True
+    )
+
+    parent = get_object_or_404(Parent, portal_token=token)
+
+    if bulletin.student.parent_id != parent.pk:
+        messages.error(request, "Ce lien ne donne pas accès à ce bulletin.")
+        return redirect("bulletin:portail_parent", token=token)
+
+    context = _contexte_bulletin(bulletin)
+    context["token"] = token
+
+    return render(request, "bulletin/bulletin_public.html", context)

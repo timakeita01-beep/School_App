@@ -63,6 +63,31 @@
   }
 
   .btn:hover { background: #374970; }
+
+  .signature-preview {
+    display: block;
+    max-width: 200px;
+    max-height: 100px;
+    margin-bottom: 10px;
+    background:
+      linear-gradient(45deg, #f1f5f9 25%, transparent 25%),
+      linear-gradient(-45deg, #f1f5f9 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, #f1f5f9 75%),
+      linear-gradient(-45deg, transparent 75%, #f1f5f9 75%);
+    background-size: 16px 16px;
+    background-position: 0 0, 0 8px, 8px -8px, -8px 0;
+    border-radius: 8px;
+    padding: 8px;
+  }
+
+  .file-input {
+    padding: 8px 12px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    width: 100%;
+  }
 </style>
 {% endblock %}
 
@@ -73,7 +98,7 @@
     Ces informations apparaissent dans l'en-tête et la signature des bulletins scolaires.
   </p>
 
-  <form method="post">
+  <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
 
     <div class="form-group">
@@ -94,6 +119,18 @@
     <div class="form-group">
       <label class="form-label">Nom du directeur (pour la signature du bulletin)</label>
       <input type="text" name="nom_directeur" class="form-input" value="{{ ecole.nom_directeur }}">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Signature du directeur</label>
+      {% if ecole.signature_directeur %}
+        <img class="signature-preview" src="{{ ecole.signature_directeur.url }}" alt="Signature actuelle">
+      {% endif %}
+      <input type="file" name="signature_directeur" accept=".png,.jpg,.jpeg" class="file-input">
+      <p class="hint" style="margin:6px 0 0;">
+        Image de la signature (idéalement PNG, fond transparent). Elle apparaîtra automatiquement
+        au-dessus du nom du directeur sur tous les bulletins. Laisser vide pour conserver l'image actuelle.
+      </p>
     </div>
 
     <button type="submit" class="btn">Enregistrer</button>

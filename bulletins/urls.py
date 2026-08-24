@@ -51,4 +51,17 @@ urlpatterns = [
         views.bulletin_detail,
         name="detail"
     ),
+
+    # Portail parent (public, sans connexion, via jeton personnel)
+    path(
+        "parent/<uuid:token>/",
+        views.portail_parent,
+        name="portail_parent"
+    ),
+
+    path(
+        "parent/<uuid:token>/bulletin/<int:pk>/",
+        views.bulletin_public,
+        name="bulletin_public"
+    ),
 ]

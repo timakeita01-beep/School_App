@@ -337,6 +337,10 @@ def parametres(request):
         ecole.adresse = request.POST.get("adresse", "").strip()
         ecole.contact = request.POST.get("contact", "").strip()
         ecole.nom_directeur = request.POST.get("nom_directeur", "").strip()
+
+        if request.FILES.get("signature_directeur"):
+            ecole.signature_directeur = request.FILES["signature_directeur"]
+
         ecole.save()
 
         messages.success(request, "Les paramètres de l'établissement ont été enregistrés.")

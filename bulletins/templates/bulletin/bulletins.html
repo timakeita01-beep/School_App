@@ -67,6 +67,8 @@
   .btn-secondary:hover { background: #e2e8f0; }
   .btn-success { background: #059669; color: white; }
   .btn-success:hover { background: #047857; }
+  .btn-whatsapp { background: #25d366; color: white; }
+  .btn-whatsapp:hover { background: #1ebc59; }
   .btn-block { width: 100%; justify-content: center; }
 
   .classes-grid {
@@ -305,7 +307,12 @@
             {% if row.bulletin %}
               <td>{{ row.bulletin.moyenne_generale }}</td>
               <td>{{ row.bulletin.rang }}</td>
-              <td><a href="{% url 'bulletin:detail' row.bulletin.pk %}" class="btn btn-secondary">Voir bulletin</a></td>
+              <td style="display:flex; gap:6px; flex-wrap:wrap;">
+                <a href="{% url 'bulletin:detail' row.bulletin.pk %}" class="btn btn-secondary">Voir</a>
+                {% if row.whatsapp_url %}
+                <a href="{{ row.whatsapp_url }}" target="_blank" rel="noopener" class="btn btn-whatsapp" title="Ouvrir WhatsApp avec le lien du bulletin pré-rempli">WhatsApp</a>
+                {% endif %}
+              </td>
             {% else %}
               <td colspan="3" class="status-ko">Non calculé</td>
             {% endif %}
@@ -314,12 +321,18 @@
         </tbody>
       </table>
 
+      <p class="modal-note" style="margin-bottom:10px;">
+        « WhatsApp » ouvre une conversation avec le tuteur, message pré-rempli avec le lien
+        du bulletin (portail parent, sans connexion requise) — à envoyer d'un clic.
+        « E-mail » simule l'envoi d'un SMS + e-mail avec ce même lien à tous les parents de la classe.
+      </p>
+
       <form method="post" action="{% url 'bulletin:notifier_parents' info.classe.pk %}">
         {% csrf_token %}
         <input type="hidden" name="mois" value="{{ mois }}">
         <input type="hidden" name="annee_scolaire" value="{{ annee_scolaire }}">
         <button type="submit" class="btn btn-success btn-block">
-          Notifier les parents par e-mail
+          Notifier tous les parents par e-mail
         </button>
       </form>
 

@@ -10,6 +10,10 @@ class EcoleConfig(models.Model):
     adresse = models.CharField(max_length=255, blank=True)
     contact = models.CharField(max_length=150, blank=True)
     nom_directeur = models.CharField(max_length=150, blank=True)
+    signature_directeur = models.ImageField(
+        upload_to="ecole/signatures/", blank=True, null=True,
+        help_text="Signature du directeur, affichée automatiquement sur tous les bulletins."
+    )
 
     class Meta:
         verbose_name = "Configuration de l'école"

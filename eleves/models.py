@@ -1,3 +1,5 @@
+import uuid
+
 from django.db import models
 from classes.models import Classe
 
@@ -9,6 +11,10 @@ class Parent(models.Model):
     phone_number = models.CharField(max_length=20, blank=False, null=False)
     address = models.TextField(blank=False, null=False)
     profession = models.CharField(max_length=100, blank=False, null=False)
+
+    # Jeton opaque utilisé pour le portail parent (accès sans compte/connexion
+    # aux bulletins de ses enfants, via un lien WhatsApp/e-mail).
+    portal_token = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"

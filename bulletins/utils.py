@@ -1,4 +1,9 @@
 from datetime import date
+from urllib.parse import quote
+
+# Indicatif pays utilisé par défaut si le numéro du parent n'en contient pas
+# déjà un (Mali).
+INDICATIF_PAYS_DEFAUT = "223"
 
 # Mois de l'année scolaire, dans l'ordre (Septembre -> Juin)
 MOIS_SCOLAIRE = [
@@ -27,3 +32,25 @@ def mois_courant():
 
 def mois_label(mois):
     return MOIS_LABELS.get(int(mois), str(mois))
+
+
+def lien_whatsapp(numero, message):
+    """Construit un lien wa.me (« click to chat ») ouvrant une conversation
+    WhatsApp avec ce numéro et ce message pré-rempli. Ne joint aucun fichier :
+    WhatsApp ne le permet pas via un simple lien, seule son API Business
+    payante le pourrait."""
+
+    if not numero:
+        return None
+
+    chiffres = "".join(c for c in numero if c.isdigit())
+
+    if not chiffres:
+        return None
+
+    # Si le numéro ne semble pas déjà contenir un indicatif pays (numéro
+    # local à 8 chiffres, format malien courant), on l'ajoute.
+    if len(chiffres) <= 8:
+        chiffres = INDICATIF_PAYS_DEFAUT + chiffres
+
+    return f"https://wa.me/{chiffres}?text={quote(message)}"
