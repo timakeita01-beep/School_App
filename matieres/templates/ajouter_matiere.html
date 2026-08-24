@@ -1,0 +1,619 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Ajouter une matière{% endblock %}
+{% block meta_desc %}Créer une nouvelle matière dans l'établissement{% endblock %}
+{% block page_title %}Les matières{% endblock %}
+{% block search_placeholder %}Rechercher une matière...{% endblock %}
+{% block nav_classes %}active{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ============================================
+       STYLES POUR L'AJOUT DE MATIÈRE
+       Couleurs : #355394, #4a6091, nuances de bleu
+       ============================================ */
+
+    /* ===== PAGE HEADER ===== */
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .page-header-text h2 {
+        font-size: 24px;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 0;
+    }
+
+    .page-header-text p {
+        font-size: 14px;
+        color: #64748b;
+        margin: 4px 0 0;
+    }
+
+    /* ===== BUTTONS ===== */
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        font-size: 14px;
+        font-weight: 600;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .btn-primary {
+        background: #355394;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #2a4378;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(53, 83, 148, 0.3);
+    }
+
+    .btn-secondary {
+        background: #f1f5f9;
+        color: #475569;
+    }
+
+    .btn-secondary:hover {
+        background: #e2e8f0;
+    }
+
+    /* ===== FORM PAGE ===== */
+    .form-page {
+        max-width: 680px;
+        margin: 0 auto;
+    }
+
+    .form-card {
+        background: white;
+        border-radius: 16px;
+        border: 1px solid #e5e7eb;
+        overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        transition: box-shadow 0.3s ease;
+    }
+
+    .form-card:hover {
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+    }
+
+    .form-card-header {
+        padding: 24px 28px 20px;
+        border-bottom: 1px solid #f1f5f9;
+        background: linear-gradient(135deg, #334a83, #194187);
+        border-radius: 16px 16px 0 0;
+    }
+
+    .form-card-header h2 {
+        font-size: 20px;
+        font-weight: 700;
+        color: #f4f7fb;
+        margin: 0;
+    }
+
+    .form-card-header p {
+        font-size: 14px;
+        color: #dbe0e7;
+        margin: 4px 0 0;
+    }
+
+    .form-card-body {
+        padding: 28px;
+    }
+
+    /* ===== NON FIELD ERRORS ===== */
+    .form-alert-error {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        color: #991b1b;
+        padding: 12px 16px;
+        border-radius: 10px;
+        font-size: 13px;
+        font-weight: 500;
+        margin-bottom: 20px;
+    }
+
+    /* ===== FORM GROUPS ===== */
+    .form-group {
+        margin-bottom: 24px;
+    }
+
+    .form-group:last-of-type {
+        margin-bottom: 0;
+    }
+
+    .form-label {
+        display: block;
+        font-size: 13px;
+        font-weight: 600;
+        color: #334155;
+        margin-bottom: 6px;
+    }
+
+    .form-label .required {
+        color: #dc2626;
+        margin-left: 2px;
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 11px 16px;
+        font-size: 15px;
+        font-family: 'Inter', sans-serif;
+        color: #0f172a;
+        background: #fafcff;
+        border: 1.5px solid #dde3ed;
+        border-radius: 12px;
+        transition: all 0.2s ease;
+        outline: none;
+    }
+
+    .form-input::placeholder {
+        color: #94a3b8;
+    }
+
+    .form-input:focus {
+        border-color: #355394;
+        background: #ffffff;
+        box-shadow: 0 0 0 4px rgba(53, 83, 148, 0.08);
+    }
+
+    .form-input.is-error {
+        border-color: #dc2626;
+        background: #fef2f2;
+    }
+
+    .form-input.is-error:focus {
+        box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.08);
+    }
+
+    .form-input[type="number"] {
+        -moz-appearance: textfield;
+        appearance: textfield;
+    }
+
+    .form-input[type="number"]::-webkit-outer-spin-button,
+    .form-input[type="number"]::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    /* ===== SELECT MULTIPLE ===== */
+    .form-select-multiple {
+        width: 100%;
+        padding: 10px 12px;
+        font-size: 14px;
+        font-family: 'Inter', sans-serif;
+        color: #0f172a;
+        background: #fafcff;
+        border: 1.5px solid #dde3ed;
+        border-radius: 12px;
+        transition: all 0.2s ease;
+        outline: none;
+        min-height: 100px;
+        cursor: pointer;
+    }
+
+    .form-select-multiple:focus {
+        border-color: #355394;
+        background: #ffffff;
+        box-shadow: 0 0 0 4px rgba(53, 83, 148, 0.08);
+    }
+
+    .form-select-multiple option {
+        padding: 6px 10px;
+    }
+
+    .form-select-multiple option:checked {
+        background: #355394;
+        color: white;
+    }
+
+    .form-hint {
+        font-size: 12px;
+        color: #94a3b8;
+        margin: 6px 0 0;
+    }
+
+    .form-error {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+        font-weight: 500;
+        color: #dc2626;
+        margin: 6px 0 0;
+        animation: slideError 0.3s ease;
+    }
+
+    .form-error svg {
+        flex-shrink: 0;
+    }
+
+    @keyframes slideError {
+        from {
+            opacity: 0;
+            transform: translateY(-6px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* ===== FORM ACTIONS ===== */
+    .form-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+        padding-top: 24px;
+        margin-top: 24px;
+        border-top: 1px solid #f1f5f9;
+    }
+
+    .form-actions .btn {
+        padding: 11px 28px;
+        font-size: 14px;
+    }
+
+    .form-actions .btn-primary {
+        background: #355394;
+    }
+
+    .form-actions .btn-primary:hover {
+        background: #2a4378;
+        box-shadow: 0 4px 14px rgba(53, 83, 148, 0.35);
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+        .page-header {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .page-header .btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .form-card-header {
+            padding: 20px;
+        }
+
+        .form-card-body {
+            padding: 20px;
+        }
+
+        .form-actions {
+            flex-direction: column-reverse;
+        }
+
+        .form-actions .btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .form-card-header {
+            padding: 16px;
+        }
+
+        .form-card-header h2 {
+            font-size: 18px;
+        }
+
+        .form-card-body {
+            padding: 16px;
+        }
+
+        .form-input {
+            font-size: 14px;
+            padding: 10px 14px;
+        }
+
+        .form-actions {
+            padding-top: 16px;
+            margin-top: 16px;
+        }
+
+        .form-select-multiple {
+            font-size: 13px;
+            min-height: 80px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Page header -->
+<div class="page-header">
+  <div class="page-header-text">
+    <h2>Ajouter une matière</h2>
+    <p>Remplissez les informations pour créer une nouvelle matière.</p>
+  </div>
+  <a href="{% url 'matieres:list' %}" class="btn btn-secondary" id="btnRetour">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+         fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="19" y1="12" x2="5" y2="12"/>
+      <polyline points="12 19 5 12 12 5"/>
+    </svg>
+    Retour aux matières
+  </a>
+</div>
+
+<!-- Form card -->
+<div class="form-page">
+  <div class="form-card">
+
+    <!-- Header -->
+    <div class="form-card-header">
+      <h2>Nouvelle matière</h2>
+      <p>Informations de base de la matière</p>
+    </div>
+
+    <!-- Body -->
+    <div class="form-card-body">
+
+      {% if form.non_field_errors %}
+      <div class="form-alert-error" role="alert">
+        {{ form.non_field_errors|join:", " }}
+      </div>
+      {% endif %}
+
+      <form method="post" action="{% url 'matieres:create' %}" id="formAjouterMatiere" novalidate>
+        {% csrf_token %}
+
+        <!-- Nom -->
+        <div class="form-group">
+          <label class="form-label" for="id_nom">
+            Nom de la matière <span class="required">*</span>
+          </label>
+          <input
+            type="text"
+            class="form-input {% if form.nom.errors %}is-error{% endif %}"
+            id="id_nom"
+            name="nom"
+            value="{{ form.nom.value|default:'' }}"
+            placeholder="Ex : Mathématiques, Français, Lecture..."
+            required
+            autocomplete="off"
+          />
+          {% if form.nom.errors %}
+          <p class="form-error" role="alert">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            {{ form.nom.errors|join:", " }}
+          </p>
+          {% endif %}
+        </div>
+
+        <!-- Notée sur (barème) : CHAMP MANQUANT AJOUTÉ -->
+        <div class="form-group">
+          <label class="form-label" for="id_note_sur">
+            Notée sur <span class="required">*</span>
+          </label>
+          <input
+            type="number"
+            class="form-input {% if form.note_sur.errors %}is-error{% endif %}"
+            id="id_note_sur"
+            name="note_sur"
+            value="{{ form.note_sur.value|default:'20' }}"
+            placeholder="Ex : 5, 10, 20..."
+            min="5"
+            step="5"
+            required
+          />
+          <p class="form-hint">Barème de notation de la matière (ex: 5, 10 ou 20).</p>
+          {% if form.note_sur.errors %}
+          <p class="form-error" role="alert">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            {{ form.note_sur.errors|join:", " }}
+          </p>
+          {% endif %}
+        </div>
+
+        <!-- Coefficient -->
+        <div class="form-group">
+          <label class="form-label" for="id_coefficient">
+            Coefficient <span class="required">*</span>
+          </label>
+          <input
+            type="number"
+            class="form-input {% if form.coefficient.errors %}is-error{% endif %}"
+            id="id_coefficient"
+            name="coefficient"
+            value="{{ form.coefficient.value|default:'1' }}"
+            placeholder="Ex : 2, 3, 4..."
+            min="1"
+            step="1"
+            required
+          />
+          <p class="form-hint">Entrez un nombre entier positif (ex: 1, 2, 3...).</p>
+          {% if form.coefficient.errors %}
+          <p class="form-error" role="alert">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            {{ form.coefficient.errors|join:", " }}
+          </p>
+          {% endif %}
+        </div>
+
+        <!-- Description -->
+        <div class="form-group">
+          <label class="form-label" for="id_description">Description</label>
+          <textarea
+            class="form-input"
+            id="id_description"
+            name="description"
+            rows="3"
+            placeholder="Décrivez brièvement la matière..."
+            style="resize:vertical;min-height:80px;"
+          >{{ form.description.value|default:'' }}</textarea>
+          <p class="form-hint">Une description courte de la matière (optionnelle).</p>
+          {% if form.description.errors %}
+          <p class="form-error" role="alert">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            {{ form.description.errors|join:", " }}
+          </p>
+          {% endif %}
+        </div>
+
+        <!-- Classes associées -->
+        <div class="form-group">
+          <label class="form-label" for="id_classes">Classes associées</label>
+          <select
+            class="form-select-multiple"
+            id="id_classes"
+            name="classes"
+            multiple
+          >
+            {% for classe in form.fields.classes.queryset %}
+            <option value="{{ classe.pk }}" {% if form.classes.value and classe.pk in form.classes.value %}selected{% endif %}>
+              {{ classe.nom }} (Niveau {{ classe.niveau }})
+            </option>
+            {% endfor %}
+          </select>
+          <p class="form-hint">Maintenez la touche Ctrl (ou Cmd sur Mac) pour sélectionner plusieurs classes.</p>
+          {% if form.classes.errors %}
+          <p class="form-error" role="alert">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            {{ form.classes.errors|join:", " }}
+          </p>
+          {% endif %}
+        </div>
+
+        <!-- Actions -->
+        <div class="form-actions">
+          <a href="{% url 'matieres:list' %}" class="btn btn-secondary">Annuler</a>
+          <button type="submit" class="btn btn-primary" id="btnSoumettre">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            Créer la matière
+          </button>
+        </div>
+
+      </form>
+    </div><!-- /form-card-body -->
+  </div><!-- /form-card -->
+</div><!-- /form-page -->
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Validation côté client
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('formAjouterMatiere');
+        const nomInput = document.getElementById('id_nom');
+        const coefficientInput = document.getElementById('id_coefficient');
+        const noteSurInput = document.getElementById('id_note_sur');
+
+        // Supprimer les espaces en début/fin du nom
+        if (nomInput) {
+            nomInput.addEventListener('blur', function() {
+                this.value = this.value.trim();
+            });
+        }
+
+        // Validation du coefficient
+        if (coefficientInput) {
+            coefficientInput.addEventListener('input', function() {
+                if (this.value < 1) {
+                    this.value = 1;
+                }
+            });
+        }
+
+        // Validation du barème
+        if (noteSurInput) {
+            noteSurInput.addEventListener('input', function() {
+                if (this.value < 5) {
+                    this.value = 5;
+                }
+            });
+        }
+
+        // Validation avant soumission
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                let hasError = false;
+
+                if (nomInput && !nomInput.value.trim()) {
+                    nomInput.classList.add('is-error');
+                    hasError = true;
+                } else if (nomInput) {
+                    nomInput.classList.remove('is-error');
+                }
+
+                if (coefficientInput && (!coefficientInput.value || coefficientInput.value < 1)) {
+                    coefficientInput.classList.add('is-error');
+                    hasError = true;
+                } else if (coefficientInput) {
+                    coefficientInput.classList.remove('is-error');
+                }
+
+                if (noteSurInput && (!noteSurInput.value || noteSurInput.value < 1)) {
+                    noteSurInput.classList.add('is-error');
+                    hasError = true;
+                } else if (noteSurInput) {
+                    noteSurInput.classList.remove('is-error');
+                }
+
+                if (hasError) {
+                    e.preventDefault();
+                    const firstError = form.querySelector('.is-error');
+                    if (firstError) {
+                        firstError.focus();
+                    }
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

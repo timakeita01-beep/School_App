@@ -1,0 +1,640 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Tableau de bord — SchoolApp{% endblock %}
+{% block meta_desc %}Tableau de bord administrateur du système de gestion scolaire{% endblock %}
+{% block page_title %}Tableau de bord{% endblock %}
+{% block search_placeholder %}Rechercher un élève, une classe...{% endblock %}
+{% block nav_accueil %}active{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* ============================================
+     DASHBOARD CARDS
+     ============================================ */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.25rem;
+    margin-bottom: 2rem;
+  }
+
+  .stat-card {
+    background:linear-gradient(135deg, #152a58 0%, #334b80 100%);
+    border-radius: 16px;
+    padding: 1.25rem 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .stat-card:hover {
+    box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+    transform: translateY(-2px);
+  }
+
+  .stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 20px;
+  }
+
+  .stat-icon.blue {
+    background: #dbeafe;
+    color: #1d4497;
+  }
+
+  .stat-icon.green {
+    background: #d1eafa;
+    color: #055596;
+  }
+
+  .stat-icon.purple {
+    background: #e0e7ff;
+    color: #4f46e5;
+  }
+
+  .stat-icon.orange {
+    background: #c7d5fe;
+    color: #0606d9;
+  }
+
+  .stat-content {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .stat-number {
+    font-size: 28px;
+    font-weight: 800;
+    color: #f4f6f8;
+    line-height: 1.2;
+    letter-spacing: -0.5px;
+  }
+
+  .stat-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: #ffffff;
+  }
+
+  /* ============================================
+     QUICK ACTIONS
+     ============================================ */
+  .quick-actions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .quick-action {
+    background: white;
+    border-radius: 14px;
+    padding: 1.25rem 1.5rem;
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    color: #0f172a;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .quick-action:hover {
+    border-color: #1d4497;
+    box-shadow: 0 4px 20px rgba(29, 68, 151, 0.08);
+    transform: translateY(-2px);
+  }
+
+  .quick-action .qa-icon {
+    font-size: 20px;
+    color: #1d4497;
+    margin-bottom: 4px;
+  }
+
+  .quick-action .qa-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #0f172a;
+  }
+
+  .quick-action .qa-desc {
+    font-size: 13px;
+    color: #64748b;
+    line-height: 1.4;
+  }
+
+  .quick-action .qa-link {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1d4497;
+    margin-top: 4px;
+  }
+
+  /* ============================================
+     SECTION TITLE
+     ============================================ */
+  .section-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 1rem;
+    letter-spacing: -0.3px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .section-title i {
+    color: #64748b;
+    font-size: 14px;
+  }
+
+  /* ============================================
+     TWO COLUMN LAYOUT
+     ============================================ */
+  .dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  @media (max-width: 900px) {
+    .dashboard-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .panel {
+    background: white;
+    border-radius: 16px;
+    padding: 1.25rem 1.5rem;
+    border: 1px solid #e2e8f0;
+  }
+
+  .panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .panel-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #0f172a;
+    margin: 0;
+  }
+
+  .panel-link {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1d4497;
+    text-decoration: none;
+  }
+
+  .panel-link:hover {
+    text-decoration: underline;
+  }
+
+  /* ============================================
+     STUDENT LIST
+     ============================================ */
+  .student-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid #f1f5f9;
+  }
+
+  .student-item:last-child {
+    border-bottom: none;
+  }
+
+  .student-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .student-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 13px;
+    flex-shrink: 0;
+  }
+
+  .student-avatar.blue {
+    background: #dbeafe;
+    color: #1d4497;
+  }
+
+  .student-avatar.green {
+    background: #d1eefa;
+    color: #054196;
+  }
+
+  .student-avatar.purple {
+    background: #e0e7ff;
+    color: #4f46e5;
+  }
+
+  .student-avatar.orange {
+    background: #c7c8fe;
+    color: #060ad9;
+  }
+
+  .student-avatar.pink {
+    background: #e7f6fc;
+    color: #27bddb;
+  }
+
+  .student-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: #0f172a;
+  }
+
+  .student-class {
+    font-size: 12px;
+    color: #64748b;
+  }
+
+  .student-date {
+    font-size: 12px;
+    color: #94a3b8;
+  }
+
+  /* ============================================
+     CLASS CHART / REPARTITION
+     ============================================ */
+  .class-bar-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .class-bar-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .class-bar-label {
+    width: 100px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #0f172a;
+    flex-shrink: 0;
+  }
+
+  .class-bar-track {
+    flex: 1;
+    height: 8px;
+    background: #f1f5f9;
+    border-radius: 6px;
+    overflow: hidden;
+    min-width: 60px;
+  }
+
+  .class-bar-fill {
+    height: 100%;
+    border-radius: 6px;
+    transition: width 0.6s ease;
+  }
+
+  .class-bar-fill.blue {
+    background: #012d8d;
+  }
+
+  .class-bar-fill.green {
+    background: #1f1fc9;
+  }
+
+  .class-bar-fill.purple {
+    background: #0d53bd;
+  }
+
+  .class-bar-fill.orange {
+    background: #2482ef;
+  }
+
+  .class-bar-fill.pink {
+    background: #3aa8f2;
+  }
+
+  .class-bar-count {
+    font-size: 13px;
+    font-weight: 600;
+    color: #0f172a;
+    width: 32px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  /* ============================================
+     SCHOOL SLOGAN
+     ============================================ */
+  .school-slogan {
+    background: linear-gradient(135deg, #152a58 0%, #334b80 100%);
+    border-radius: 16px;
+    padding: 1.5rem 2rem;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 0.5rem;
+  }
+
+  .school-slogan h3 {
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0;
+  }
+
+  .school-slogan p {
+    font-size: 14px;
+    opacity: 0.85;
+    margin: 4px 0 0;
+  }
+
+  .school-slogan .slogan-icon {
+    font-size: 36px;
+    opacity: 0.3;
+  }
+
+  /* ============================================
+     RESPONSIVE
+     ============================================ */
+  @media (max-width: 768px) {
+    .stats-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .quick-actions {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .stat-card {
+      padding: 1rem;
+    }
+
+    .stat-number {
+      font-size: 22px;
+    }
+
+    .stat-icon {
+      width: 40px;
+      height: 40px;
+      font-size: 16px;
+    }
+
+    .class-bar-label {
+      width: 70px;
+      font-size: 12px;
+    }
+
+    .school-slogan {
+      padding: 1.25rem;
+      flex-direction: column;
+      text-align: center;
+    }
+
+    .school-slogan .slogan-icon {
+      display: none;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .stats-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .quick-actions {
+      grid-template-columns: 1fr;
+    }
+
+    .panel {
+      padding: 1rem;
+    }
+
+    .student-item {
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    .student-date {
+      width: 100%;
+      padding-left: 48px;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- ============================================
+     STATISTIQUES
+     ============================================ -->
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-icon blue">
+      <i class="fas fa-user-graduate"></i>
+    </div>
+    <div class="stat-content">
+      <div class="stat-number">{{ total_eleves }}</div>
+      <div class="stat-label">Total Élèves</div>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-icon green">
+      <i class="fas fa-chalkboard-teacher"></i>
+    </div>
+    <div class="stat-content">
+      <div class="stat-number">{{ total_enseignants }}</div>
+      <div class="stat-label">Total Enseignants</div>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-icon purple">
+      <i class="fas fa-school"></i>
+    </div>
+    <div class="stat-content">
+      <div class="stat-number">{{ total_classes }}</div>
+      <div class="stat-label">Total Classes Activées</div>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-icon orange">
+      <i class="fas fa-book"></i>
+    </div>
+    <div class="stat-content">
+      <div class="stat-number">{{ total_matieres }}</div>
+      <div class="stat-label">Total Matières</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================
+     ACTIONS RAPIDES
+     ============================================ -->
+<div class="quick-actions">
+  <a href="{% url 'students:list' %}" class="quick-action">
+    <div class="qa-icon"><i class="fas fa-user-plus"></i></div>
+    <div class="qa-title">Élèves</div>
+    <div class="qa-desc">Ajouter des élèves dans votre école, définissez sa classe et ses anciennes notes.</div>
+    <div class="qa-link">Gérer les élèves →</div>
+  </a>
+
+  <a href="{% url 'notifications:composer' %}" class="quick-action">
+    <div class="qa-icon"><i class="fas fa-bell"></i></div>
+    <div class="qa-title">Notifications</div>
+    <div class="qa-desc">Notifier les parents ou tuteur d'élève par rapport aux Bulletins - Statistiques - Retard - Paiements...</div>
+    <div class="qa-link">Envoyer une notification →</div>
+  </a>
+
+  <a href="{% url 'bulletin:liste' %}" class="quick-action">
+    <div class="qa-icon"><i class="fas fa-file-pdf"></i></div>
+    <div class="qa-title">Bulletin</div>
+    <div class="qa-desc">Télécharger les bulletins des élèves sous format PDF, ou concevez les bulletins des élèves pour le trimestre.</div>
+    <div class="qa-link">Gérer les bulletins →</div>
+  </a>
+
+  <a href="{% url 'classes:list' %}" class="quick-action">
+    <div class="qa-icon"><i class="fas fa-plus-circle"></i></div>
+    <div class="qa-title">Classes</div>
+    <div class="qa-desc">Ajouter une classe dans votre école. Nom - Niveau - Emploi du temps ...</div>
+    <div class="qa-link">Gérer les classes →</div>
+  </a>
+</div>
+
+<!-- ============================================
+     DEUX COLONNES : DERNIERS ÉLÈVES + RÉPARTITION
+     ============================================ -->
+<div class="dashboard-grid">
+  <!-- Derniers élèves inscrits -->
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-title">
+        <i class="fas fa-clock" style="color: #64748b; margin-right: 6px;"></i>
+        Derniers élèves inscrits
+      </div>
+      <a href="{% url 'students:list' %}" class="panel-link">
+        Voir tout <i class="fas fa-arrow-right" style="font-size: 12px;"></i>
+      </a>
+    </div>
+
+    <div>
+      {% if derniers_eleves %}
+        {% for eleve in derniers_eleves %}
+        <div class="student-item">
+          <div class="student-info">
+            <div class="student-avatar {% cycle 'blue' 'green' 'purple' 'orange' 'pink' %}">
+              {{ eleve.first_name|first|upper }}{{ eleve.last_name|first|upper }}
+            </div>
+            <div>
+              <div class="student-name">{{ eleve.first_name }} {{ eleve.last_name }}</div>
+              <div class="student-class">{{ eleve.classroom.nom|default:"Non affecté" }}</div>
+            </div>
+          </div>
+          <div class="student-date">
+            {{ eleve.inscription_date|date:"d/m/Y" }}
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}
+        <p style="color: #94a3b8; font-size: 14px; text-align: center; padding: 1.5rem 0;">
+          <i class="fas fa-inbox" style="display: block; font-size: 24px; margin-bottom: 8px;"></i>
+          Aucun élève inscrit pour le moment.
+        </p>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Répartition des classes -->
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-title">
+        <i class="fas fa-chart-bar" style="color: #64748b; margin-right: 6px;"></i>
+        Répartition des classes
+      </div>
+      <a href="{% url 'classes:list' %}" class="panel-link">
+        Gérer <i class="fas fa-arrow-right" style="font-size: 12px;"></i>
+      </a>
+    </div>
+
+    <div class="class-bar-wrapper">
+      {% for classe in repartition_classes %}
+      <div class="class-bar-item">
+        <span class="class-bar-label">{{ classe.nom|default:"Sans nom" }}</span>
+        <div class="class-bar-track">
+         <div class="class-bar-fill {% cycle 'blue' 'green' 'purple' 'orange' 'pink' %}"
+              style="width: {{ classe.pourcentage|floatformat:0 }}%;">
+           </div>
+        </div>
+        <span class="class-bar-count">{{ classe.total }}</span>
+      </div>
+      {% empty %}
+      <p style="color: #94a3b8; font-size: 14px; text-align: center; padding: 1.5rem 0;">
+        <i class="fas fa-school" style="display: block; font-size: 24px; margin-bottom: 8px;"></i>
+        Aucune classe n'a été créée.
+      </p>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- ============================================
+     BANNIÈRE "VOTRE ÉCOLE DANS UN SEUL LOGICIEL"
+     ============================================ -->
+<div class="school-slogan">
+  <div>
+    <h3><i class="fas fa-gem" style="margin-right: 10px;"></i>Votre école dans un seul logiciel</h3>
+    <p>Gérez les élèves, les classes, les bulletins et les notifications depuis une interface unique et intuitive.</p>
+  </div>
+  <div class="slogan-icon">
+    <i class="fas fa-school"></i>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Animation au chargement des barres de répartition
+  document.addEventListener('DOMContentLoaded', function() {
+    const bars = document.querySelectorAll('.class-bar-fill');
+    bars.forEach(bar => {
+      // La largeur est déjà définie inline, on force une petite animation
+      const width = bar.style.width;
+      bar.style.width = '0%';
+      setTimeout(() => {
+        bar.style.width = width;
+      }, 100);
+    });
+  });
+</script>
+{% endblock %}

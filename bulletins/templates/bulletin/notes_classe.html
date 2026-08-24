@@ -1,0 +1,365 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Saisie des notes{% endblock %}
+{% block meta_desc %}Saisie des notes — {{ classe.nom }}{% endblock %}
+{% block page_title %}Saisie des notes — {{ classe.nom }}{% endblock %}
+{% block search_placeholder %}Rechercher un élève...{% endblock %}
+{% block nav_bulletins %}active{% endblock %}
+{% block nav_bulletins_prof %}active{% endblock %}
+
+{% block extra_css %}
+<style>
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .page-header-text h2 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0;
+  }
+
+  .page-header-text p {
+    font-size: 14px;
+    color: #64748b;
+    margin: 4px 0 0;
+  }
+
+  .period-form select, .period-form input[type="text"] {
+    padding: 8px 12px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    background: white;
+    color: #0f172a;
+  }
+
+  .period-form {
+    display: flex;
+    gap: 8px;
+  }
+
+  .banner {
+    padding: 12px 18px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 1.25rem;
+  }
+
+  .banner-lock {
+    background: #fef3c7;
+    color: #92400e;
+    border: 1px solid #fde68a;
+  }
+
+  .progress-card {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 18px 20px;
+    margin-bottom: 1.5rem;
+  }
+
+  .progress-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .progress-card-top strong {
+    font-size: 14px;
+    color: #0f172a;
+  }
+
+  .progress-bar-wrap {
+    background: #e2e8f0;
+    border-radius: 10px;
+    height: 8px;
+    overflow: hidden;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    background: #2563eb;
+    border-radius: 10px;
+  }
+
+  .progress-bar-fill.complete {
+    background: #059669;
+  }
+
+  .matiere-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 1.5rem;
+  }
+
+  .matiere-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: 20px;
+    background: white;
+    border: 1.5px solid #e2e8f0;
+    color: #475569;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .matiere-tab.active {
+    background: #213561;
+    border-color: #213561;
+    color: white;
+  }
+
+  .matiere-tab.complete:not(.active) {
+    border-color: #a7f3d0;
+    background: #ecfdf5;
+    color: #059669;
+  }
+
+  .notes-table-wrap {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    overflow: hidden;
+  }
+
+  table.notes-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .notes-table th {
+    text-align: left;
+    font-size: 12px;
+    text-transform: uppercase;
+    color: #94a3b8;
+    padding: 14px 20px;
+    border-bottom: 1px solid #f1f5f9;
+    background: #f8fafc;
+  }
+
+  .notes-table td {
+    padding: 12px 20px;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 14px;
+    color: #0f172a;
+  }
+
+  .notes-table tr:last-child td {
+    border-bottom: none;
+  }
+
+  .note-input {
+    width: 90px;
+    padding: 8px 10px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 8px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+  }
+
+  .note-input:focus {
+    border-color: #2563eb;
+    outline: none;
+  }
+
+  .comment-input {
+    width: 100%;
+    min-width: 220px;
+    padding: 8px 10px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 8px;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+  }
+
+  .comment-input:focus {
+    border-color: #2563eb;
+    outline: none;
+  }
+
+  .table-footer {
+    padding: 16px 20px;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 22px;
+    font-size: 14px;
+    font-weight: 600;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    text-decoration: none;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .btn-primary {
+    background: #213561;
+    color: white;
+  }
+
+  .btn-primary:hover {
+    background: #374970;
+  }
+
+  .btn-primary:disabled {
+    background: #cbd5e1;
+    cursor: not-allowed;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    background: white;
+    border-radius: 16px;
+    border: 1px solid #e5e7eb;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+  <div class="page-header-text">
+    <h2>{{ classe.nom }}</h2>
+    <p>{{ total_eleves }} élève(s) — {{ mois_label }} {{ annee_scolaire }}</p>
+  </div>
+
+  <form class="period-form" method="get">
+    <input type="hidden" name="matiere" value="{{ matiere_selectionnee.pk }}">
+    <input type="text" name="annee_scolaire" value="{{ annee_scolaire }}" style="width:110px;">
+    <select onchange="changerMois(this.value)">
+      {% for valeur, label in mois_scolaire %}
+      <option value="{{ valeur }}" {% if valeur == mois %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+    <button type="submit" class="btn btn-primary">Valider</button>
+  </form>
+</div>
+
+{% if verrouillee %}
+<div class="banner banner-lock">
+  Les bulletins de cette période ont déjà été validés par l'administrateur : les notes sont verrouillées.
+</div>
+{% endif %}
+
+<div class="progress-card">
+  <div class="progress-card-top">
+    <strong>{{ matieres_completes }}/{{ total_matieres }} matières complétées</strong>
+    {% if total_matieres and matieres_completes == total_matieres %}
+      <span style="color:#059669; font-size:13px; font-weight:600;">Toutes les matières sont notées ✓</span>
+    {% endif %}
+  </div>
+  <div class="progress-bar-wrap">
+    <div class="progress-bar-fill {% if total_matieres and matieres_completes == total_matieres %}complete{% endif %}"
+         style="width: {% widthratio matieres_completes total_matieres 100 %}%;"></div>
+  </div>
+</div>
+
+{% if matieres_info %}
+<div class="matiere-tabs">
+  {% for info in matieres_info %}
+  <a class="matiere-tab {% if matiere_selectionnee.pk == info.matiere.pk %}active{% endif %} {% if info.complete %}complete{% endif %}"
+     href="?matiere={{ info.matiere.pk }}&annee_scolaire={{ annee_scolaire }}">
+    {{ info.matiere.nom }}
+    {% if info.complete %}✓{% else %}({{ info.notes_saisies }}/{{ total_eleves }}){% endif %}
+  </a>
+  {% endfor %}
+</div>
+
+{% if matiere_selectionnee %}
+<form method="post"
+      action="{% url 'bulletin:notes_bulk_save' classe.pk mois matiere_selectionnee.pk %}">
+  {% csrf_token %}
+  <input type="hidden" name="annee_scolaire" value="{{ annee_scolaire }}">
+
+  <div class="notes-table-wrap">
+    <table class="notes-table">
+      <thead>
+        <tr>
+          <th>Élève</th>
+          <th>Note « {{ matiere_selectionnee.nom }} » (sur {{ matiere_selectionnee.note_sur }})</th>
+          <th>Appréciation <span style="text-transform:none; font-weight:400;">(facultatif)</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for ligne in lignes %}
+        <tr>
+          <td>{{ ligne.eleve.first_name }} {{ ligne.eleve.last_name }}</td>
+          <td>
+            <input
+              class="note-input"
+              type="number"
+              step="0.01"
+              min="0"
+              max="{{ matiere_selectionnee.note_sur }}"
+              name="note_{{ ligne.eleve.pk }}"
+              value="{{ ligne.valeur }}"
+              {% if verrouillee %}disabled{% else %}required{% endif %}
+            >
+          </td>
+          <td>
+            <input
+              class="comment-input"
+              type="text"
+              name="comment_{{ ligne.eleve.pk }}"
+              value="{{ ligne.commentaire }}"
+              placeholder="Ex : Bon travail, doit approfondir..."
+              {% if verrouillee %}disabled{% endif %}
+            >
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    {% if not verrouillee %}
+    <div class="table-footer">
+      <button type="submit" class="btn btn-primary">
+        Enregistrer les notes de « {{ matiere_selectionnee.nom }} »
+      </button>
+    </div>
+    {% endif %}
+  </div>
+</form>
+{% endif %}
+
+{% else %}
+<div class="empty-state">
+  <h3>Aucune matière rattachée à cette classe</h3>
+  <p>Demandez à l'administrateur d'associer des matières à « {{ classe.nom }} ».</p>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function changerMois(mois) {
+  const annee = document.querySelector('input[name="annee_scolaire"]').value;
+  const matiere = document.querySelector('input[name="matiere"]').value;
+  window.location.href = "/bulletins/classe/{{ classe.pk }}/mois/" + mois + "/"
+    + '?matiere=' + matiere + '&annee_scolaire=' + annee;
+}
+</script>
+{% endblock %}

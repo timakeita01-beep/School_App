@@ -1,0 +1,845 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Profil — {{ teacher.get_full_name|default:teacher.username }}{% endblock %}
+{% block meta_desc %}Profil de l'enseignant {{ teacher.get_full_name|default:teacher.username }}{% endblock %}
+{% block page_title %}Enseignants{% endblock %}
+{% block search_placeholder %}Rechercher un enseignant...{% endblock %}
+{% block nav_emploi %}active{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ============================================
+       STYLES POUR LE PROFIL ENSEIGNANT
+       Couleurs : #355394, #4a6091, nuances de bleu
+       ============================================ */
+
+    .profile-container {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 20px 16px 40px;
+    }
+
+    /* ===== PAGE HEADER ===== */
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .page-header-text h2 {
+        font-size: 24px;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 0;
+    }
+
+    .page-header-text p {
+        font-size: 14px;
+        color: #64748b;
+        margin: 4px 0 0;
+    }
+
+    /* ===== BUTTONS ===== */
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        font-size: 14px;
+        font-weight: 600;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .btn-primary {
+        background: #355394;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #2a4378;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(53, 83, 148, 0.3);
+    }
+
+    .btn-secondary {
+        background: #f1f5f9;
+        color: #475569;
+    }
+
+    .btn-secondary:hover {
+        background: #e2e8f0;
+    }
+
+    .btn-edit {
+        background: #dbeafe;
+        color: #355394;
+    }
+
+    .btn-edit:hover {
+        background: #bfdbfe;
+        transform: translateY(-1px);
+    }
+
+    .btn-danger {
+        background: #fee2e2;
+        color: #dc2626;
+    }
+
+    .btn-danger:hover {
+        background: #fecaca;
+        transform: translateY(-1px);
+    }
+
+    /* ===== PROFILE CARD ===== */
+    .profile-card {
+        background: white;
+        border-radius: 20px;
+        border: 1px solid #e5e7eb;
+        overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        margin-bottom: 2rem;
+    }
+
+    .profile-card-header {
+        padding: 24px 28px;
+        background: linear-gradient(135deg, #f8faff, #f0f4fb);
+        border-bottom: 1px solid #f1f5f9;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+
+    .profile-avatar {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, #355394, #4a6091);
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .profile-avatar .avatar-initials {
+        font-size: 32px;
+        font-weight: 700;
+        color: white;
+        letter-spacing: -1px;
+    }
+
+    .profile-title {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .profile-title .profile-name {
+        font-size: 22px;
+        font-weight: 700;
+        color: #0f172a;
+        margin: 0;
+    }
+
+    .profile-title .profile-username {
+        font-size: 14px;
+        color: #64748b;
+        margin: 2px 0 0;
+    }
+
+    .profile-title .profile-email {
+        font-size: 14px;
+        color: #475569;
+        margin: 2px 0 0;
+    }
+
+    .profile-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-left: auto;
+    }
+
+    /* ===== DETAIL GRID ===== */
+    .detail-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0;
+        padding: 0;
+    }
+
+    .detail-section {
+        padding: 24px 28px;
+        border-right: 1px solid #f1f5f9;
+    }
+
+    .detail-section:last-child {
+        border-right: none;
+    }
+
+    .section-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: #0f172a;
+        margin: 0 0 16px 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .section-title .title-icon {
+        width: 18px;
+        height: 18px;
+        color: #355394;
+    }
+
+    /* ===== INFO GRID ===== */
+    .info-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px 24px;
+    }
+
+    .info-item {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .info-item.full-width {
+        grid-column: 1 / -1;
+    }
+
+    .info-label {
+        font-size: 11px;
+        font-weight: 500;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+    }
+
+    .info-value {
+        font-size: 15px;
+        font-weight: 500;
+        color: #0f172a;
+    }
+
+    .info-value .highlight {
+        color: #355394;
+        font-weight: 600;
+    }
+
+    /* ===== CLASSES LIST ===== */
+    .classes-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .class-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 14px;
+        background: #f8fafc;
+        border-radius: 10px;
+        border: 1px solid #f1f5f9;
+        transition: all 0.2s ease;
+    }
+
+    .class-item:hover {
+        border-color: #355394;
+        background: #f8faff;
+    }
+
+    .class-item .class-name {
+        font-weight: 500;
+        color: #0f172a;
+        font-size: 14px;
+    }
+
+    .class-item .class-niveau {
+        font-size: 12px;
+        color: #94a3b8;
+        background: white;
+        padding: 2px 10px;
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+    }
+
+    .class-item .class-actions {
+        display: flex;
+        gap: 4px;
+    }
+
+    .class-item .class-actions .btn-sm {
+        padding: 2px 8px;
+        font-size: 11px;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    .class-item .class-actions .btn-sm-view {
+        background: #dbeafe;
+        color: #355394;
+    }
+
+    .class-item .class-actions .btn-sm-view:hover {
+        background: #bfdbfe;
+    }
+
+    /* ===== STATS ===== */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+        margin-bottom: 0;
+    }
+
+    .stat-box {
+        background: #f8fafc;
+        border-radius: 10px;
+        padding: 12px 16px;
+        border: 1px solid #f1f5f9;
+        text-align: center;
+    }
+
+    .stat-box .stat-number {
+        font-size: 20px;
+        font-weight: 700;
+        color: #0f172a;
+    }
+
+    .stat-box .stat-label {
+        font-size: 11px;
+        color: #64748b;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+    }
+
+    /* ===== EMPTY STATE ===== */
+    .empty-state {
+        text-align: center;
+        padding: 20px;
+        background: #f8fafc;
+        border-radius: 10px;
+        border: 1px dashed #d1d5db;
+    }
+
+    .empty-state .empty-icon {
+        width: 32px;
+        height: 32px;
+        color: #94a3b8;
+        margin: 0 auto 6px;
+    }
+
+    .empty-state p {
+        color: #64748b;
+        font-size: 13px;
+        margin: 0;
+    }
+
+    /* ===== MODAL ===== */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(15, 23, 42, 0.5);
+        backdrop-filter: blur(4px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        padding: 20px;
+    }
+
+    .modal-overlay.active {
+        display: flex;
+        animation: fadeIn 0.25s ease;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    .modal {
+        background: white;
+        border-radius: 20px;
+        max-width: 420px;
+        width: 100%;
+        padding: 28px 24px 24px;
+        text-align: center;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+        animation: slideUp 0.3s ease;
+    }
+
+    @keyframes slideUp {
+        from {
+            transform: translateY(20px);
+            opacity: 0;
+        }
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+
+    .modal-icon-wrap {
+        width: 48px;
+        height: 48px;
+        background: #fee2e2;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 12px;
+        color: #dc2626;
+    }
+
+    .modal-icon-wrap svg {
+        width: 24px;
+        height: 24px;
+    }
+
+    .modal h3 {
+        font-size: 17px;
+        font-weight: 600;
+        color: #0f172a;
+        margin: 0 0 6px;
+    }
+
+    .modal p {
+        font-size: 14px;
+        color: #475569;
+        margin: 0 0 18px;
+        line-height: 1.6;
+    }
+
+    .modal p strong {
+        color: #0f172a;
+    }
+
+    .modal-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+    }
+
+    .modal-actions .btn {
+        padding: 8px 20px;
+        font-size: 13px;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 1024px) {
+        .detail-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .detail-section {
+            border-right: none;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .detail-section:last-child {
+            border-bottom: none;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .page-header {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .page-header .btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .profile-card-header {
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .profile-actions {
+            margin-left: 0;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .profile-actions .btn {
+            flex: 1;
+            justify-content: center;
+        }
+
+        .detail-section {
+            padding: 20px;
+        }
+
+        .info-grid {
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+
+        .stats-grid {
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .stat-box .stat-number {
+            font-size: 17px;
+        }
+
+        .modal-actions {
+            flex-direction: column;
+        }
+
+        .modal-actions .btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .profile-container {
+            padding: 12px 8px 24px;
+        }
+
+        .profile-avatar {
+            width: 60px;
+            height: 60px;
+        }
+
+        .profile-avatar .avatar-initials {
+            font-size: 22px;
+        }
+
+        .profile-title .profile-name {
+            font-size: 18px;
+        }
+
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .profile-card-header {
+            padding: 16px;
+        }
+
+        .detail-section {
+            padding: 16px;
+        }
+
+        .class-item {
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .class-item .class-actions {
+            width: 100%;
+            justify-content: flex-end;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="profile-container">
+
+    <!-- Page header -->
+    <div class="page-header">
+        <div class="page-header-text">
+            <h2>Profil de l'enseignant</h2>
+            <p>Consultez les informations détaillées de l'enseignant.</p>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <a href="{% url 'accounts:teacher_list' %}" class="btn btn-secondary">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"/>
+                    <polyline points="12 19 5 12 12 5"/>
+                </svg>
+                Retour
+            </a>
+        </div>
+    </div>
+
+    <!-- Profile Card -->
+    <div class="profile-card">
+
+        <!-- Header -->
+        <div class="profile-card-header">
+            <div class="profile-avatar">
+                <span class="avatar-initials">
+                    {% if teacher.first_name and teacher.last_name %}
+                        {{ teacher.first_name|first|upper }}{{ teacher.last_name|first|upper }}
+                    {% else %}
+                        {{ teacher.username|first|upper }}
+                    {% endif %}
+                </span>
+            </div>
+            <div class="profile-title">
+                <h1 class="profile-name">
+                    {% if teacher.get_full_name %}
+                        {{ teacher.get_full_name }}
+                    {% else %}
+                        {{ teacher.username }}
+                    {% endif %}
+                </h1>
+                <p class="profile-username">@{{ teacher.username }}</p>
+                <p class="profile-email">
+                    <svg style="display:inline;width:14px;height:14px;vertical-align:middle;margin-right:4px;color:#94a3b8;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                    </svg>
+                    {{ teacher.email|default:"Aucun email renseigné" }}
+                </p>
+            </div>
+            <div class="profile-actions">
+                <a href="{% url 'accounts:teacher_update' teacher.pk %}" class="btn btn-edit">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+                        <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                    </svg>
+                    Modifier
+                </a>
+                <button class="btn btn-danger"
+                        data-delete-url="{% url 'accounts:teacher_delete' teacher.pk %}"
+                        onclick="confirmDelete(this.dataset.deleteUrl, '{{ teacher.get_full_name|default:teacher.username|escapejs }}')">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
+                    </svg>
+                    Supprimer
+                </button>
+            </div>
+        </div>
+
+        <!-- Statistiques -->
+        <div style="padding:16px 28px 0;border-bottom:1px solid #f1f5f9;">
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <div class="stat-number">{{ classes|length }}</div>
+                    <div class="stat-label">Classes</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number">
+                        {% with matieres_count=0 %}
+                            {% for classe in classes %}
+                                {% with matieres_count=matieres_count|add:classe.matieres.count %}{% endwith %}
+                            {% endfor %}
+                            {{ matieres_count }}
+                        {% endwith %}
+                    </div>
+                    <div class="stat-label">Matières</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number">
+                        {% with eleves_count=0 %}
+                            {% for classe in classes %}
+                                {% with eleves_count=eleves_count|add:classe.students.count %}{% endwith %}
+                            {% endfor %}
+                            {{ eleves_count }}
+                        {% endwith %}
+                    </div>
+                    <div class="stat-label">Élèves</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number">{{ teacher.date_joined|date:"Y" }}</div>
+                    <div class="stat-label">Arrivée</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Grille d'informations -->
+        <div class="detail-grid">
+
+            <!-- Colonne gauche : Informations personnelles -->
+            <div class="detail-section">
+                <h2 class="section-title">
+                    <svg class="title-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                    </svg>
+                    Informations personnelles
+                </h2>
+
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">Nom d'utilisateur</span>
+                        <span class="info-value">{{ teacher.username }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Nom complet</span>
+                        <span class="info-value">{{ teacher.get_full_name|default:"Non renseigné" }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Prénom</span>
+                        <span class="info-value">{{ teacher.first_name|default:"—" }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Nom</span>
+                        <span class="info-value">{{ teacher.last_name|default:"—" }}</span>
+                    </div>
+                    <div class="info-item full-width">
+                        <span class="info-label">Email</span>
+                        <span class="info-value">{{ teacher.email|default:"Non renseigné" }}</span>
+                    </div>
+                    <div class="info-item full-width">
+                        <span class="info-label">Statut</span>
+                        <span class="info-value"><span class="highlight">Enseignant</span></span>
+                    </div>
+                    <div class="info-item full-width">
+                        <span class="info-label">Date d'arrivée</span>
+                        <span class="info-value">{{ teacher.date_joined|date:"d/m/Y" }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Colonne droite : Classes affectées -->
+            <div class="detail-section">
+                <h2 class="section-title">
+                    <svg class="title-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                    </svg>
+                    Classes affectées
+                    <span style="font-size:12px;color:#94a3b8;font-weight:400;margin-left:4px;">({{ classes|length }})</span>
+                </h2>
+
+                {% if classes %}
+                <div class="classes-list">
+                    {% for classe in classes %}
+                    <div class="class-item">
+                        <span class="class-name">{{ classe.nom }}</span>
+                        <span class="class-niveau">
+                            {% if classe.niveau == 1 %}1er{% else %}{{ classe.niveau }}ème{% endif %}
+                        </span>
+                        <div class="class-actions">
+                            <a href="{% url 'classes:detail' classe.pk %}" class="btn-sm btn-sm-view">Voir</a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <svg class="empty-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                    </svg>
+                    <p>Aucune classe affectée à cet enseignant.</p>
+                </div>
+                {% endif %}
+
+                <!-- Matières enseignées (si disponible) -->
+                <h2 class="section-title" style="margin-top:20px;">
+                    <svg class="title-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 19.5A2.5 2.5 0 016.5 17H20"/>
+                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>
+                    </svg>
+                    Matières enseignées
+                </h2>
+                {% with matieres_list=teacher.matiere_set.all %}
+                    {% if matieres_list %}
+                    <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                        {% for matiere in matieres_list %}
+                        <span style="background:#f1f5f9;color:#475569;padding:4px 12px;border-radius:12px;font-size:12px;border:1px solid #e5e7eb;">
+                            {{ matiere.nom }}
+                            <span style="color:#94a3b8;font-weight:500;margin-left:4px;">Coef: {{ matiere.coefficient }}</span>
+                        </span>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="empty-state">
+                        <svg class="empty-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 19.5A2.5 2.5 0 016.5 17H20"/>
+                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>
+                        </svg>
+                        <p>Aucune matière enseignée.</p>
+                    </div>
+                    {% endif %}
+                {% endwith %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmation de suppression -->
+<div class="modal-overlay" id="deleteModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal">
+        <div class="modal-icon-wrap" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                <line x1="12" x2="12" y1="9" y2="13"/>
+                <line x1="12" x2="12.01" y1="17" y2="17"/>
+            </svg>
+        </div>
+        <h3 id="modalTitle">Confirmer la suppression</h3>
+        <p>
+            Êtes-vous sûr de vouloir supprimer l'enseignant
+            <strong id="deleteTeacherName"></strong> ?
+            Cette action est irréversible.
+        </p>
+        <div class="modal-actions">
+            <button class="btn btn-secondary" id="btnAnnuler" onclick="closeDeleteModal()">Annuler</button>
+            <form method="POST" id="deleteForm" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger" id="confirmDeleteBtn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
+                    </svg>
+                    Supprimer
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    /* ---- Delete modal ---- */
+    function confirmDelete(url, nom) {
+        const modal = document.getElementById('deleteModal');
+        const deleteName = document.getElementById('deleteTeacherName');
+        const deleteForm = document.getElementById('deleteForm');
+
+        deleteName.textContent = nom;
+        deleteForm.action = url;
+        modal.classList.add('active');
+        document.getElementById('btnAnnuler').focus();
+    }
+
+    function closeDeleteModal() {
+        document.getElementById('deleteModal').classList.remove('active');
+    }
+
+    // Close on overlay click
+    document.getElementById('deleteModal').addEventListener('click', function (e) {
+        if (e.target === this) closeDeleteModal();
+    });
+
+    // Close on Escape
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') closeDeleteModal();
+    });
+</script>
+{% endblock %}

@@ -1,3 +1,9 @@
 from django.contrib import admin
-
-# Register your models here.
+from .models import Matiere
+ 
+@admin.register(Matiere)
+class MatiereAdmin(admin.ModelAdmin):
+    list_display = ("nom", "note_sur", "coefficient")
+    filter_horizontal = ("classes",)
+    search_fields = ("nom",)
+ 

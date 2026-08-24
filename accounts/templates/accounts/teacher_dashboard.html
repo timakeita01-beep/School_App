@@ -1,0 +1,247 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Tableau de bord{% endblock %}
+{% block meta_desc %}Espace enseignant — mes classes et la saisie des notes{% endblock %}
+{% block page_title %}Bonjour {{ user.first_name|default:user.username }}{% endblock %}
+{% block search_placeholder %}Rechercher une classe...{% endblock %}
+{% block nav_accueil %}active{% endblock %}
+
+{% block extra_css %}
+<style>
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .page-header-text h2 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0;
+  }
+
+  .page-header-text p {
+    font-size: 14px;
+    color: #64748b;
+    margin: 4px 0 0;
+  }
+
+  .period-pill {
+    background: #dbeafe;
+    color: #12254e;
+    font-weight: 600;
+    font-size: 13px;
+    padding: 6px 14px;
+    border-radius: 20px;
+  }
+
+  .classes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 24px;
+  }
+
+  .class-card {
+    background: rgb(248, 248, 248);
+    border-radius: 16px;
+    border: 1px solid #e5e6e8;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .class-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.06);
+    border-color: #173a86;
+  }
+
+  .card-header {
+    background: linear-gradient(135deg, #1b2e56, #2c4780);
+    padding: 16px 20px;
+    color: #f7f5f5;
+    min-height: 72px;
+  }
+
+  .card-badge {
+    display: inline-block;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 2px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+
+  .card-title {
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0;
+    color: white;
+  }
+
+  .card-body {
+    padding: 18px 20px 20px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: rgb(247, 247, 247);
+  }
+
+  .card-stats {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .card-stat-value {
+    font-size: 20px;
+    font-weight: 700;
+    color: #0f172a;
+  }
+
+  .card-stat-label {
+    font-size: 11px;
+    color: #94a3b8;
+    text-transform: uppercase;
+  }
+
+  .progress-bar-wrap {
+    background: #e2e8f0;
+    border-radius: 10px;
+    height: 8px;
+    overflow: hidden;
+    margin-bottom: 8px;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    background: #2563eb;
+    border-radius: 10px;
+  }
+
+  .progress-bar-fill.complete {
+    background: #059669;
+  }
+
+  .progress-label {
+    font-size: 12px;
+    color: #64748b;
+    margin-bottom: 16px;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 18px;
+    font-size: 14px;
+    font-weight: 600;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    text-decoration: none;
+    font-family: 'Inter', sans-serif;
+    margin-top: auto;
+  }
+
+  .btn-primary {
+    background: #213561;
+    color: white;
+  }
+
+  .btn-primary:hover {
+    background: #374970;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    background: white;
+    border-radius: 16px;
+    border: 1px solid #e5e7eb;
+  }
+
+  .empty-state h3 {
+    font-size: 20px;
+    font-weight: 600;
+    color: #0f172a;
+    margin: 0 0 6px;
+  }
+
+  .empty-state p {
+    color: #64748b;
+    margin: 0;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+  <div class="page-header-text">
+    <h2>Mes classes</h2>
+    <p>Sélectionnez une classe pour saisir les notes de vos élèves.</p>
+  </div>
+  <span class="period-pill">{{ mois_label }} {{ annee_scolaire }}</span>
+</div>
+
+{% if classes_info %}
+<div class="classes-grid">
+  {% for info in classes_info %}
+  <article class="class-card">
+    <div class="card-header">
+      <span class="card-badge">
+        {% if info.classe.niveau == 1 %}1er{% else %}{{ info.classe.niveau }}ème{% endif %}
+      </span>
+      <h3 class="card-title">{{ info.classe.nom }}</h3>
+    </div>
+
+    <div class="card-body">
+      <div class="card-stats">
+        <div>
+          <div class="card-stat-value">{{ info.total_eleves }}</div>
+          <div class="card-stat-label">Élèves</div>
+        </div>
+        <div>
+          <div class="card-stat-value">{{ info.matieres_completes }}/{{ info.total_matieres }}</div>
+          <div class="card-stat-label">Matières notées</div>
+        </div>
+      </div>
+
+      {% if info.total_matieres %}
+      <div class="progress-bar-wrap">
+        <div class="progress-bar-fill {% if info.matieres_completes == info.total_matieres %}complete{% endif %}"
+             style="width: {% widthratio info.matieres_completes info.total_matieres 100 %}%;"></div>
+      </div>
+      <p class="progress-label">
+        {% if info.matieres_completes == info.total_matieres %}
+          Toutes les matières sont notées pour ce mois.
+        {% else %}
+          Il reste {{ info.matieres_restantes }} matière(s) à noter.
+        {% endif %}
+      </p>
+      {% endif %}
+
+      <a href="{% url 'bulletin:notes_classe' info.classe.pk mois %}" class="btn btn-primary">
+        Noter mes élèves
+      </a>
+    </div>
+  </article>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+  <h3>Aucune classe assignée</h3>
+  <p>Contactez l'administrateur pour qu'il vous attribue une classe.</p>
+</div>
+{% endif %}
+
+{% endblock %}

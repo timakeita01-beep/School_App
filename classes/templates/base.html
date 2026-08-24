@@ -1,0 +1,955 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="{% block meta_desc %}Portail Scolaire — Système de Gestion Scolaire{% endblock %}" />
+  <title>{% block title %}SchoolApp{% endblock %} | Portail Scolaire</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    /* ============================================
+       STYLES GLOBAUX
+       ============================================ */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #f1f5f9;
+      color: #0f172a;
+    }
+
+    .app-layout {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* ============================================
+       SIDEBAR
+       ============================================ */
+    .sidebar {
+      width: 280px;
+      background: #ffffff;
+      border-right: 1px solid #e2e8f0;
+      display: flex;
+      flex-direction: column;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      padding: 1.5rem 1rem;
+      flex-shrink: 0;
+      overflow-y: auto;
+      z-index: 50;
+    }
+
+    .sidebar-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0 0.5rem 1.5rem 0.5rem;
+      border-bottom: 1px solid #f1f5f9;
+      margin-bottom: 1.5rem;
+    }
+
+    .brand-icon {
+      width: 40px;
+      height: 40px;
+      background: #12254e;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .brand-icon svg {
+      width: 22px;
+      height: 22px;
+    }
+
+    .brand-text {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .brand-name {
+      font-size: 16px;
+      font-weight: 700;
+      color: #0f172a;
+      letter-spacing: -0.3px;
+    }
+
+    .brand-sub {
+      font-size: 11px;
+      color: #64748b;
+      font-weight: 500;
+    }
+
+    .sidebar-nav {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0.7rem 1rem;
+      border-radius: 10px;
+      color: #475569;
+      font-weight: 500;
+      font-size: 14px;
+      transition: all 0.2s ease;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .nav-item:hover {
+      background: #f1f5f9;
+      color: #0f172a;
+    }
+
+    .nav-item.active {
+      background: #dbeafe;
+      color: #2563eb;
+    }
+
+    .nav-item.active .nav-icon {
+      color: #2563eb;
+    }
+
+    .nav-icon {
+      width: 20px;
+      height: 20px;
+      color: #94a3b8;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .nav-icon svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .sidebar-footer {
+      border-top: 1px solid #f1f5f9;
+      padding-top: 1rem;
+      margin-top: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .sidebar-footer .nav-item {
+      font-size: 13px;
+    }
+
+    .sidebar-footer .nav-item.logout-btn {
+      color: #dc2626;
+    }
+
+    .sidebar-footer .nav-item.logout-btn:hover {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+
+    .sidebar-footer .nav-item.logout-btn .nav-icon {
+      color: #dc2626;
+    }
+
+    /* ============================================
+       MAIN AREA
+       ============================================ */
+    .main-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    /* ============================================
+       TOPBAR
+       ============================================ */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 2rem;
+      background: white;
+      border-bottom: 1px solid #e2e8f0;
+      flex-wrap: wrap;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 40;
+    }
+
+    .topbar-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: #0f172a;
+      margin: 0;
+    }
+
+    .search-wrapper {
+      position: relative;
+      flex: 1;
+      max-width: 400px;
+      min-width: 180px;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #94a3b8;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 8px 12px 8px 38px;
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 10px;
+      background: #f8fafc;
+      transition: all 0.2s ease;
+      outline: none;
+      color: #0f172a;
+    }
+
+    .search-input:focus {
+      border-color: #2563eb;
+      background: white;
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.05);
+    }
+
+    .search-input::placeholder {
+      color: #94a3b8;
+    }
+
+    /* ============================================
+       USER INFO - DYNAMIQUE
+       ============================================ */
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .user-info:hover .user-dropdown {
+      display: block;
+    }
+
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      background: #dbeafe;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 14px;
+      color: #2563eb;
+      flex-shrink: 0;
+    }
+
+    .user-details {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.3;
+    }
+
+    .user-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: #0f172a;
+    }
+
+    .user-email {
+      font-size: 12px;
+      color: #64748b;
+    }
+
+    .role-badge {
+      display: inline-block;
+      font-size: 10px;
+      padding: 1px 8px;
+      border-radius: 10px;
+      font-weight: 600;
+      margin-right: 4px;
+    }
+
+    .role-badge.admin {
+      background: #dbeafe;
+      color: #12254e;
+    }
+
+    .role-badge.teacher {
+      background: #d1fae5;
+      color: #059669;
+    }
+
+    .role-badge.student {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .role-badge.guest {
+      background: #f1f5f9;
+      color: #64748b;
+    }
+
+    /* ============================================
+       USER DROPDOWN
+       ============================================ */
+    .user-dropdown {
+      display: none;
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.12);
+      min-width: 200px;
+      padding: 8px 0;
+      z-index: 100;
+      animation: dropdownSlide 0.2s ease;
+    }
+
+    @keyframes dropdownSlide {
+      from {
+        opacity: 0;
+        transform: translateY(-8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .user-dropdown-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 16px;
+      color: #475569;
+      font-size: 13px;
+      font-weight: 500;
+      text-decoration: none;
+      transition: background 0.2s ease;
+      cursor: pointer;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .user-dropdown-item:hover {
+      background: #f1f5f9;
+      color: #0f172a;
+    }
+
+    .user-dropdown-item.danger {
+      color: #dc2626;
+    }
+
+    .user-dropdown-item.danger:hover {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+
+    .user-dropdown-divider {
+      height: 1px;
+      background: #f1f5f9;
+      margin: 4px 12px;
+    }
+
+    /* ============================================
+       MAIN CONTENT
+       ============================================ */
+    .main-content {
+      flex: 1;
+      padding: 1.5rem 2rem 1rem;
+      background: #f1f5f9;
+      min-height: calc(100vh - 120px);
+    }
+
+    /* ============================================
+       MESSAGES
+       ============================================ */
+    .messages-list {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 1rem 0;
+    }
+
+    .message {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 18px;
+      border-radius: 10px;
+      margin-bottom: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      animation: slideDown 0.3s ease;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .message-success {
+      background: #d1fae5;
+      color: #065f46;
+      border: 1px solid #a7f3d0;
+    }
+
+    .message-error {
+      background: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #fecaca;
+    }
+
+    .message-warning {
+      background: #fef3c7;
+      color: #92400e;
+      border: 1px solid #fde68a;
+    }
+
+    .message-info {
+      background: #dbeafe;
+      color: #12254e;
+      border: 1px solid #bfdbfe;
+    }
+
+    .message-close {
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      color: inherit;
+      opacity: 0.6;
+      padding: 0 4px;
+      transition: opacity 0.2s ease;
+    }
+
+    .message-close:hover {
+      opacity: 1;
+    }
+
+    /* ============================================
+       FOOTER
+       ============================================ */
+    .app-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      background: white;
+      border-top: 1px solid #e2e8f0;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .footer-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .footer-brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .footer-brand svg {
+      width: 18px;
+      height: 18px;
+      color: #12254e;
+    }
+
+    .footer-name {
+      font-weight: 600;
+      font-size: 14px;
+      color: #0f172a;
+    }
+
+    .footer-copy {
+      font-size: 12px;
+      color: #94a3b8;
+      margin: 0;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 16px;
+    }
+
+    .footer-links a {
+      font-size: 12px;
+      color: #64748b;
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+
+    .footer-links a:hover {
+      color: #12254e;
+    }
+
+    /* ============================================
+       RESPONSIVE
+       ============================================ */
+    @media (max-width: 1024px) {
+      .sidebar {
+        width: 240px;
+        padding: 1rem;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        display: none;
+      }
+
+      .topbar {
+        padding: 0.75rem 1rem;
+        flex-wrap: wrap;
+      }
+
+      .topbar-title {
+        font-size: 18px;
+        order: -1;
+        flex: 0 0 100%;
+      }
+
+      .search-wrapper {
+        max-width: 100%;
+        flex: 1;
+      }
+
+      .user-info {
+        margin-left: auto;
+      }
+
+      .main-content {
+        padding: 1rem;
+      }
+
+      .app-footer {
+        flex-direction: column;
+        text-align: center;
+        padding: 1rem;
+      }
+
+      .footer-links {
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .user-details {
+        display: none;
+      }
+
+      .user-avatar {
+        width: 36px;
+        height: 36px;
+        font-size: 12px;
+      }
+
+      .topbar-title {
+        font-size: 16px;
+      }
+
+      .main-content {
+        padding: 0.75rem;
+      }
+    }
+  </style>
+
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<div class="app-layout">
+
+  <!-- ===========================
+       SIDEBAR
+       =========================== -->
+  <aside class="sidebar" id="sidebar" role="navigation" aria-label="Menu principal">
+
+    <!-- Brand -->
+    <div class="sidebar-brand">
+      <div class="brand-icon" aria-hidden="true">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+             fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+          <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <span class="brand-name">SchoolApp</span>
+        <span class="brand-sub">École Primaire</span>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="sidebar-nav">
+
+      <a href="{% url 'accounts:dashboard' %}" class="nav-item {% block nav_accueil %}{% endblock %}">
+        <span class="nav-icon" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect width="7" height="7" x="3" y="3" rx="1"/>
+            <rect width="7" height="7" x="14" y="3" rx="1"/>
+            <rect width="7" height="7" x="14" y="14" rx="1"/>
+            <rect width="7" height="7" x="3" y="14" rx="1"/>
+          </svg>
+        </span>
+        <span>Tableau de bord</span>
+      </a>
+
+      {% if user.is_staff %}
+      <a href="{% url 'students:list' %}" class="nav-item {% block nav_eleves %}{% endblock %}">
+        <span class="nav-icon" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+        </span>
+        <span>Élèves</span>
+      </a>
+
+      <a href="{% url 'classes:list' %}" class="nav-item {% block nav_classes %}{% endblock %}">
+        <span class="nav-icon" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+        </span>
+        <span>Classes</span>
+      </a>
+
+      <a href="{% url 'matieres:list' %}" class="nav-item {% block nav_matieres %}{% endblock %}">
+        <span class="nav-icon" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+          </svg>
+        </span>
+        <span>Matières</span>
+      </a>
+
+      <a href="{% url 'accounts:teacher_list' %}" class="nav-item {% block nav_enseignants %}{% endblock %}">
+        <span class="nav-icon" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect width="18" height="18" x="3" y="4" rx="2"/>
+            <line x1="16" x2="16" y1="2" y2="6"/>
+            <line x1="8"  x2="8"  y1="2" y2="6"/>
+            <line x1="3"  x2="21" y1="10" y2="10"/>
+          </svg>
+        </span>
+        <span>Enseignants</span>
+      </a>
+
+      <a href="{% url 'bulletin:liste' %}" class="nav-item {% block nav_bulletins %}{% endblock %}">
+        <span class="nav-icon" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" x2="8" y1="13" y2="13"/>
+            <line x1="16" x2="8" y1="17" y2="17"/>
+            <polyline points="10 9 9 9 8 9"/>
+          </svg>
+        </span>
+        <span>Bulletins</span>
+      </a>
+
+      <a href="{% url 'notifications:composer' %}" class="nav-item {% block nav_notifications %}{% endblock %}">
+        <span class="nav-icon" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+          </svg>
+        </span>
+        <span>Notifications</span>
+      </a>
+      {% else %}
+      <a href="{% url 'accounts:teacher_dashboard' %}" class="nav-item {% block nav_bulletins_prof %}{% endblock %}">
+        <span class="nav-icon" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" x2="8" y1="13" y2="13"/>
+            <line x1="16" x2="8" y1="17" y2="17"/>
+            <polyline points="10 9 9 9 8 9"/>
+          </svg>
+        </span>
+        <span>Noter mes élèves</span>
+      </a>
+      {% endif %}
+
+    </nav>
+
+    <!-- Footer of sidebar -->
+    <div class="sidebar-footer">
+      {% if user.is_staff %}
+      <a href="{% url 'accounts:parametres' %}" class="nav-item">
+        <span class="nav-icon" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+        </span>
+        <span>Paramètres</span>
+      </a>
+      {% endif %}
+
+      <!-- BOUTON DÉCONNEXION -->
+      <form action="{% url 'accounts:logout' %}" method="POST" style="display: inline;">
+        {% csrf_token %}
+        <button type="submit" class="nav-item logout-btn" style="width: 100%; border: none; background: none; cursor: pointer; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 12px; padding: 0.7rem 1rem; border-radius: 10px; transition: all 0.2s ease; color: #dc2626;">
+          <span class="nav-icon" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+            </svg>
+          </span>
+          <span>Déconnexion</span>
+        </button>
+      </form>
+    </div>
+
+  </aside><!-- /sidebar -->
+
+  <!-- ===========================
+       MAIN AREA
+       =========================== -->
+  <div class="main-area">
+
+    <!-- Topbar -->
+    <header class="topbar">
+      <h1 class="topbar-title">{% block page_title %}Portail Scolaire{% endblock %}</h1>
+
+      <div class="search-wrapper">
+        <span class="search-icon" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/>
+            <path d="m21 21-4.35-4.35"/>
+          </svg>
+        </span>
+        <input type="search" class="search-input" id="searchInput"
+               placeholder="{% block search_placeholder %}Rechercher...{% endblock %}"
+               aria-label="Rechercher" />
+      </div>
+
+      <!-- USER INFO - DYNAMIQUE AVEC DROPDOWN -->
+      <div class="user-info">
+        <div class="user-avatar" aria-hidden="true">
+          {% if user.is_authenticated %}
+            {% if user.first_name and user.last_name %}
+              {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
+            {% else %}
+              {{ user.username|slice:":2"|upper }}
+            {% endif %}
+          {% else %}
+            GU
+          {% endif %}
+        </div>
+        <div class="user-details">
+          <span class="user-name">
+            {% if user.is_authenticated %}
+              {% if user.is_staff %}
+                <span class="role-badge admin">Admin</span>
+              {% elif user.groups.all %}
+                {% for group in user.groups.all %}
+                  <span class="role-badge teacher">{{ group.name }}</span>
+                {% endfor %}
+              {% else %}
+                <span class="role-badge student">Élève</span>
+              {% endif %}
+              {{ user.get_full_name|default:user.username }}
+            {% else %}
+              <span class="role-badge guest">Invité</span>
+            {% endif %}
+          </span>
+          <span class="user-email">
+            {% if user.is_authenticated %}
+              {{ user.email|default:user.username }}
+            {% else %}
+              non connecté
+            {% endif %}
+          </span>
+        </div>
+
+        <!-- Flèche pour indiquer le dropdown -->
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #94a3b8;">
+          <path d="M19 9l-7 7-7-7"/>
+        </svg>
+
+        <!-- DROPDOWN MENU -->
+        <div class="user-dropdown">
+          <!-- Info utilisateur dans le dropdown -->
+          <div style="padding: 8px 16px 4px;">
+            <div style="font-weight: 600; font-size: 14px; color: #0f172a;">
+              {{ user.get_full_name|default:user.username }}
+            </div>
+            <div style="font-size: 12px; color: #64748b;">
+              {{ user.email|default:user.username }}
+            </div>
+          </div>
+          <div class="user-dropdown-divider"></div>
+
+          <!-- Profil -->
+          <a href="#" class="user-dropdown-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+            </svg>
+            Mon profil
+          </a>
+
+          <!-- Paramètres -->
+          <a href="#" class="user-dropdown-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12.22 2h-.44a2 2 0 00-2 2v.18a2 2 0 01-1 1.73l-.43.25a2 2 0 01-2 0l-.15-.08a2 2 0 00-2.73.73l-.22.38a2 2 0 00.73 2.73l.15.1a2 2 0 011 1.72v.51a2 2 0 01-1 1.74l-.15.09a2 2 0 00-.73 2.73l.22.38a2 2 0 002.73.73l.15-.08a2 2 0 012 0l.43.25a2 2 0 011 1.73V20a2 2 0 002 2h.44a2 2 0 002-2v-.18a2 2 0 011-1.73l.43-.25a2 2 0 012 0l.15.08a2 2 0 002.73-.73l.22-.39a2 2 0 00-.73-2.73l-.15-.08a2 2 0 01-1-1.74v-.5a2 2 0 011-1.74l.15-.09a2 2 0 00.73-2.73l-.22-.38a2 2 0 00-2.73-.73l-.15.08a2 2 0 01-2 0l-.43-.25a2 2 0 01-1-1.73V4a2 2 0 00-2-2z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+            Paramètres
+          </a>
+
+          <div class="user-dropdown-divider"></div>
+
+          <!-- Déconnexion -->
+          <form action="{% url 'accounts:logout' %}" method="POST" style="display: inline; width: 100%;">
+            {% csrf_token %}
+            <button type="submit" class="user-dropdown-item danger" style="width: 100%; border: none; background: none; cursor: pointer; font-family: 'Inter', sans-serif; display: flex; align-items: center; gap: 10px; padding: 8px 16px; font-size: 13px; font-weight: 500; color: #dc2626; text-align: left; transition: background 0.2s ease; border-radius: 0;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+              </svg>
+              Se déconnecter
+            </button>
+          </form>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main content -->
+    <main class="main-content" id="mainContent">
+
+      <!-- Django flash messages -->
+      {% if messages %}
+      <ul class="messages-list" role="alert" aria-live="polite">
+        {% for message in messages %}
+        <li class="message message-{{ message.tags }}">
+          {{ message }}
+          <button class="message-close" onclick="this.parentElement.remove()" aria-label="Fermer">×</button>
+        </li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+
+      {% block content %}{% endblock %}
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <div class="footer-left">
+        <div class="footer-brand">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+            <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+          </svg>
+          <span class="footer-name">School_App</span>
+        </div>
+        <p class="footer-copy">© 2026 Système de Gestion Scolaire.<br>Fait par SEPTA</p>
+      </div>
+      <nav class="footer-links" aria-label="Liens utiles">
+        <a href="#">Politique de confidentialité</a>
+        <a href="#">Mentions légales</a>
+        <a href="#">Contact</a>
+      </nav>
+    </footer>
+
+  </div><!-- /main-area -->
+
+</div><!-- /app-layout -->
+
+<!-- JavaScript pour le dropdown -->
+<script>
+  // Toggle dropdown au clic
+  document.addEventListener('DOMContentLoaded', function() {
+    const userInfo = document.querySelector('.user-info');
+    const dropdown = document.querySelector('.user-dropdown');
+
+    if (userInfo && dropdown) {
+      userInfo.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const isVisible = dropdown.style.display === 'block';
+        dropdown.style.display = isVisible ? 'none' : 'block';
+      });
+
+      // Fermer le dropdown en cliquant ailleurs
+      document.addEventListener('click', function() {
+        dropdown.style.display = 'none';
+      });
+
+      // Empêcher la fermeture quand on clique à l'intérieur du dropdown
+      dropdown.addEventListener('click', function(e) {
+        e.stopPropagation();
+      });
+    }
+  });
+</script>
+
+{% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Paramètres{% endblock %}
+{% block meta_desc %}Informations de l'établissement affichées sur les bulletins{% endblock %}
+{% block page_title %}Paramètres de l'établissement{% endblock %}
+
+{% block extra_css %}
+<style>
+  .settings-card {
+    background: white;
+    border-radius: 16px;
+    border: 1px solid #e5e7eb;
+    max-width: 640px;
+    padding: 28px;
+  }
+
+  .settings-card p.hint {
+    font-size: 13px;
+    color: #64748b;
+    margin: 0 0 24px;
+  }
+
+  .form-group {
+    margin-bottom: 18px;
+  }
+
+  .form-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #475569;
+    margin-bottom: 6px;
+  }
+
+  .form-input {
+    width: 100%;
+    padding: 10px 14px;
+    font-size: 14px;
+    font-family: 'Inter', sans-serif;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    outline: none;
+  }
+
+  .form-input:focus {
+    border-color: #2563eb;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 22px;
+    font-size: 14px;
+    font-weight: 600;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    background: #213561;
+    color: white;
+  }
+
+  .btn:hover { background: #374970; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="settings-card">
+  <p class="hint">
+    Ces informations apparaissent dans l'en-tête et la signature des bulletins scolaires.
+  </p>
+
+  <form method="post">
+    {% csrf_token %}
+
+    <div class="form-group">
+      <label class="form-label">Nom de l'établissement</label>
+      <input type="text" name="nom" class="form-input" value="{{ ecole.nom }}" required>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Adresse</label>
+      <input type="text" name="adresse" class="form-input" value="{{ ecole.adresse }}">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Contact (téléphone / e-mail)</label>
+      <input type="text" name="contact" class="form-input" value="{{ ecole.contact }}">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Nom du directeur (pour la signature du bulletin)</label>
+      <input type="text" name="nom_directeur" class="form-input" value="{{ ecole.nom_directeur }}">
+    </div>
+
+    <button type="submit" class="btn">Enregistrer</button>
+  </form>
+</div>
+
+{% endblock %}

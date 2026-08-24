@@ -1,0 +1,396 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Bulletin — {{ eleve.first_name }} {{ eleve.last_name }}{% endblock %}
+{% block meta_desc %}Bulletin de {{ eleve.first_name }} {{ eleve.last_name }}{% endblock %}
+{% block page_title %}Bulletin de {{ eleve.first_name }} {{ eleve.last_name }}{% endblock %}
+{% block nav_bulletins %}active{% endblock %}
+{% block nav_bulletins_prof %}active{% endblock %}
+
+{% block extra_css %}
+<style>
+  .bulletin-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-bottom: 1.5rem;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    text-decoration: none;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .btn-primary { background: #12254e; color: white; }
+  .btn-primary:hover { background: #1d3a73; }
+  .btn-secondary { background: #f1f5f9; color: #475569; }
+
+  .bulletin-sheet {
+    background: white;
+    border-radius: 16px;
+    border: 1px solid #e5e7eb;
+    padding: 40px 44px;
+    max-width: 880px;
+    margin: 0 auto;
+  }
+
+  /* ===== EN-TÊTE ===== */
+  .sheet-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #12254e;
+    margin-bottom: 24px;
+  }
+
+  .sheet-top-title h2 {
+    margin: 0 0 4px;
+    color: #0f172a;
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.3px;
+  }
+
+  .sheet-top-title p {
+    margin: 0;
+    color: #64748b;
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  .sheet-top-ecole {
+    text-align: right;
+    font-size: 12px;
+    color: #64748b;
+    line-height: 1.5;
+  }
+
+  .sheet-top-ecole strong {
+    display: block;
+    color: #0f172a;
+    font-size: 14px;
+    margin-bottom: 2px;
+  }
+
+  /* ===== BLOC ÉLÈVE ===== */
+  .eleve-bloc {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f8fafc;
+    border-radius: 14px;
+    padding: 18px 22px;
+    margin-bottom: 24px;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .eleve-bloc-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .eleve-photo {
+    width: 64px;
+    height: 64px;
+    border-radius: 12px;
+    object-fit: cover;
+    flex-shrink: 0;
+    background: #dbeafe;
+  }
+
+  .eleve-photo-fallback {
+    width: 64px;
+    height: 64px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #1b2e56, #2c4780);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+
+  .eleve-nom {
+    font-size: 17px;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0 0 2px;
+  }
+
+  .eleve-meta {
+    font-size: 12px;
+    color: #64748b;
+  }
+
+  .eleve-bloc-right {
+    text-align: right;
+  }
+
+  .eleve-bloc-right .label {
+    display: block;
+    font-size: 10px;
+    text-transform: uppercase;
+    color: #94a3b8;
+    letter-spacing: 0.3px;
+    margin-bottom: 1px;
+  }
+
+  .eleve-bloc-right .value {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #0f172a;
+    margin-bottom: 8px;
+  }
+
+  /* ===== TABLEAU ===== */
+  table.bulletin-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 24px;
+  }
+
+  .bulletin-table th, .bulletin-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 13px;
+    text-align: left;
+  }
+
+  .bulletin-table th {
+    background: #f8fafc;
+    color: #64748b;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+
+  .bulletin-table td.note-cell {
+    font-weight: 700;
+    color: #0f172a;
+  }
+
+  .bulletin-table td.appreciation-cell {
+    color: #475569;
+    font-size: 12.5px;
+  }
+
+  /* ===== RÉSUMÉ ===== */
+  .bulletin-summary {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .summary-box {
+    background: #eef2ff;
+    border-radius: 12px;
+    padding: 16px 20px;
+    text-align: center;
+  }
+
+  .summary-box .value {
+    font-size: 26px;
+    font-weight: 800;
+    color: #12254e;
+  }
+
+  .summary-box .unit {
+    font-size: 13px;
+    font-weight: 500;
+    color: #64748b;
+  }
+
+  .summary-box .label {
+    font-size: 11px;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    margin-top: 4px;
+  }
+
+  .avis-box {
+    background: #f8fafc;
+    border-left: 3px solid #12254e;
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin-bottom: 28px;
+  }
+
+  .avis-box .label {
+    font-size: 11px;
+    text-transform: uppercase;
+    color: #94a3b8;
+    letter-spacing: 0.3px;
+    margin-bottom: 4px;
+  }
+
+  .avis-box p {
+    margin: 0;
+    font-size: 13px;
+    color: #334155;
+  }
+
+  /* ===== SIGNATURES ===== */
+  .signatures {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 40px;
+    padding-top: 16px;
+  }
+
+  .signature-block {
+    text-align: center;
+    width: 220px;
+  }
+
+  .signature-role {
+    font-size: 11px;
+    text-transform: uppercase;
+    color: #94a3b8;
+    letter-spacing: 0.3px;
+    margin-bottom: 40px;
+  }
+
+  .signature-line {
+    border-top: 1px solid #cbd5e1;
+    padding-top: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #0f172a;
+  }
+
+  @media print {
+    .sidebar, .topbar, .app-footer, .no-print, .messages-list {
+      display: none !important;
+    }
+    .main-area, .main-content {
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+    .bulletin-sheet {
+      border: none;
+      padding: 0;
+    }
+    body {
+      background: white;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="bulletin-actions no-print">
+  <a href="{% url 'bulletin:liste' %}" class="btn btn-secondary">Retour</a>
+  <button type="button" class="btn btn-primary" onclick="window.print()">Imprimer</button>
+</div>
+
+<div class="bulletin-sheet">
+
+  <div class="sheet-top">
+    <div class="sheet-top-title">
+      <h2>Bulletin scolaire</h2>
+      <p>{{ mois_label }} — {{ bulletin.annee_scolaire }}</p>
+    </div>
+    <div class="sheet-top-ecole">
+      <strong>{{ ecole.nom }}</strong>
+      {% if ecole.adresse %}{{ ecole.adresse }}<br>{% endif %}
+      {% if ecole.contact %}{{ ecole.contact }}{% endif %}
+    </div>
+  </div>
+
+  <div class="eleve-bloc">
+    <div class="eleve-bloc-left">
+      {% if eleve.photo %}
+        <img class="eleve-photo" src="{{ eleve.photo.url }}" alt="{{ eleve.first_name }} {{ eleve.last_name }}">
+      {% else %}
+        <div class="eleve-photo-fallback">{{ eleve.first_name|first }}{{ eleve.last_name|first }}</div>
+      {% endif %}
+      <div>
+        <p class="eleve-nom">{{ eleve.first_name|upper }} {{ eleve.last_name|upper }}</p>
+        <p class="eleve-meta">ID: {{ eleve.identification_number }} | {{ classe.nom }} — {{ eleve.age_display }}</p>
+        <p class="eleve-meta">Né(e) le {{ eleve.date_of_birth|date:"d/m/Y" }}</p>
+      </div>
+    </div>
+    <div class="eleve-bloc-right">
+      <span class="label">Professeur principal</span>
+      <span class="value">
+        {% if classe.enseignant %}{{ classe.enseignant.get_full_name|default:classe.enseignant.username }}{% else %}Non affecté{% endif %}
+      </span>
+      <span class="label">Effectif classe</span>
+      <span class="value">{{ effectif_classe }} élèves</span>
+    </div>
+  </div>
+
+  <table class="bulletin-table">
+    <thead>
+      <tr>
+        <th>Enseignements</th>
+        <th>Coef.</th>
+        <th>Note /10</th>
+        <th>Moy. classe</th>
+        <th>Appréciations &amp; travail</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for ligne in lignes %}
+      <tr>
+        <td>{{ ligne.matiere.nom }}</td>
+        <td>{{ ligne.matiere.coefficient }}</td>
+        <td class="note-cell">{{ ligne.note_sur_10|default:"—" }}</td>
+        <td>{{ ligne.moyenne_classe|default:"—" }}</td>
+        <td class="appreciation-cell">{{ ligne.note.commentaire|default:"—" }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div class="bulletin-summary">
+    <div class="summary-box">
+      <div class="value">{{ bulletin.moyenne_generale }}<span class="unit"> /10</span></div>
+      <div class="label">Moyenne générale</div>
+    </div>
+    <div class="summary-box">
+      <div class="value">{{ bulletin.rang }}<span class="unit">ème</span></div>
+      <div class="label">Rang dans la classe — sur {{ effectif_classe }} élèves</div>
+    </div>
+  </div>
+
+  {% if bulletin.avis_conseil %}
+  <div class="avis-box">
+    <div class="label">Avis du conseil de classe</div>
+    <p>{{ bulletin.avis_conseil }}</p>
+  </div>
+  {% endif %}
+
+  <div class="signatures">
+    <div class="signature-block">
+      <div class="signature-role">M. Le Directeur</div>
+      <div class="signature-line">{{ ecole.nom_directeur|default:"—" }}</div>
+    </div>
+    <div class="signature-block">
+      <div class="signature-role">Tuteur</div>
+      <div class="signature-line">{{ eleve.parent.first_name }} {{ eleve.parent.last_name }}</div>
+    </div>
+  </div>
+
+</div>
+
+{% endblock %}
