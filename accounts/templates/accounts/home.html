@@ -662,6 +662,145 @@
       color: #0a2257;
     }
 
+    .footer-home .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+      margin-top: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .footer-home .footer-links a {
+      font-size: 12px;
+      color: #64748b;
+    }
+
+    .footer-home .footer-links a:hover {
+      color: #0a2257;
+    }
+
+    /* ============================================
+       MESSAGES (flash Django)
+       ============================================ */
+    .home-messages {
+      position: fixed;
+      top: 90px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 2000;
+      width: 100%;
+      max-width: 480px;
+      padding: 0 1rem;
+    }
+
+    .home-message {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 18px;
+      border-radius: 12px;
+      margin-bottom: 10px;
+      font-size: 14px;
+      font-weight: 500;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    }
+
+    .home-message-success {
+      background: #d1fae5;
+      color: #065f46;
+      border: 1px solid #a7f3d0;
+    }
+
+    .home-message-error {
+      background: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #fecaca;
+    }
+
+    .home-message-close {
+      background: none;
+      border: none;
+      font-size: 18px;
+      cursor: pointer;
+      color: inherit;
+      opacity: 0.6;
+    }
+
+    /* ============================================
+       SECTION CONTACT
+       ============================================ */
+    .contact-section {
+      padding: 4rem 2rem;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    .contact-title {
+      text-align: center;
+      font-size: 28px;
+      font-weight: 800;
+      color: #0f172a;
+      margin-bottom: 0.5rem;
+    }
+
+    .contact-sub {
+      text-align: center;
+      color: #64748b;
+      font-size: 15px;
+      margin-bottom: 2rem;
+    }
+
+    .contact-sub a {
+      color: #0a2257;
+      font-weight: 600;
+    }
+
+    .contact-form {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 2rem;
+    }
+
+    .contact-form .form-row {
+      margin-bottom: 1rem;
+    }
+
+    .contact-form label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: #475569;
+      margin-bottom: 6px;
+    }
+
+    .contact-form input,
+    .contact-form textarea {
+      width: 100%;
+      padding: 10px 14px;
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 10px;
+      outline: none;
+    }
+
+    .contact-form input:focus,
+    .contact-form textarea:focus {
+      border-color: #2563eb;
+    }
+
+    .contact-form textarea {
+      resize: vertical;
+      min-height: 120px;
+    }
+
+    .contact-form button {
+      width: 100%;
+      margin-top: 0.5rem;
+    }
+
     /* ============================================
        RESPONSIVE
        ============================================ */
@@ -783,6 +922,17 @@
   </style>
 </head>
 <body>
+
+{% if messages %}
+<div class="home-messages" role="alert" aria-live="polite">
+  {% for message in messages %}
+  <div class="home-message home-message-{{ message.tags }}">
+    {{ message }}
+    <button class="home-message-close" onclick="this.parentElement.remove()" aria-label="Fermer">×</button>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
 
 <!-- ============================================
      NAVBAR (indépendante)
@@ -1037,13 +1187,47 @@
 </section>
 
 <!-- ============================================
+     SECTION CONTACT
+     ============================================ -->
+<section id="contact" class="contact-section">
+  <h2 class="contact-title">Une question, un problème à signaler ?</h2>
+  <p class="contact-sub">
+    Écrivez-nous directement, notre équipe <strong>SEPTA</strong> vous répondra par e-mail.
+    Vous pouvez aussi nous écrire à <a href="mailto:septadev7@gmail.com">septadev7@gmail.com</a>.
+  </p>
+
+  <form class="contact-form" method="post" action="{% url 'accounts:contact' %}">
+    {% csrf_token %}
+    <div class="form-row">
+      <label for="contact-nom">Nom (facultatif)</label>
+      <input type="text" id="contact-nom" name="nom" placeholder="Votre nom">
+    </div>
+    <div class="form-row">
+      <label for="contact-email">Votre e-mail</label>
+      <input type="email" id="contact-email" name="email" placeholder="vous@exemple.com" required>
+    </div>
+    <div class="form-row">
+      <label for="contact-message">Message</label>
+      <textarea id="contact-message" name="message" placeholder="Décrivez votre demande ou le problème rencontré..." required></textarea>
+    </div>
+    <button type="submit" class="btn-hero btn-hero-primary">
+      Envoyer le message
+    </button>
+  </form>
+</section>
+
+<!-- ============================================
      FOOTER
      ============================================ -->
-<footer id="contact" class="footer-home">
+<footer class="footer-home">
   <p class="footer-text">
     © 2026 <strong>SCHOOLAPP</strong> — Système de Gestion Scolaire.<br>
     Fait par <strong>SEPTA</strong> — Collaboration · Innovation · Technologie
   </p>
+  <nav class="footer-links" aria-label="Liens utiles">
+    <a href="{% url 'accounts:politique_confidentialite' %}">Politique de confidentialité</a>
+    <a href="#contact">Contact</a>
+  </nav>
 </footer>
 
 <!-- ============================================

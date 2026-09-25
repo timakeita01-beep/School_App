@@ -68,6 +68,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'bulletins.context_processors.reclamations_badge',
             ],
         },
     },
@@ -136,3 +137,7 @@ LOGOUT_REDIRECT_URL = "accounts:login"
 # vrai backend SMTP en production.
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 DEFAULT_FROM_EMAIL = "no-reply@schoolapp.local"
+
+# Adresse recevant les messages du formulaire de contact public (destinés à
+# SEPTA, l'éditeur du logiciel, et non à l'établissement scolaire).
+CONTACT_EMAIL = "septadev7@gmail.com"

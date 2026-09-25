@@ -310,7 +310,7 @@
 
 <div class="bulletin-actions no-print">
   <a href="{% url 'bulletin:liste' %}" class="btn btn-secondary">Retour</a>
-  <button type="button" class="btn btn-primary" onclick="window.print()">Imprimer</button>
+  <a href="{% url 'bulletin:pdf' bulletin.pk %}" target="_blank" class="btn btn-primary">Télécharger en PDF</a>
 </div>
 
 <div class="bulletin-sheet">

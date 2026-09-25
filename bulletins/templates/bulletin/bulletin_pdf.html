@@ -1,0 +1,208 @@
+<html>
+<head>
+<style>
+  @page {
+    size: A4;
+    margin: 2cm 1.8cm;
+  }
+
+  body {
+    font-family: Helvetica, Arial, sans-serif;
+    color: #0f172a;
+    font-size: 10pt;
+  }
+
+  table { border-collapse: collapse; }
+
+  .header-table {
+    width: 100%;
+    border-bottom: 2px solid #12254e;
+    padding-bottom: 8px;
+    margin-bottom: 12px;
+  }
+
+  .header-table td { vertical-align: top; }
+
+  .titre { font-size: 17pt; font-weight: bold; color: #0f172a; }
+  .sous-titre { font-size: 10pt; color: #64748b; }
+
+  .ecole-info { text-align: right; font-size: 9pt; color: #64748b; }
+  .ecole-info strong { font-size: 11pt; color: #0f172a; }
+
+  .eleve-table {
+    width: 100%;
+    background-color: #f8fafc;
+    margin-bottom: 12px;
+  }
+
+  .eleve-table td { padding: 7px 12px; font-size: 9.5pt; }
+
+  .eleve-photo { width: 56px; height: 56px; }
+
+  .eleve-nom { font-size: 12pt; font-weight: bold; margin-bottom: 2px; }
+  .eleve-meta { font-size: 9pt; color: #475569; }
+
+  .label-petit {
+    font-size: 8pt;
+    color: #94a3b8;
+    text-transform: uppercase;
+  }
+
+  table.notes-table {
+    width: 100%;
+    margin-bottom: 12px;
+  }
+
+  table.notes-table th {
+    background-color: #f1f5f9;
+    color: #475569;
+    font-size: 8pt;
+    text-transform: uppercase;
+    text-align: left;
+    padding: 5px 10px;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  table.notes-table td {
+    padding: 5px 10px;
+    font-size: 9.5pt;
+    border-bottom: 1px solid #f1f5f9;
+  }
+
+  .note-cell { font-weight: bold; }
+
+  table.summary-table {
+    width: 100%;
+    margin-bottom: 12px;
+  }
+
+  table.summary-table td {
+    width: 50%;
+    background-color: #eef2ff;
+    text-align: center;
+    padding: 10px;
+  }
+
+  .summary-value { font-size: 20pt; font-weight: bold; color: #12254e; }
+  .summary-label { font-size: 8pt; color: #64748b; text-transform: uppercase; }
+
+  .avis-box {
+    background-color: #f8fafc;
+    border-left: 3px solid #12254e;
+    padding: 8px 14px;
+    margin-bottom: 12px;
+    font-size: 9.5pt;
+  }
+
+  .avis-label { font-size: 8pt; text-transform: uppercase; color: #94a3b8; }
+
+  table.signatures-table {
+    width: 100%;
+    margin-top: 10px;
+  }
+
+  table.signatures-table td {
+    width: 50%;
+    text-align: center;
+    font-size: 9pt;
+  }
+
+  .signature-role { font-size: 8pt; text-transform: uppercase; color: #94a3b8; }
+  .signature-line {
+    border-top: 1px solid #cbd5e1;
+    padding-top: 4px;
+    font-weight: bold;
+  }
+</style>
+</head>
+<body>
+
+  <table class="header-table">
+    <tr>
+      <td>
+        <div class="titre">Bulletin scolaire</div>
+        <div class="sous-titre">{{ mois_label }} &mdash; {{ bulletin.annee_scolaire }}</div>
+      </td>
+      <td class="ecole-info">
+        <strong>{{ ecole.nom }}</strong><br>
+        {% if ecole.adresse %}{{ ecole.adresse }}<br>{% endif %}
+        {% if ecole.contact %}{{ ecole.contact }}{% endif %}
+      </td>
+    </tr>
+  </table>
+
+  <table class="eleve-table">
+    <tr>
+      {% if eleve.photo %}
+      <td style="width:70px;"><img class="eleve-photo" src="{{ eleve.photo.path }}" width="56" height="56"/></td>
+      {% endif %}
+      <td>
+        <div class="eleve-nom">{{ eleve.first_name|upper }} {{ eleve.last_name|upper }}</div>
+        <div class="eleve-meta">ID : {{ eleve.identification_number }} &mdash; {{ classe.nom }} &mdash; {{ eleve.age_display }}</div>
+        <div class="eleve-meta">Né(e) le {{ eleve.date_of_birth|date:"d/m/Y" }}</div>
+      </td>
+      <td style="text-align:right;">
+        <div class="label-petit">Professeur principal</div>
+        <div>{% if classe.enseignant %}{{ classe.enseignant.get_full_name|default:classe.enseignant.username }}{% else %}Non affecté{% endif %}</div>
+        <div class="label-petit" style="margin-top:6px;">Effectif classe</div>
+        <div>{{ effectif_classe }} élèves</div>
+      </td>
+    </tr>
+  </table>
+
+  <table class="notes-table">
+    <tr>
+      <th>Enseignements</th>
+      <th>Coef.</th>
+      <th>Note /10</th>
+      <th>Moy. classe</th>
+      <th>Appréciations &amp; travail</th>
+    </tr>
+    {% for ligne in lignes %}
+    <tr>
+      <td>{{ ligne.matiere.nom }}</td>
+      <td>{{ ligne.matiere.coefficient }}</td>
+      <td class="note-cell">{{ ligne.note_sur_10|default:"—" }}</td>
+      <td>{{ ligne.moyenne_classe|default:"—" }}</td>
+      <td>{{ ligne.note.commentaire|default:"—" }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+
+  <table class="summary-table">
+    <tr>
+      <td>
+        <div class="summary-value">{{ bulletin.moyenne_generale }} /10</div>
+        <div class="summary-label">Moyenne générale</div>
+      </td>
+      <td>
+        <div class="summary-value">{{ bulletin.rang }}<span style="font-size:11pt;">ème</span></div>
+        <div class="summary-label">Rang &mdash; sur {{ effectif_classe }} élèves</div>
+      </td>
+    </tr>
+  </table>
+
+  {% if bulletin.avis_conseil %}
+  <div class="avis-box">
+    <div class="avis-label">Avis du conseil de classe</div>
+    <div>{{ bulletin.avis_conseil }}</div>
+  </div>
+  {% endif %}
+
+  <table class="signatures-table">
+    <tr>
+      <td>
+        <div class="signature-role">M. Le Directeur</div>
+        {% if ecole.signature_directeur %}<img src="{{ ecole.signature_directeur.path }}" width="130" height="55"/><br>{% else %}<br><br>{% endif %}
+        <div class="signature-line">{{ ecole.nom_directeur|default:"—" }}</div>
+      </td>
+      <td>
+        <div class="signature-role">Tuteur</div>
+        <br><br>
+        <div class="signature-line">{{ eleve.parent.first_name }} {{ eleve.parent.last_name }}</div>
+      </td>
+    </tr>
+  </table>
+
+</body>
+</html>

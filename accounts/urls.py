@@ -4,6 +4,8 @@ from . import views
 app_name = 'accounts'
 urlpatterns = [
     path("", views.home, name="home"),
+    path("contact/", views.contact, name="contact"),
+    path("politique-confidentialite/", views.politique_confidentialite, name="politique_confidentialite"),
     path("login/", views.login_view, name="login"),
     path("logout/", views.logout_view, name="logout"),
     path("dashboard/", views.dashboard, name="dashboard"),
@@ -15,4 +17,5 @@ urlpatterns = [
     path("teacher/<int:pk>/delete/", views.teacher_delete, name="teacher_delete"),
     path("teacher/<int:pk>/profile/", views.teacher_profile, name="teacher_profile"),
     path("parametres/", views.parametres, name="parametres"),
+    path("parametres/sauvegarde/", views.sauvegarde_export, name="sauvegarde_export"),
 ]

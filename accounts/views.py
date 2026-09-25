@@ -1,5 +1,12 @@
+from datetime import date
+
+from django.conf import settings
 from django.contrib import messages
+from django.core import serializers
+from django.core.mail import send_mail
+from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User, Group
@@ -52,6 +59,45 @@ def admin_dashboard(request):
 def home(request):
     return render(request, "accounts/home.html")
 
+
+def politique_confidentialite(request):
+    return render(request, "accounts/politique_confidentialite.html")
+
+
+def contact(request):
+    if request.method == "POST":
+        nom = request.POST.get("nom", "").strip()
+        email = request.POST.get("email", "").strip()
+        message = request.POST.get("message", "").strip()
+
+        if not email or not message:
+            messages.error(
+                request,
+                "Merci de renseigner votre e-mail et votre message.",
+            )
+            return redirect(reverse("accounts:home") + "#contact")
+
+        send_mail(
+            subject=f"[Contact SchoolApp] Message de {nom or email}",
+            message=(
+                f"Nom : {nom or 'Non renseigné'}\n"
+                f"E-mail : {email}\n\n"
+                f"Message :\n{message}\n"
+            ),
+            from_email=None,
+            recipient_list=[settings.CONTACT_EMAIL],
+            fail_silently=True,
+        )
+
+        messages.success(
+            request,
+            "Votre message a bien été envoyé. Nous vous répondrons rapidement.",
+        )
+        return redirect(reverse("accounts:home") + "#contact")
+
+    return redirect("accounts:home")
+
+
 def is_teacher(user):
     return user.groups.filter(name="Teacher").exists()
 
@@ -93,14 +139,14 @@ def teacher_dashboard(request):
 
     from datetime import date
 
-    from bulletins.models import Note
-    from bulletins.utils import mois_courant, mois_label, ANNEE_SCOLAIRE_DEFAUT
+    from bulletins.models import Note, Reclamation
+    from bulletins.utils import mois_courant, mois_label, annee_active
     from presences.models import Presence
 
     classes = Classe.objects.filter(enseignant=request.user).order_by("-niveau", "nom")
 
     mois = mois_courant()
-    annee_scolaire = ANNEE_SCOLAIRE_DEFAUT
+    annee_scolaire = annee_active()
     aujourdhui = date.today()
 
     classes_info = []
@@ -134,11 +180,16 @@ def teacher_dashboard(request):
             "appel_fait_aujourdhui": appel_fait_aujourdhui,
         })
 
+    reclamations_a_traiter = Reclamation.objects.filter(
+        statut=Reclamation.TRANSMISE, bulletin__classe__enseignant=request.user,
+    ).select_related("bulletin__student", "bulletin__classe", "matiere")
+
     context = {
         "classes_info": classes_info,
         "mois": mois,
         "mois_label": mois_label(mois),
         "annee_scolaire": annee_scolaire,
+        "reclamations_a_traiter": reclamations_a_traiter,
     }
 
     return render(request, "accounts/teacher_dashboard.html", context)
@@ -359,6 +410,47 @@ def parametres(request):
         return redirect("accounts:parametres")
 
     return render(request, "accounts/parametres.html", {"ecole": ecole})
+
+
+@login_required
+def sauvegarde_export(request):
+    """Exporte l'intégralité des données métier en JSON, téléchargeable
+    avant une opération sensible (ex : passage en classe supérieure)."""
+
+    if not request.user.is_staff:
+        messages.error(request, "Seul l'administrateur peut télécharger une sauvegarde.")
+        return redirect("accounts:dashboard")
+
+    from bulletins.models import Bulletin, Note, PromotionCampagne, Reclamation
+    from classes.models import Classe
+    from eleves.models import Parent, Student
+    from matieres.models import Matiere
+    from notifications.models import Notification
+    from presences.models import Presence
+
+    objets = []
+    for queryset in [
+        EcoleConfig.objects.all(),
+        Classe.objects.all(),
+        Matiere.objects.all(),
+        Parent.objects.all(),
+        Student.objects.all(),
+        Note.objects.all(),
+        Bulletin.objects.all(),
+        Presence.objects.all(),
+        Notification.objects.all(),
+        Reclamation.objects.all(),
+        PromotionCampagne.objects.all(),
+    ]:
+        objets.extend(queryset)
+
+    donnees_json = serializers.serialize("json", objets, indent=2)
+
+    horodatage = date.today().isoformat()
+    response = HttpResponse(donnees_json, content_type="application/json")
+    response["Content-Disposition"] = f'attachment; filename="sauvegarde_{horodatage}.json"'
+
+    return response
 
 
 def teacher_profile(request, pk):

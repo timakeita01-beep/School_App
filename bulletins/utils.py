@@ -34,6 +34,33 @@ def mois_label(mois):
     return MOIS_LABELS.get(int(mois), str(mois))
 
 
+def annee_active():
+    """Année scolaire actuellement en cours, définie par l'administrateur
+    (avance automatiquement à chaque passage en classe supérieure)."""
+
+    from accounts.models import EcoleConfig
+
+    return EcoleConfig.get_solo().annee_scolaire_active
+
+
+def annee_suivante(annee_scolaire):
+    """« 2026-2027 » -> « 2027-2028 »."""
+
+    debut, fin = annee_scolaire.split("-")
+    return f"{int(debut) + 1}-{int(fin) + 1}"
+
+
+def annees_disponibles():
+    """Les deux années scolaires accessibles dans la navigation : l'année
+    active et celle qui la précède. Les années plus anciennes ne sont plus
+    proposées mais restent conservées en base (rien n'est jamais supprimé)."""
+
+    active = annee_active()
+    debut, fin = active.split("-")
+    precedente = f"{int(debut) - 1}-{int(fin) - 1}"
+    return [active, precedente]
+
+
 def lien_whatsapp(numero, message):
     """Construit un lien wa.me (« click to chat ») ouvrant une conversation
     WhatsApp avec ce numéro et ce message pré-rempli. Ne joint aucun fichier :

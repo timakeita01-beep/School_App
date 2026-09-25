@@ -42,6 +42,13 @@ class Student(models.Model):
     photo_identite = models.ImageField(upload_to='eleves/photos_identite/', blank=True, null=True)
     acte_naissance = models.FileField(upload_to='eleves/actes_naissance/', blank=True, null=True)
 
+    # Un élève reste "actif" tant qu'il est scolarisé dans l'établissement.
+    # Passé inactif lors du passage en classe supérieure des élèves de 6ème
+    # année (sortie/diplôme) : il disparaît des listes de classe actives
+    # mais son dossier et ses bulletins restent consultables.
+    actif = models.BooleanField(default=True)
+    date_sortie = models.DateField(blank=True, null=True)
+
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
 

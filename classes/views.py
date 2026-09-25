@@ -13,8 +13,9 @@ def voir(request):
 
 def classe_detail(request, pk):
     classe = get_object_or_404(Classe, pk=pk)
-    # Tous les élèves de cette classe
-    eleves = classe.students.all()
+    # Tous les élèves actifs de cette classe (les diplômés/sortis n'y
+    # figurent plus, mais restent consultables via leur fiche)
+    eleves = classe.students.filter(actif=True)
     matieres = classe.matieres.all()
 
     enseignant = None

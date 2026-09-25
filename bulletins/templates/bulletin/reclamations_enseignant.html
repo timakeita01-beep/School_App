@@ -1,0 +1,244 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Réclamations{% endblock %}
+{% block meta_desc %}Réclamations de notes à examiner{% endblock %}
+{% block page_title %}Réclamations à examiner{% endblock %}
+{% block nav_reclamations_teacher %}active{% endblock %}
+
+{% block extra_css %}
+<style>
+  .page-header { margin-bottom: 1.5rem; }
+  .page-header h2 { font-size: 22px; font-weight: 700; color: #0f172a; margin: 0; }
+  .page-header p { font-size: 14px; color: #64748b; margin: 4px 0 0; max-width: 700px; }
+
+  .section-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 1.75rem 0 1rem;
+  }
+  .section-title:first-of-type { margin-top: 0; }
+
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 24px;
+  }
+
+  .rec-card {
+    background: rgb(248, 248, 248);
+    border-radius: 16px;
+    border: 1px solid #e5e6e8;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .rec-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.06);
+    border-color: #173a86;
+  }
+
+  .rec-card-header {
+    background: linear-gradient(135deg, #1b2e56, #2c4780);
+    padding: 16px 20px;
+    color: #f7f5f5;
+    position: relative;
+  }
+
+  .rec-card-badge {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 20px;
+  }
+
+  .badge-attente { background: #dbeafe; color: #1e3a8a; }
+  .badge-traitee { background: #d1fae5; color: #065f46; }
+  .badge-rejetee { background: #e2e8f0; color: #475569; }
+
+  .rec-card-sub {
+    display: inline-block;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 2px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+
+  .rec-card-title {
+    font-size: 17px;
+    font-weight: 700;
+    margin: 0;
+    color: white;
+  }
+
+  .rec-card-body {
+    padding: 18px 20px 20px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: rgb(247, 247, 247);
+  }
+
+  .rec-card-meta {
+    font-size: 12px;
+    color: #94a3b8;
+    margin-bottom: 12px;
+  }
+
+  .rec-message {
+    background: white;
+    border: 1px solid #e5e6e8;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: #334155;
+    margin-bottom: 14px;
+  }
+
+  .field-group { margin-bottom: 12px; }
+
+  .field-group label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: #475569;
+    margin-bottom: 4px;
+  }
+
+  .field-group input, .field-group textarea {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 8px;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    background: white;
+  }
+
+  .field-group textarea { min-height: 60px; resize: vertical; }
+
+  .rec-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: auto;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    flex: 1;
+  }
+
+  .btn-success { background: #059669; color: white; }
+  .btn-success:hover { background: #047857; }
+  .btn-danger { background: #fee2e2; color: #991b1b; }
+  .btn-danger:hover { background: #fecaca; }
+
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    background: white;
+    border-radius: 16px;
+    border: 1px solid #e5e7eb;
+    color: #94a3b8;
+    font-size: 13px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+  <h2>Réclamations à examiner</h2>
+  <p>Ces signalements de parents vous ont été transmis par l'administration. Proposez une correction ou expliquez pourquoi la note est correcte.</p>
+</div>
+
+<div class="section-title">À traiter {% if reclamations %}({{ reclamations|length }}){% endif %}</div>
+
+{% if reclamations %}
+<div class="cards-grid">
+  {% for r in reclamations %}
+  <article class="rec-card">
+    <div class="rec-card-header">
+      <span class="rec-card-sub">{{ r.bulletin.classe.nom }}</span>
+      <h3 class="rec-card-title">{{ r.bulletin.student.first_name }} {{ r.bulletin.student.last_name }}</h3>
+    </div>
+    <div class="rec-card-body">
+      <div class="rec-card-meta">
+        {{ r.matiere.nom }} · {{ r.bulletin.mois }}/{{ r.bulletin.annee_scolaire }}
+        {% if r.note %} · Note actuelle : {{ r.note.valeur }}/{{ r.matiere.note_sur }}{% endif %}
+      </div>
+      <div class="rec-message">« {{ r.message_parent }} »</div>
+
+      <form method="post" action="">
+        {% csrf_token %}
+        <div class="field-group">
+          <label>Note corrigée (/{{ r.matiere.note_sur }})</label>
+          <input type="text" name="valeur_proposee" placeholder="ex: 15.5">
+        </div>
+        <div class="field-group">
+          <label>Commentaire (obligatoire pour un rejet)</label>
+          <textarea name="commentaire" placeholder="Expliquez votre décision..."></textarea>
+        </div>
+        <div class="rec-actions">
+          <button type="submit" formaction="{% url 'bulletin:reclamation_valider' r.pk %}" class="btn btn-success">
+            Valider
+          </button>
+          <button type="submit" formaction="{% url 'bulletin:reclamation_rejeter' r.pk %}" class="btn btn-danger">
+            Rejeter
+          </button>
+        </div>
+      </form>
+    </div>
+  </article>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">Aucune réclamation en attente pour vos classes.</div>
+{% endif %}
+
+<div class="section-title">Historique</div>
+{% if historique %}
+<div class="cards-grid">
+  {% for r in historique %}
+  <article class="rec-card">
+    <div class="rec-card-header">
+      {% if r.statut == "traitee" %}
+        <span class="rec-card-badge badge-traitee">Traitée</span>
+      {% elif r.statut == "rejetee" %}
+        <span class="rec-card-badge badge-rejetee">Rejetée</span>
+      {% else %}
+        <span class="rec-card-badge badge-attente">En attente de saisie</span>
+      {% endif %}
+      <span class="rec-card-sub">{{ r.bulletin.classe.nom }}</span>
+      <h3 class="rec-card-title">{{ r.bulletin.student.first_name }} {{ r.bulletin.student.last_name }}</h3>
+    </div>
+    <div class="rec-card-body">
+      <div class="rec-card-meta">{{ r.matiere.nom }} · {{ r.maj_le|date:"d/m/Y H:i" }}</div>
+    </div>
+  </article>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">Aucun historique pour le moment.</div>
+{% endif %}
+
+{% endblock %}

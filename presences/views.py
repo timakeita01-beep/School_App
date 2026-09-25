@@ -50,7 +50,7 @@ def appel_classe(request, classe_id):
 
     jour = parse_date(request.GET.get("date"), date.today())
 
-    eleves = list(classe.students.all().order_by("last_name", "first_name"))
+    eleves = list(classe.students.filter(actif=True).order_by("last_name", "first_name"))
 
     presences_dict = {
         p.student_id: p
@@ -90,7 +90,7 @@ def appel_bulk_save(request, classe_id):
         return redirect("accounts:dashboard")
 
     jour = parse_date(request.POST.get("date"), date.today())
-    eleves = list(classe.students.all())
+    eleves = list(classe.students.filter(actif=True))
 
     redirect_url = reverse("presences:appel_classe", args=[classe.pk]) + f"?date={jour}"
 
@@ -170,5 +170,19 @@ def marquer_notifie(request, pk):
         presence.parent_notifie = True
         presence.save(update_fields=["parent_notifie"])
         messages.success(request, "Le parent a été marqué comme notifié.")
+
+    return redirect("presences:alertes_absences")
+
+
+@login_required
+def historique_delete(request, pk):
+    if not request.user.is_staff:
+        messages.error(request, "Seul l'administrateur peut effectuer cette action.")
+        return redirect("accounts:dashboard")
+
+    if request.method == "POST":
+        presence = get_object_or_404(Presence, pk=pk, present=False, parent_notifie=True)
+        presence.delete()
+        messages.success(request, "L'entrée a été supprimée de l'historique.")
 
     return redirect("presences:alertes_absences")

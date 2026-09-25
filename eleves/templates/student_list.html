@@ -22,8 +22,16 @@
                     </svg>
                 </div>
                 <div>
-                    <h1 class="list-title">Liste des élèves</h1>
-                    <p class="list-subtitle">Gérez les informations de chaque élève avec aisance</p>
+                    <h1 class="list-title">{% if voir_sortis %}Élèves sortis / diplômés{% else %}Liste des élèves{% endif %}</h1>
+                    <p class="list-subtitle">
+                        {% if voir_sortis %}
+                            Anciens élèves ayant quitté l'établissement (dossier conservé).
+                            <a href="{% url 'students:list' %}">← Retour aux élèves actifs</a>
+                        {% else %}
+                            Gérez les informations de chaque élève avec aisance ·
+                            <a href="?sortis=1">Voir les anciens élèves / diplômés</a>
+                        {% endif %}
+                    </p>
                 </div>
             </div>
             <div class="list-header-actions">

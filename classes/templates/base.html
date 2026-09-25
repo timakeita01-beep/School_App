@@ -150,6 +150,21 @@
       height: 18px;
     }
 
+    .badge-count {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 18px;
+      height: 18px;
+      padding: 0 5px;
+      margin-left: auto;
+      background: #dc2626;
+      color: white;
+      font-size: 10px;
+      font-weight: 700;
+      border-radius: 20px;
+    }
+
     .sidebar-footer {
       border-top: 1px solid #f1f5f9;
       padding-top: 1rem;
@@ -730,6 +745,18 @@
         </span>
         <span>Notifications</span>
       </a>
+
+      <a href="{% url 'bulletin:reclamations' %}" class="nav-item {% block nav_reclamations_admin %}{% endblock %}">
+        <span class="nav-icon" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 9v4m0 4h.01"/>
+            <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+          </svg>
+        </span>
+        <span>Réclamations</span>
+        {% if reclamations_badge_count %}<span class="badge-count">{{ reclamations_badge_count }}</span>{% endif %}
+      </a>
       {% else %}
       <a href="{% url 'accounts:teacher_dashboard' %}" class="nav-item {% block nav_bulletins_prof %}{% endblock %}">
         <span class="nav-icon" aria-hidden="true">
@@ -743,6 +770,18 @@
           </svg>
         </span>
         <span>Noter mes élèves</span>
+      </a>
+
+      <a href="{% url 'bulletin:reclamations_enseignant' %}" class="nav-item {% block nav_reclamations_teacher %}{% endblock %}">
+        <span class="nav-icon" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 9v4m0 4h.01"/>
+            <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+          </svg>
+        </span>
+        <span>Réclamations</span>
+        {% if reclamations_badge_count %}<span class="badge-count">{{ reclamations_badge_count }}</span>{% endif %}
       </a>
       {% endif %}
 
@@ -924,9 +963,8 @@
         <p class="footer-copy">© 2026 Système de Gestion Scolaire.<br>Fait par SEPTA</p>
       </div>
       <nav class="footer-links" aria-label="Liens utiles">
-        <a href="#">Politique de confidentialité</a>
-        <a href="#">Mentions légales</a>
-        <a href="#">Contact</a>
+        <a href="{% url 'accounts:politique_confidentialite' %}">Politique de confidentialité</a>
+        <a href="{% url 'accounts:home' %}#contact">Contact</a>
       </nav>
     </footer>
 

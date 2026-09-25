@@ -10,4 +10,5 @@ urlpatterns = [
 
     path("alertes/", views.alertes_absences, name="alertes_absences"),
     path("alertes/<int:pk>/notifie/", views.marquer_notifie, name="marquer_notifie"),
+    path("alertes/<int:pk>/supprimer/", views.historique_delete, name="historique_supprimer"),
 ]

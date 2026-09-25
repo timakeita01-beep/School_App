@@ -212,6 +212,7 @@
         <th>Classe</th>
         <th>Date</th>
         <th>Statut</th>
+        <th></th>
       </tr>
     </thead>
     <tbody>
@@ -221,6 +222,15 @@
         <td>{{ presence.classe.nom }}</td>
         <td>{{ presence.date|date:"d/m/Y" }}</td>
         <td><span class="badge-traite">Parent notifié</span></td>
+        <td>
+          <form method="post" action="{% url 'presences:historique_supprimer' presence.pk %}"
+                onsubmit="return confirm('Supprimer cette entrée de l\'historique ?');">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-secondary" style="padding:6px 12px;">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </form>
+        </td>
       </tr>
       {% endfor %}
     </tbody>

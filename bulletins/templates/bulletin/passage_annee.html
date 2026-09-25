@@ -1,0 +1,186 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Passage en classe supérieure{% endblock %}
+{% block meta_desc %}Fin d'année : calcul et validation des passages en classe supérieure{% endblock %}
+{% block page_title %}Passage en classe supérieure{% endblock %}
+
+{% block extra_css %}
+<style>
+  .page-header { margin-bottom: 1.5rem; }
+  .page-header h2 { font-size: 22px; font-weight: 700; color: #0f172a; margin: 0; }
+  .page-header p { font-size: 14px; color: #64748b; margin: 4px 0 0; max-width: 720px; }
+
+  .info-banner {
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 12px;
+    padding: 14px 18px;
+    font-size: 13px;
+    color: #1e3a8a;
+    margin-bottom: 1.5rem;
+  }
+
+  .toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 1.5rem;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    text-decoration: none;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .btn-primary { background: #213561; color: white; }
+  .btn-primary:hover { background: #374970; }
+  .btn-secondary { background: #f1f5f9; color: #475569; }
+  .btn-secondary:hover { background: #e2e8f0; }
+  .btn-success { background: #059669; color: white; }
+  .btn-success:hover { background: #047857; }
+
+  .classe-block {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    margin-bottom: 20px;
+    overflow: hidden;
+  }
+
+  .classe-block-head {
+    background: #f8fafc;
+    padding: 14px 20px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #0f172a;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  table.passage-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .passage-table th {
+    text-align: left;
+    font-size: 11px;
+    text-transform: uppercase;
+    color: #94a3b8;
+    padding: 10px 20px;
+    background: #fafbfc;
+  }
+
+  .passage-table td {
+    padding: 10px 20px;
+    border-top: 1px solid #f1f5f9;
+    font-size: 13px;
+    color: #0f172a;
+  }
+
+  .moyenne-badge {
+    font-weight: 700;
+  }
+
+  .moyenne-badge.admis { color: #059669; }
+  .moyenne-badge.redouble { color: #dc2626; }
+
+  .empty-hist { font-size: 13px; color: #94a3b8; padding: 20px; }
+
+  .confirm-bar {
+    position: sticky;
+    bottom: 0;
+    background: white;
+    border-top: 1px solid #e2e8f0;
+    padding: 16px 20px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    border-radius: 16px 16px 0 0;
+    box-shadow: 0 -6px 20px rgba(0,0,0,0.04);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+  <h2>Passage en classe supérieure — {{ annee_scolaire }}</h2>
+  <p>
+    Moyenne annuelle calculée sur les bulletins d'Octobre à Juin (un mois non validé compte pour 0).
+    Seuil de passage : <strong>{{ seuil_passage }}/10</strong>. Vous pouvez surclasser chaque décision
+    avant de confirmer — rien n'est supprimé, les données de l'année restent consultables ensuite.
+  </p>
+</div>
+
+<div class="info-banner">
+  Pensez à télécharger une sauvegarde depuis les Paramètres avant de confirmer le passage.
+</div>
+
+<div class="toolbar">
+  <a href="{% url 'bulletin:passage_annee_export_csv' %}?annee_scolaire={{ annee_scolaire }}" class="btn btn-secondary">
+    Exporter la liste en CSV
+  </a>
+</div>
+
+<form method="post" id="passageForm">
+  {% csrf_token %}
+  <input type="hidden" name="annee_scolaire" value="{{ annee_scolaire }}">
+
+  {% for info in classes_info %}
+  <div class="classe-block">
+    <div class="classe-block-head">
+      {{ info.classe.nom }}
+      {% if info.classe.niveau >= 6 %}<span style="font-weight:400;color:#64748b;">— les admis sortiront de l'établissement</span>{% endif %}
+    </div>
+
+    {% if info.lignes %}
+    <table class="passage-table">
+      <thead>
+        <tr>
+          <th>Élève</th>
+          <th>Moyenne annuelle /10</th>
+          <th>Décision</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for ligne in info.lignes %}
+        <tr>
+          <td>{{ ligne.eleve.first_name }} {{ ligne.eleve.last_name }}</td>
+          <td><span class="moyenne-badge {% if ligne.admis %}admis{% else %}redouble{% endif %}">{{ ligne.moyenne }}/10</span></td>
+          <td>
+            <label>
+              <input type="checkbox" name="admis_{{ ligne.eleve.pk }}" {% if ligne.admis %}checked{% endif %}>
+              Admis en classe supérieure
+            </label>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="empty-hist">Aucun élève actif dans cette classe.</p>
+    {% endif %}
+  </div>
+  {% endfor %}
+
+  <div class="confirm-bar">
+    <button type="submit" class="btn btn-success"
+            onclick="return confirm('Confirmer le passage en classe supérieure pour {{ annee_scolaire }} ? Cette action déplace les élèves admis et fait avancer l\'année scolaire active.');">
+      Confirmer le passage en classe supérieure
+    </button>
+  </div>
+</form>
+
+{% endblock %}

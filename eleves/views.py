@@ -7,8 +7,17 @@ from .Form import ParentForm, StudentForm
 # Create your views here.
 
 def student_list(request):
-    student_list = Student.objects.all()
-    return render(request, 'student_list.html', {'student_list': student_list})
+    voir_sortis = request.GET.get("sortis") == "1"
+
+    if voir_sortis:
+        student_list = Student.objects.filter(actif=False)
+    else:
+        student_list = Student.objects.filter(actif=True)
+
+    return render(request, 'student_list.html', {
+        'student_list': student_list,
+        'voir_sortis': voir_sortis,
+    })
 
 def student_detail(request, identification_number):
     student = Student.objects.get(identification_number=identification_number)

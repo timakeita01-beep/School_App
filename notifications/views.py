@@ -1,7 +1,7 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.mail import send_mail
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 
 from classes.models import Classe
 from eleves.models import Parent
@@ -100,3 +100,17 @@ def composer(request):
     }
 
     return render(request, "notifications/composer.html", context)
+
+
+@login_required
+def notification_delete(request, pk):
+    if not request.user.is_staff:
+        messages.error(request, "Seul l'administrateur peut supprimer une notification.")
+        return redirect("accounts:dashboard")
+
+    if request.method == "POST":
+        notif = get_object_or_404(Notification, pk=pk)
+        notif.delete()
+        messages.success(request, "La notification a été supprimée de l'historique.")
+
+    return redirect("notifications:composer")

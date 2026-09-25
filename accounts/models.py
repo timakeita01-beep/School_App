@@ -10,6 +10,11 @@ class EcoleConfig(models.Model):
     adresse = models.CharField(max_length=255, blank=True)
     contact = models.CharField(max_length=150, blank=True)
     nom_directeur = models.CharField(max_length=150, blank=True)
+    annee_scolaire_active = models.CharField(
+        max_length=20, default="2026-2027",
+        help_text="Année scolaire en cours. Avance automatiquement lors du "
+                   "passage en classe supérieure.",
+    )
     signature_directeur = models.ImageField(
         upload_to="ecole/signatures/", blank=True, null=True,
         help_text="Signature du directeur, affichée automatiquement sur tous les bulletins."

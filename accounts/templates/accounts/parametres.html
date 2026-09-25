@@ -88,6 +88,68 @@
     font-size: 13px;
     width: 100%;
   }
+
+  .archive-card {
+    background: white;
+    border-radius: 16px;
+    border: 1px solid #e5e7eb;
+    max-width: 640px;
+    padding: 28px;
+    margin-top: 24px;
+  }
+
+  .archive-card h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0 0 6px;
+  }
+
+  .archive-card p.hint { font-size: 13px; color: #64748b; margin: 0 0 20px; }
+
+  .archive-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 0;
+    border-top: 1px solid #f1f5f9;
+    flex-wrap: wrap;
+  }
+
+  .archive-row:first-of-type { border-top: none; padding-top: 0; }
+
+  .archive-row-text strong {
+    display: block;
+    font-size: 14px;
+    color: #0f172a;
+  }
+
+  .archive-row-text span {
+    font-size: 12px;
+    color: #64748b;
+  }
+
+  .btn-outline {
+    background: white;
+    color: #213561;
+    border: 1.5px solid #213561;
+  }
+
+  .btn-outline:hover { background: #eff2f8; }
+
+  .btn-warning { background: #d97706; color: white; }
+  .btn-warning:hover { background: #b45309; }
+
+  .annee-pill {
+    display: inline-block;
+    background: #dbeafe;
+    color: #12254e;
+    font-weight: 600;
+    font-size: 13px;
+    padding: 4px 12px;
+    border-radius: 20px;
+  }
 </style>
 {% endblock %}
 
@@ -135,6 +197,29 @@
 
     <button type="submit" class="btn">Enregistrer</button>
   </form>
+</div>
+
+<div class="archive-card">
+  <h3>Archive &amp; Sauvegarde</h3>
+  <p class="hint">
+    Année scolaire active : <span class="annee-pill">{{ ecole.annee_scolaire_active }}</span>
+  </p>
+
+  <div class="archive-row">
+    <div class="archive-row-text">
+      <strong>Télécharger une sauvegarde</strong>
+      <span>Export JSON de toutes les données (élèves, notes, bulletins, présences...). À faire avant tout passage en classe supérieure.</span>
+    </div>
+    <a href="{% url 'accounts:sauvegarde_export' %}" class="btn btn-outline">Télécharger (.json)</a>
+  </div>
+
+  <div class="archive-row">
+    <div class="archive-row-text">
+      <strong>Passage en classe supérieure</strong>
+      <span>Calcule la moyenne annuelle de chaque élève et fait passer les admis en classe supérieure. Aucune donnée n'est supprimée.</span>
+    </div>
+    <a href="{% url 'bulletin:passage_annee' %}" class="btn btn-warning">Démarrer le passage</a>
+  </div>
 </div>
 
 {% endblock %}

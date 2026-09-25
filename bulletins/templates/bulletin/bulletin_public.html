@@ -199,6 +199,77 @@
       font-size: 12.5px;
     }
 
+    .signaler-btn {
+      background: none;
+      border: 1px solid #e2e8f0;
+      color: #94a3b8;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      white-space: nowrap;
+    }
+
+    .signaler-btn:hover {
+      border-color: #dc2626;
+      color: #dc2626;
+    }
+
+    .signalement-box {
+      display: none;
+      background: #fff7ed;
+      border: 1px solid #fed7aa;
+      border-radius: 12px;
+      padding: 18px 20px;
+      margin-bottom: 24px;
+    }
+
+    .signalement-box.open { display: block; }
+
+    .signalement-box .titre {
+      font-size: 13px;
+      font-weight: 700;
+      color: #7c2d12;
+      margin-bottom: 10px;
+    }
+
+    .signalement-box textarea {
+      width: 100%;
+      min-height: 90px;
+      padding: 10px 12px;
+      border: 1.5px solid #fed7aa;
+      border-radius: 10px;
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      resize: vertical;
+      outline: none;
+      margin-bottom: 10px;
+    }
+
+    .signalement-box-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-danger-outline {
+      background: #dc2626;
+      color: white;
+    }
+
+    .banner {
+      max-width: 880px;
+      margin: 0 auto 16px;
+      padding: 12px 18px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .banner-success { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+    .banner-error { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+
     .bulletin-summary {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -311,12 +382,30 @@
 </head>
 <body>
 
+{% if messages %}
+  {% for message in messages %}
+  <div class="banner banner-{{ message.tags }} no-print">{{ message }}</div>
+  {% endfor %}
+{% endif %}
+
 <div class="bulletin-actions no-print">
   <a href="{% url 'bulletin:portail_parent' token %}" class="btn btn-secondary">← Tous les bulletins</a>
-  <button type="button" class="btn btn-primary" onclick="window.print()">Télécharger / Imprimer</button>
+  <a href="{% url 'bulletin:bulletin_pdf_public' token bulletin.pk %}" target="_blank" class="btn btn-primary">Télécharger en PDF</a>
 </div>
 
 <div class="bulletin-sheet">
+
+  <div class="signalement-box no-print" id="signalementBox">
+    <div class="titre">Signaler une erreur — <span id="signalementMatiere"></span></div>
+    <form method="post" id="signalementForm" action="">
+      {% csrf_token %}
+      <textarea name="message" placeholder="Expliquez ce qui vous semble incorrect sur cette note..." required></textarea>
+      <div class="signalement-box-actions">
+        <button type="submit" class="btn btn-danger-outline">Envoyer le signalement</button>
+        <button type="button" class="btn btn-secondary" onclick="fermerSignalement()">Annuler</button>
+      </div>
+    </form>
+  </div>
 
   <div class="sheet-top">
     <div class="sheet-top-title">
@@ -361,6 +450,7 @@
         <th>Note /10</th>
         <th>Moy. classe</th>
         <th>Appréciations &amp; travail</th>
+        <th class="no-print"></th>
       </tr>
     </thead>
     <tbody>
@@ -371,6 +461,12 @@
         <td class="note-cell">{{ ligne.note_sur_10|default:"—" }}</td>
         <td>{{ ligne.moyenne_classe|default:"—" }}</td>
         <td class="appreciation-cell">{{ ligne.note.commentaire|default:"—" }}</td>
+        <td class="no-print">
+          <button type="button" class="signaler-btn"
+                  onclick="ouvrirSignalement('{% url 'bulletin:reclamation_creer' token bulletin.pk ligne.matiere.pk %}', '{{ ligne.matiere.nom|escapejs }}')">
+            Signaler
+          </button>
+        </td>
       </tr>
       {% endfor %}
     </tbody>
@@ -409,6 +505,20 @@
   </div>
 
 </div>
+
+<script>
+function ouvrirSignalement(actionUrl, matiereNom) {
+  const box = document.getElementById('signalementBox');
+  document.getElementById('signalementForm').action = actionUrl;
+  document.getElementById('signalementMatiere').textContent = matiereNom;
+  box.classList.add('open');
+  box.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function fermerSignalement() {
+  document.getElementById('signalementBox').classList.remove('open');
+}
+</script>
 
 </body>
 </html>

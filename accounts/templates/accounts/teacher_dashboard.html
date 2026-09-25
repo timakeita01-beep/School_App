@@ -46,6 +46,112 @@
     gap: 24px;
   }
 
+  .classe-group {
+    margin-bottom: 2rem;
+  }
+
+  .classe-group-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0 0 12px;
+  }
+
+  .classe-group-badge {
+    display: inline-block;
+    background: #dbeafe;
+    color: #12254e;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 10px;
+    border-radius: 20px;
+    margin-right: 8px;
+  }
+
+  .cards-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+  }
+
+  .card-icon-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .card-icon-row .card-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.18);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .card-icon-row .card-icon i {
+    color: white;
+    font-size: 15px;
+  }
+
+  .reclamations-section {
+    background: white;
+    border: 1px solid #e5e6e8;
+    border-radius: 16px;
+    padding: 20px 22px;
+    margin-bottom: 2rem;
+  }
+
+  .reclamations-section h3 {
+    font-size: 15px;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0 0 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .reclamations-section .hint {
+    font-size: 13px;
+    color: #64748b;
+    margin: 0 0 14px;
+  }
+
+  .reclamations-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 14px;
+  }
+
+  .reclamation-card {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 14px 16px;
+    background: #fff7ed;
+    border: 1px solid #fed7aa;
+    border-radius: 12px;
+    font-size: 13px;
+    color: #7c2d12;
+  }
+
+  .badge-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    background: #dc2626;
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: 20px;
+  }
+
   .class-card {
     background: rgb(248, 248, 248);
     border-radius: 16px;
@@ -188,58 +294,115 @@
 <div class="page-header">
   <div class="page-header-text">
     <h2>Mes classes</h2>
-    <p>Sélectionnez une classe pour saisir les notes de vos élèves.</p>
+    <p>Sélectionnez une classe pour saisir les notes ou faire l'appel de vos élèves.</p>
   </div>
   <span class="period-pill">{{ mois_label }} {{ annee_scolaire }}</span>
 </div>
 
+<div class="reclamations-section">
+  <h3>
+    Réclamations à traiter
+    {% if reclamations_a_traiter %}<span class="badge-count">{{ reclamations_a_traiter|length }}</span>{% endif %}
+  </h3>
+  <p class="hint">Corrections de notes signalées par des parents, transmises par l'administration.</p>
+
+  {% if reclamations_a_traiter %}
+  <div class="reclamations-grid">
+    {% for reclamation in reclamations_a_traiter %}
+    <div class="reclamation-card">
+      <span>
+        <strong>{{ reclamation.bulletin.student.first_name }} {{ reclamation.bulletin.student.last_name }}</strong><br>
+        {{ reclamation.matiere.nom }} ({{ reclamation.bulletin.classe.nom }})
+      </span>
+      <a href="{% url 'bulletin:reclamations_enseignant' %}" class="btn btn-primary" style="padding:8px 14px;font-size:12px;margin-top:0;">
+        Examiner
+      </a>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+    <p class="hint" style="margin:0;">Aucune réclamation en attente pour le moment.</p>
+  {% endif %}
+</div>
+
 {% if classes_info %}
-<div class="classes-grid">
   {% for info in classes_info %}
-  <article class="class-card">
-    <div class="card-header">
-      <span class="card-badge">
+  <div class="classe-group">
+    <div class="classe-group-title">
+      <span class="classe-group-badge">
         {% if info.classe.niveau == 1 %}1er{% else %}{{ info.classe.niveau }}ème{% endif %}
       </span>
-      <h3 class="card-title">{{ info.classe.nom }}</h3>
+      {{ info.classe.nom }}
     </div>
 
-    <div class="card-body">
-      <div class="card-stats">
-        <div>
-          <div class="card-stat-value">{{ info.total_eleves }}</div>
-          <div class="card-stat-label">Élèves</div>
+    <div class="cards-row">
+      <!-- Carte Notes -->
+      <article class="class-card">
+        <div class="card-header">
+          <div class="card-icon-row">
+            <div class="card-icon"><i class="fa-solid fa-pen-to-square"></i></div>
+            <h3 class="card-title">Notes</h3>
+          </div>
         </div>
-        <div>
-          <div class="card-stat-value">{{ info.matieres_completes }}/{{ info.total_matieres }}</div>
-          <div class="card-stat-label">Matières notées</div>
+
+        <div class="card-body">
+          <div class="card-stats">
+            <div>
+              <div class="card-stat-value">{{ info.total_eleves }}</div>
+              <div class="card-stat-label">Élèves</div>
+            </div>
+            <div>
+              <div class="card-stat-value">{{ info.matieres_completes }}/{{ info.total_matieres }}</div>
+              <div class="card-stat-label">Matières notées</div>
+            </div>
+          </div>
+
+          {% if info.total_matieres %}
+          <div class="progress-bar-wrap">
+            <div class="progress-bar-fill {% if info.matieres_completes == info.total_matieres %}complete{% endif %}"
+                 style="width: {% widthratio info.matieres_completes info.total_matieres 100 %}%;"></div>
+          </div>
+          <p class="progress-label">
+            {% if info.matieres_completes == info.total_matieres %}
+              Toutes les matières sont notées pour ce mois.
+            {% else %}
+              Il reste {{ info.matieres_restantes }} matière(s) à noter.
+            {% endif %}
+          </p>
+          {% endif %}
+
+          <a href="{% url 'bulletin:notes_classe' info.classe.pk mois %}" class="btn btn-primary">
+            Noter mes élèves
+          </a>
         </div>
-      </div>
+      </article>
 
-      {% if info.total_matieres %}
-      <div class="progress-bar-wrap">
-        <div class="progress-bar-fill {% if info.matieres_completes == info.total_matieres %}complete{% endif %}"
-             style="width: {% widthratio info.matieres_completes info.total_matieres 100 %}%;"></div>
-      </div>
-      <p class="progress-label">
-        {% if info.matieres_completes == info.total_matieres %}
-          Toutes les matières sont notées pour ce mois.
-        {% else %}
-          Il reste {{ info.matieres_restantes }} matière(s) à noter.
-        {% endif %}
-      </p>
-      {% endif %}
+      <!-- Carte Présence -->
+      <article class="class-card">
+        <div class="card-header" style="background: linear-gradient(135deg, {% if info.appel_fait_aujourdhui %}#065f46, #059669{% else %}#1b2e56, #2c4780{% endif %});">
+          <div class="card-icon-row">
+            <div class="card-icon"><i class="fa-solid fa-clipboard-check"></i></div>
+            <h3 class="card-title">Présence</h3>
+          </div>
+        </div>
 
-      <a href="{% url 'bulletin:notes_classe' info.classe.pk mois %}" class="btn btn-primary">
-        Noter mes élèves
-      </a>
-      <a href="{% url 'presences:appel_classe' info.classe.pk %}" class="btn btn-primary" style="margin-top: 8px; background: {% if info.appel_fait_aujourdhui %}#059669{% else %}#213561{% endif %};">
-        {% if info.appel_fait_aujourdhui %}Modifier l'appel du jour{% else %}Faire l'appel du jour{% endif %}
-      </a>
+        <div class="card-body">
+          <p class="progress-label" style="margin-bottom: 16px;">
+            {% if info.appel_fait_aujourdhui %}
+              L'appel d'aujourd'hui a déjà été fait pour cette classe.
+            {% else %}
+              L'appel du jour n'a pas encore été fait pour cette classe.
+            {% endif %}
+          </p>
+
+          <a href="{% url 'presences:appel_classe' info.classe.pk %}" class="btn btn-primary" style="background: {% if info.appel_fait_aujourdhui %}#059669{% else %}#213561{% endif %};">
+            {% if info.appel_fait_aujourdhui %}Modifier l'appel du jour{% else %}Faire l'appel du jour{% endif %}
+          </a>
+        </div>
+      </article>
     </div>
-  </article>
+  </div>
   {% endfor %}
-</div>
 {% else %}
 <div class="empty-state">
   <h3>Aucune classe assignée</h3>

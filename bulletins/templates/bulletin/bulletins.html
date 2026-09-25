@@ -235,7 +235,11 @@
   </div>
 
   <form class="period-form" method="get">
-    <input type="text" name="annee_scolaire" value="{{ annee_scolaire }}" style="width:110px;">
+    <select name="annee_scolaire" onchange="this.form.submit()">
+      {% for annee in annees_disponibles %}
+      <option value="{{ annee }}" {% if annee == annee_scolaire %}selected{% endif %}>{{ annee }}</option>
+      {% endfor %}
+    </select>
     <select name="mois" onchange="this.form.submit()">
       {% for valeur, label in mois_scolaire %}
       <option value="{{ valeur }}" {% if valeur == mois %}selected{% endif %}>{{ label }}</option>

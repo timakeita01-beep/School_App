@@ -1,19 +1,27 @@
+import csv
+from datetime import date
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.core.mail import send_mail
+from django.core.mail import EmailMessage, send_mail
 from django.db import transaction
 from django.db.models import Avg
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 
 from accounts.models import EcoleConfig
 from classes.models import Classe
 from eleves.models import Parent
+from matieres.models import Matiere
 
-from .models import Note, Bulletin
-from .utils import MOIS_SCOLAIRE, ANNEE_SCOLAIRE_DEFAUT, mois_courant, mois_label, lien_whatsapp
+from .models import Note, Bulletin, Reclamation, PromotionCampagne
+from .pdf import generer_bulletin_pdf, nom_fichier_pdf
+from .utils import (
+    MOIS_SCOLAIRE, mois_courant, mois_label, lien_whatsapp,
+    annee_active, annees_disponibles, annee_suivante,
+)
 
 
 # ============================================================
@@ -93,9 +101,9 @@ def notes_classe(request, classe_id, mois):
         messages.error(request, "Vous n'êtes pas l'enseignant de cette classe.")
         return redirect("accounts:dashboard")
 
-    annee_scolaire = request.GET.get("annee_scolaire", ANNEE_SCOLAIRE_DEFAUT)
+    annee_scolaire = request.GET.get("annee_scolaire", annee_active())
 
-    eleves = list(classe.students.all().order_by("last_name", "first_name"))
+    eleves = list(classe.students.filter(actif=True).order_by("last_name", "first_name"))
     matieres = list(classe.matieres.all())
     total_eleves = len(eleves)
 
@@ -195,7 +203,7 @@ def notes_bulk_save(request, classe_id, mois, matiere_id):
         messages.error(request, "Vous ne pouvez pas saisir les notes de cette classe.")
         return redirect("accounts:dashboard")
 
-    annee_scolaire = request.POST.get("annee_scolaire", ANNEE_SCOLAIRE_DEFAUT)
+    annee_scolaire = request.POST.get("annee_scolaire", annee_active())
 
     redirect_url = (
         reverse("bulletin:notes_classe", args=[classe.pk, mois])
@@ -210,7 +218,7 @@ def notes_bulk_save(request, classe_id, mois, matiere_id):
         )
         return redirect(redirect_url)
 
-    eleves = list(classe.students.all())
+    eleves = list(classe.students.filter(actif=True))
 
     if not eleves:
         messages.error(request, "Cette classe n'a aucun élève.")
@@ -318,12 +326,12 @@ def bulletin_list(request):
         return redirect("accounts:dashboard")
 
     mois = int(request.GET.get("mois", mois_courant()))
-    annee_scolaire = request.GET.get("annee_scolaire", ANNEE_SCOLAIRE_DEFAUT)
+    annee_scolaire = request.GET.get("annee_scolaire", annee_active())
 
     classes_info = []
 
     for classe in Classe.objects.all().order_by("-niveau", "nom"):
-        eleves = list(classe.students.all().order_by("last_name", "first_name"))
+        eleves = list(classe.students.filter(actif=True).order_by("last_name", "first_name"))
         total_eleves = len(eleves)
 
         valide = classe_verrouillee(classe, mois, annee_scolaire)
@@ -388,32 +396,20 @@ def bulletin_list(request):
         "mois_label": mois_label(mois),
         "mois_scolaire": MOIS_SCOLAIRE,
         "annee_scolaire": annee_scolaire,
+        "annees_disponibles": annees_disponibles(),
     }
 
     return render(request, "bulletin/bulletins.html", context)
 
 
-@login_required
-def valider_classe(request, classe_id):
-    """Calcule les moyennes/rangs et valide d'un coup les bulletins d'une
-    classe pour le mois choisi. Verrouille ensuite la saisie des notes."""
+def _recalculer_et_valider_classe(classe, mois, annee_scolaire):
+    """Calcule les moyennes/rangs de toute la classe pour ce mois et
+    (re)valide les bulletins correspondants. Réutilisé par la validation
+    admin classique et par l'application d'une correction de note suite à
+    réclamation (le recalcul doit impacter le classement de toute la
+    classe, pas seulement l'élève concerné)."""
 
-    if not est_admin(request.user):
-        messages.error(request, "Seul l'administrateur peut valider les bulletins.")
-        return redirect("accounts:dashboard")
-
-    if request.method != "POST":
-        return redirect("bulletin:liste")
-
-    classe = get_object_or_404(Classe, pk=classe_id)
-    mois = int(request.POST.get("mois"))
-    annee_scolaire = request.POST.get("annee_scolaire", ANNEE_SCOLAIRE_DEFAUT)
-
-    redirect_url = (
-        reverse("bulletin:liste") + f"?mois={mois}&annee_scolaire={annee_scolaire}"
-    )
-
-    eleves = classe.students.all()
+    eleves = classe.students.filter(actif=True)
     resultats = []
 
     for eleve in eleves:
@@ -422,12 +418,7 @@ def valider_classe(request, classe_id):
             resultats.append({"student": eleve, "moyenne": moyenne})
 
     if not resultats:
-        messages.error(
-            request,
-            "Aucun bulletin ne peut être validé : vérifiez que toutes les "
-            "notes de la classe sont saisies pour ce mois.",
-        )
-        return redirect(redirect_url)
+        return resultats
 
     resultats.sort(key=lambda x: x["moyenne"], reverse=True)
 
@@ -444,6 +435,39 @@ def valider_classe(request, classe_id):
                     "valide": True,
                 },
             )
+
+    return resultats
+
+
+@login_required
+def valider_classe(request, classe_id):
+    """Calcule les moyennes/rangs et valide d'un coup les bulletins d'une
+    classe pour le mois choisi. Verrouille ensuite la saisie des notes."""
+
+    if not est_admin(request.user):
+        messages.error(request, "Seul l'administrateur peut valider les bulletins.")
+        return redirect("accounts:dashboard")
+
+    if request.method != "POST":
+        return redirect("bulletin:liste")
+
+    classe = get_object_or_404(Classe, pk=classe_id)
+    mois = int(request.POST.get("mois"))
+    annee_scolaire = request.POST.get("annee_scolaire", annee_active())
+
+    redirect_url = (
+        reverse("bulletin:liste") + f"?mois={mois}&annee_scolaire={annee_scolaire}"
+    )
+
+    resultats = _recalculer_et_valider_classe(classe, mois, annee_scolaire)
+
+    if not resultats:
+        messages.error(
+            request,
+            "Aucun bulletin ne peut être validé : vérifiez que toutes les "
+            "notes de la classe sont saisies pour ce mois.",
+        )
+        return redirect(redirect_url)
 
     messages.success(
         request,
@@ -467,7 +491,7 @@ def notifier_parents(request, classe_id):
 
     classe = get_object_or_404(Classe, pk=classe_id)
     mois = int(request.POST.get("mois"))
-    annee_scolaire = request.POST.get("annee_scolaire", ANNEE_SCOLAIRE_DEFAUT)
+    annee_scolaire = request.POST.get("annee_scolaire", annee_active())
 
     redirect_url = (
         reverse("bulletin:liste") + f"?mois={mois}&annee_scolaire={annee_scolaire}"
@@ -486,6 +510,7 @@ def notifier_parents(request, classe_id):
 
     envoyes = 0
     sans_email = 0
+    echecs_pdf = 0
 
     for bulletin in bulletins:
         parent = bulletin.student.parent
@@ -495,28 +520,35 @@ def notifier_parents(request, classe_id):
             sans_email += 1
             continue
 
-        lien = request.build_absolute_uri(
-            reverse("bulletin:bulletin_public", args=[parent.portal_token, bulletin.pk])
-        )
+        pdf_bytes = generer_bulletin_pdf(_contexte_bulletin(bulletin))
 
-        send_mail(
+        if pdf_bytes is None:
+            echecs_pdf += 1
+            continue
+
+        message = EmailMessage(
             subject=f"Bulletin de {bulletin.student.first_name} {bulletin.student.last_name} "
                     f"- {mois_label(mois)} {annee_scolaire}",
-            message=(
+            body=(
                 f"Bonjour {parent.first_name},\n\n"
-                f"Le bulletin de {bulletin.student.first_name} {bulletin.student.last_name} "
-                f"({classe.nom}) pour {mois_label(mois)} {annee_scolaire} est disponible.\n"
-                f"Moyenne générale : {bulletin.moyenne_generale}/10 — Rang : {bulletin.rang}\n\n"
-                f"Consultez-le ici : {lien}\n"
+                f"Veuillez trouver ci-joint le bulletin de {bulletin.student.first_name} "
+                f"{bulletin.student.last_name} ({classe.nom}) pour {mois_label(mois)} {annee_scolaire}.\n"
+                f"Moyenne générale : {bulletin.moyenne_generale}/10 — Rang : {bulletin.rang}\n"
             ),
             from_email=None,
-            recipient_list=[email],
-            fail_silently=True,
+            to=[email],
         )
+        message.attach(nom_fichier_pdf(bulletin), pdf_bytes, "application/pdf")
+        message.send(fail_silently=True)
         envoyes += 1
 
     if envoyes:
-        messages.success(request, f"{envoyes} bulletin(s) notifié(s) par e-mail aux parents.")
+        messages.success(request, f"{envoyes} bulletin(s) envoyé(s) en PDF par e-mail aux parents.")
+    if echecs_pdf:
+        messages.warning(
+            request,
+            f"{echecs_pdf} bulletin(s) n'ont pas pu être envoyés (échec de génération du PDF).",
+        )
     if sans_email:
         messages.warning(
             request,
@@ -596,6 +628,30 @@ def bulletin_detail(request, pk):
     return render(request, "bulletin/bulletin_detail.html", _contexte_bulletin(bulletin))
 
 
+@login_required
+def bulletin_pdf(request, pk):
+    """Téléchargement du PDF du bulletin, réservé à l'admin et à
+    l'enseignant de la classe (même accès que bulletin_detail)."""
+
+    bulletin = get_object_or_404(
+        Bulletin.objects.select_related("student", "classe"), pk=pk
+    )
+
+    if est_enseignant(request.user) and bulletin.classe.enseignant != request.user:
+        messages.error(request, "Vous n'avez pas accès à ce bulletin.")
+        return redirect("accounts:dashboard")
+
+    pdf_bytes = generer_bulletin_pdf(_contexte_bulletin(bulletin))
+
+    if pdf_bytes is None:
+        messages.error(request, "La génération du PDF a échoué. Réessayez.")
+        return redirect("bulletin:detail", pk=bulletin.pk)
+
+    response = HttpResponse(pdf_bytes, content_type="application/pdf")
+    response["Content-Disposition"] = f'inline; filename="{nom_fichier_pdf(bulletin)}"'
+    return response
+
+
 # ============================================================
 # 3. PORTAIL PARENT (accès public, sans connexion, via jeton)
 # ============================================================
@@ -650,3 +706,494 @@ def bulletin_public(request, token, pk):
     context["token"] = token
 
     return render(request, "bulletin/bulletin_public.html", context)
+
+
+def bulletin_pdf_public(request, token, pk):
+    """Téléchargement du PDF par le parent, sans connexion (même contrôle
+    d'accès par jeton que bulletin_public)."""
+
+    bulletin = get_object_or_404(
+        Bulletin.objects.select_related("student", "classe"), pk=pk, valide=True
+    )
+
+    parent = get_object_or_404(Parent, portal_token=token)
+
+    if bulletin.student.parent_id != parent.pk:
+        messages.error(request, "Ce lien ne donne pas accès à ce bulletin.")
+        return redirect("bulletin:portail_parent", token=token)
+
+    pdf_bytes = generer_bulletin_pdf(_contexte_bulletin(bulletin))
+
+    if pdf_bytes is None:
+        messages.error(request, "La génération du PDF a échoué. Réessayez.")
+        return redirect("bulletin:bulletin_public", token=token, pk=bulletin.pk)
+
+    response = HttpResponse(pdf_bytes, content_type="application/pdf")
+    response["Content-Disposition"] = f'inline; filename="{nom_fichier_pdf(bulletin)}"'
+    return response
+
+
+# ============================================================
+# 4. RÉCLAMATIONS SUR LES NOTES
+# ============================================================
+
+def reclamation_creer(request, token, pk, matiere_id):
+    """Point d'entrée public (portail parent, sans connexion) : le parent
+    signale une erreur sur la note d'une matière d'un bulletin validé."""
+
+    bulletin = get_object_or_404(
+        Bulletin.objects.select_related("student", "classe"), pk=pk, valide=True
+    )
+    parent = get_object_or_404(Parent, portal_token=token)
+
+    if bulletin.student.parent_id != parent.pk:
+        messages.error(request, "Ce lien ne donne pas accès à ce bulletin.")
+        return redirect("bulletin:portail_parent", token=token)
+
+    matiere = get_object_or_404(Matiere, pk=matiere_id)
+
+    if request.method == "POST":
+        message = request.POST.get("message", "").strip()
+
+        if not message:
+            messages.error(request, "Merci de décrire le problème rencontré.")
+            return redirect("bulletin:bulletin_public", token=token, pk=bulletin.pk)
+
+        note = Note.objects.filter(
+            student=bulletin.student,
+            matiere=matiere,
+            mois=bulletin.mois,
+            annee_scolaire=bulletin.annee_scolaire,
+        ).first()
+
+        Reclamation.objects.create(
+            bulletin=bulletin,
+            matiere=matiere,
+            note=note,
+            message_parent=message,
+        )
+
+        messages.success(
+            request,
+            "Votre signalement a bien été envoyé à l'administration. "
+            "Nous reviendrons vers vous après vérification.",
+        )
+
+    return redirect("bulletin:bulletin_public", token=token, pk=bulletin.pk)
+
+
+@login_required
+def reclamations_liste(request):
+    """Espace admin : réclamations à transmettre à l'enseignant, en attente
+    de saisie de la correction, ou déjà traitées/rejetées."""
+
+    if not est_admin(request.user):
+        messages.error(request, "Seul l'administrateur peut accéder à cette page.")
+        return redirect("accounts:dashboard")
+
+    nouvelles = Reclamation.objects.filter(
+        statut=Reclamation.NOUVELLE
+    ).select_related("bulletin__student", "bulletin__classe", "matiere", "note")
+
+    en_attente_saisie = Reclamation.objects.filter(
+        statut=Reclamation.VALIDEE_ENSEIGNANT
+    ).select_related("bulletin__student", "bulletin__classe", "matiere", "note")
+
+    transmises = Reclamation.objects.filter(
+        statut=Reclamation.TRANSMISE
+    ).select_related("bulletin__student", "bulletin__classe", "matiere")
+
+    historique = Reclamation.objects.filter(
+        statut__in=[Reclamation.TRAITEE, Reclamation.REJETEE]
+    ).select_related(
+        "bulletin__student", "bulletin__classe", "matiere", "traitee_par"
+    )[:30]
+
+    context = {
+        "nouvelles": nouvelles,
+        "en_attente_saisie": en_attente_saisie,
+        "transmises": transmises,
+        "historique": historique,
+    }
+
+    return render(request, "bulletin/reclamations.html", context)
+
+
+@login_required
+def reclamation_transmettre(request, pk):
+    if not est_admin(request.user):
+        messages.error(request, "Seul l'administrateur peut effectuer cette action.")
+        return redirect("accounts:dashboard")
+
+    if request.method == "POST":
+        reclamation = get_object_or_404(
+            Reclamation.objects.select_related("bulletin__classe"),
+            pk=pk, statut=Reclamation.NOUVELLE,
+        )
+        enseignant = reclamation.bulletin.classe.enseignant
+        reclamation.statut = Reclamation.TRANSMISE
+        reclamation.save(update_fields=["statut", "maj_le"])
+
+        nom_enseignant = (enseignant.get_full_name() if enseignant else "") or "l'enseignant de la classe"
+        messages.success(
+            request,
+            f"La réclamation a été transmise à {nom_enseignant}.",
+        )
+
+    return redirect("bulletin:reclamations")
+
+
+@login_required
+def reclamation_appliquer(request, pk):
+    """L'administrateur applique la valeur proposée/validée par
+    l'enseignant : écrit la note corrigée, relance le calcul moyenne/rang
+    de toute la classe, et peut renotifier le parent."""
+
+    if not est_admin(request.user):
+        messages.error(request, "Seul l'administrateur peut effectuer cette action.")
+        return redirect("accounts:dashboard")
+
+    if request.method != "POST":
+        return redirect("bulletin:reclamations")
+
+    reclamation = get_object_or_404(
+        Reclamation.objects.select_related("bulletin__student", "bulletin__classe", "matiere"),
+        pk=pk, statut=Reclamation.VALIDEE_ENSEIGNANT,
+    )
+
+    if reclamation.valeur_proposee is None:
+        messages.error(request, "Aucune valeur proposée par l'enseignant pour cette réclamation.")
+        return redirect("bulletin:reclamations")
+
+    bulletin = reclamation.bulletin
+    eleve = bulletin.student
+    classe = bulletin.classe
+    matiere = reclamation.matiere
+
+    if reclamation.valeur_proposee < 0 or reclamation.valeur_proposee > matiere.note_sur:
+        messages.error(
+            request,
+            f"La valeur proposée ({reclamation.valeur_proposee}) est hors barème "
+            f"(0 à {matiere.note_sur}).",
+        )
+        return redirect("bulletin:reclamations")
+
+    Note.objects.update_or_create(
+        student=eleve,
+        matiere=matiere,
+        mois=bulletin.mois,
+        annee_scolaire=bulletin.annee_scolaire,
+        defaults={
+            "enseignant": classe.enseignant,
+            "valeur": reclamation.valeur_proposee,
+            "commentaire": reclamation.commentaire_enseignant,
+        },
+    )
+
+    _recalculer_et_valider_classe(classe, bulletin.mois, bulletin.annee_scolaire)
+
+    reclamation.statut = Reclamation.TRAITEE
+    reclamation.traitee_par = request.user
+    reclamation.save(update_fields=["statut", "traitee_par", "maj_le"])
+
+    messages.success(
+        request,
+        f"La note de {eleve.first_name} {eleve.last_name} en {matiere.nom} a été corrigée "
+        "et le bulletin recalculé.",
+    )
+
+    if request.POST.get("renotifier_parent") == "on":
+        parent = eleve.parent
+        bulletin_maj = Bulletin.objects.get(
+            student=eleve, mois=bulletin.mois, annee_scolaire=bulletin.annee_scolaire
+        )
+
+        if parent and parent.email:
+            pdf_bytes = generer_bulletin_pdf(_contexte_bulletin(bulletin_maj))
+
+            if pdf_bytes is None:
+                messages.warning(request, "Impossible de notifier le parent : échec de génération du PDF.")
+            else:
+                message = EmailMessage(
+                    subject=(
+                        f"Bulletin corrigé de {eleve.first_name} {eleve.last_name} - "
+                        f"{mois_label(bulletin.mois)} {bulletin.annee_scolaire}"
+                    ),
+                    body=(
+                        f"Bonjour {parent.first_name},\n\n"
+                        f"Suite à votre signalement, la note de {matiere.nom} a été corrigée. "
+                        f"Veuillez trouver ci-joint le bulletin mis à jour de "
+                        f"{eleve.first_name} {eleve.last_name}.\n"
+                    ),
+                    from_email=None,
+                    to=[parent.email],
+                )
+                message.attach(nom_fichier_pdf(bulletin_maj), pdf_bytes, "application/pdf")
+                message.send(fail_silently=True)
+                messages.success(request, "Le parent a été notifié par e-mail avec le bulletin en PDF.")
+        else:
+            messages.warning(request, "Impossible de notifier le parent : aucun e-mail renseigné.")
+
+    return redirect("bulletin:reclamations")
+
+
+@login_required
+def reclamations_enseignant(request):
+    """Espace enseignant : réclamations transmises par l'administration sur
+    ses classes, à valider (proposer une correction) ou rejeter."""
+
+    if not est_enseignant(request.user):
+        messages.error(request, "Cette page est réservée aux enseignants.")
+        return redirect("accounts:dashboard")
+
+    reclamations = Reclamation.objects.filter(
+        statut=Reclamation.TRANSMISE, bulletin__classe__enseignant=request.user,
+    ).select_related("bulletin__student", "bulletin__classe", "matiere", "note")
+
+    historique = Reclamation.objects.filter(
+        statut__in=[Reclamation.VALIDEE_ENSEIGNANT, Reclamation.REJETEE, Reclamation.TRAITEE],
+        bulletin__classe__enseignant=request.user,
+    ).select_related("bulletin__student", "bulletin__classe", "matiere")[:20]
+
+    context = {"reclamations": reclamations, "historique": historique}
+
+    return render(request, "bulletin/reclamations_enseignant.html", context)
+
+
+@login_required
+def reclamation_valider(request, pk):
+    if not est_enseignant(request.user):
+        messages.error(request, "Cette page est réservée aux enseignants.")
+        return redirect("accounts:dashboard")
+
+    if request.method != "POST":
+        return redirect("bulletin:reclamations_enseignant")
+
+    reclamation = get_object_or_404(
+        Reclamation, pk=pk, statut=Reclamation.TRANSMISE,
+        bulletin__classe__enseignant=request.user,
+    )
+
+    brut = request.POST.get("valeur_proposee", "").strip()
+    commentaire = request.POST.get("commentaire", "").strip()
+
+    try:
+        valeur = Decimal(brut.replace(",", "."))
+    except InvalidOperation:
+        messages.error(request, "Merci de renseigner une valeur de note valide.")
+        return redirect("bulletin:reclamations_enseignant")
+
+    matiere = reclamation.matiere
+
+    if valeur < 0 or valeur > matiere.note_sur:
+        messages.error(request, f"La note doit être comprise entre 0 et {matiere.note_sur}.")
+        return redirect("bulletin:reclamations_enseignant")
+
+    reclamation.valeur_proposee = valeur
+    reclamation.commentaire_enseignant = commentaire
+    reclamation.statut = Reclamation.VALIDEE_ENSEIGNANT
+    reclamation.save(update_fields=["valeur_proposee", "commentaire_enseignant", "statut", "maj_le"])
+
+    messages.success(
+        request,
+        "La correction a été validée et transmise à l'administration pour application.",
+    )
+
+    return redirect("bulletin:reclamations_enseignant")
+
+
+@login_required
+def reclamation_rejeter(request, pk):
+    if not est_enseignant(request.user):
+        messages.error(request, "Cette page est réservée aux enseignants.")
+        return redirect("accounts:dashboard")
+
+    if request.method != "POST":
+        return redirect("bulletin:reclamations_enseignant")
+
+    reclamation = get_object_or_404(
+        Reclamation, pk=pk, statut=Reclamation.TRANSMISE,
+        bulletin__classe__enseignant=request.user,
+    )
+
+    commentaire = request.POST.get("commentaire", "").strip()
+
+    if not commentaire:
+        messages.error(request, "Merci d'indiquer un motif de rejet.")
+        return redirect("bulletin:reclamations_enseignant")
+
+    reclamation.commentaire_enseignant = commentaire
+    reclamation.statut = Reclamation.REJETEE
+    reclamation.save(update_fields=["commentaire_enseignant", "statut", "maj_le"])
+
+    messages.success(request, "La réclamation a été rejetée.")
+
+    return redirect("bulletin:reclamations_enseignant")
+
+
+# ============================================================
+# 5. PASSAGE EN CLASSE SUPÉRIEURE (FIN D'ANNÉE)
+# ============================================================
+
+# Mois pris en compte pour la moyenne annuelle : Octobre à Juin (9 mois).
+# Septembre est exclu (les cours démarrent réellement en octobre). Un mois
+# sans bulletin validé compte pour 0 : ça pénalise l'élève plutôt que de
+# bloquer le calcul.
+MOIS_PROMOTION = [10, 11, 12, 1, 2, 3, 4, 5, 6]
+SEUIL_PASSAGE = Decimal("5")
+
+
+def _moyenne_annuelle(student, annee_scolaire):
+    total = Decimal("0")
+
+    for mois in MOIS_PROMOTION:
+        bulletin = Bulletin.objects.filter(
+            student=student, mois=mois, annee_scolaire=annee_scolaire, valide=True
+        ).first()
+        total += bulletin.moyenne_generale if bulletin else Decimal("0")
+
+    return (total / Decimal(len(MOIS_PROMOTION))).quantize(
+        Decimal("0.01"), rounding=ROUND_HALF_UP
+    )
+
+
+def _classe_superieure(classe):
+    """Classe du niveau directement supérieur, créée automatiquement si
+    elle n'existe pas encore (en pratique les 6 niveaux existent déjà)."""
+
+    niveau_suivant = classe.niveau + 1
+    nom = "1ère Année" if niveau_suivant == 1 else f"{niveau_suivant}ème Année"
+    classe_sup, _ = Classe.objects.get_or_create(
+        niveau=niveau_suivant, defaults={"nom": nom}
+    )
+    return classe_sup
+
+
+def _classes_avec_moyennes(annee_scolaire):
+    classes_info = []
+
+    for classe in Classe.objects.all().order_by("niveau", "nom"):
+        eleves = classe.students.filter(actif=True).order_by("last_name", "first_name")
+        lignes = []
+
+        for eleve in eleves:
+            moyenne = _moyenne_annuelle(eleve, annee_scolaire)
+            lignes.append({
+                "eleve": eleve,
+                "moyenne": moyenne,
+                "admis": moyenne >= SEUIL_PASSAGE,
+            })
+
+        classes_info.append({"classe": classe, "lignes": lignes})
+
+    return classes_info
+
+
+@login_required
+def passage_annee(request):
+    """Fin d'année : calcule la moyenne annuelle de chaque élève actif,
+    propose une liste admis/redouble éditable, puis applique les décisions
+    (transfert de classe ou sortie pour la 6ème année) sans jamais rien
+    supprimer."""
+
+    if not est_admin(request.user):
+        messages.error(
+            request,
+            "Seul l'administrateur peut effectuer le passage en classe supérieure.",
+        )
+        return redirect("accounts:dashboard")
+
+    annee_scolaire = (
+        request.POST.get("annee_scolaire")
+        or request.GET.get("annee_scolaire")
+        or annee_active()
+    )
+
+    classes_info = _classes_avec_moyennes(annee_scolaire)
+
+    if request.method == "POST":
+        resultats = []
+
+        with transaction.atomic():
+            for info in classes_info:
+                classe = info["classe"]
+
+                for ligne in info["lignes"]:
+                    eleve = ligne["eleve"]
+                    admis_final = request.POST.get(f"admis_{eleve.pk}") == "on"
+
+                    if admis_final and classe.niveau >= 6:
+                        eleve.actif = False
+                        eleve.date_sortie = date.today()
+                        eleve.save(update_fields=["actif", "date_sortie"])
+                        classe_destination = "Sorti(e) / Diplômé(e)"
+                    elif admis_final:
+                        classe_sup = _classe_superieure(classe)
+                        eleve.classroom = classe_sup
+                        eleve.save(update_fields=["classroom"])
+                        classe_destination = classe_sup.nom
+                    else:
+                        classe_destination = classe.nom
+
+                    resultats.append({
+                        "eleve_id": eleve.pk,
+                        "eleve": f"{eleve.first_name} {eleve.last_name}",
+                        "classe_origine": classe.nom,
+                        "moyenne": str(ligne["moyenne"]),
+                        "decision": "admis" if admis_final else "redouble",
+                        "classe_destination": classe_destination,
+                    })
+
+            PromotionCampagne.objects.create(
+                annee_scolaire_cloturee=annee_scolaire,
+                realisee_par=request.user,
+                resultats=resultats,
+            )
+
+            ecole = EcoleConfig.get_solo()
+            ecole.annee_scolaire_active = annee_suivante(annee_scolaire)
+            ecole.save(update_fields=["annee_scolaire_active"])
+
+        messages.success(
+            request,
+            f"Passage en classe supérieure confirmé pour {len(resultats)} élève(s) "
+            f"({annee_scolaire}). Nouvelle année scolaire active : "
+            f"{ecole.annee_scolaire_active}.",
+        )
+
+        return redirect("accounts:parametres")
+
+    context = {
+        "classes_info": classes_info,
+        "annee_scolaire": annee_scolaire,
+        "seuil_passage": SEUIL_PASSAGE,
+    }
+
+    return render(request, "bulletin/passage_annee.html", context)
+
+
+@login_required
+def passage_annee_export_csv(request):
+    if not est_admin(request.user):
+        messages.error(request, "Seul l'administrateur peut exporter cette liste.")
+        return redirect("accounts:dashboard")
+
+    annee_scolaire = request.GET.get("annee_scolaire") or annee_active()
+
+    response = HttpResponse(content_type="text/csv; charset=utf-8")
+    response["Content-Disposition"] = f'attachment; filename="passage_{annee_scolaire}.csv"'
+    response.write("﻿")  # BOM pour un affichage correct des accents dans Excel
+
+    writer = csv.writer(response)
+    writer.writerow(["Classe", "Élève", "Moyenne annuelle /10", "Décision"])
+
+    for info in _classes_avec_moyennes(annee_scolaire):
+        for ligne in info["lignes"]:
+            writer.writerow([
+                info["classe"].nom,
+                f"{ligne['eleve'].first_name} {ligne['eleve'].last_name}",
+                str(ligne["moyenne"]),
+                "Admis" if ligne["admis"] else "Redouble",
+            ])
+
+    return response

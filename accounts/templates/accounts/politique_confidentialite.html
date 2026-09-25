@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Politique de confidentialité — Portail Scolaire" />
+  <title>Politique de confidentialité | Portail Scolaire</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #f1f5f9;
+      color: #0f172a;
+    }
+
+    a { color: #0a2257; }
+
+    .navbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid #e2e8f0;
+      padding: 0.9rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .navbar-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+
+    .navbar-brand .brand-icon {
+      width: 36px;
+      height: 36px;
+      background: #0a2257;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .navbar-brand .brand-icon svg { width: 18px; height: 18px; color: white; }
+
+    .navbar-brand span {
+      font-size: 15px;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .btn-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 18px;
+      background: #f1f5f9;
+      color: #0f172a;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 13px;
+      text-decoration: none;
+    }
+
+    .btn-back:hover { background: #e2e8f0; }
+
+    .doc-wrap {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 3rem 2rem 5rem;
+    }
+
+    .doc-wrap h1 {
+      font-size: 32px;
+      font-weight: 800;
+      margin-bottom: 0.5rem;
+    }
+
+    .doc-updated {
+      color: #64748b;
+      font-size: 13px;
+      margin-bottom: 2.5rem;
+    }
+
+    .doc-wrap section {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 1.75rem 2rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .doc-wrap h2 {
+      font-size: 17px;
+      font-weight: 700;
+      margin-bottom: 0.75rem;
+      color: #0a2257;
+    }
+
+    .doc-wrap p, .doc-wrap li {
+      font-size: 14px;
+      line-height: 1.7;
+      color: #334155;
+    }
+
+    .doc-wrap ul { margin: 0.5rem 0 0 1.2rem; }
+    .doc-wrap li { margin-bottom: 0.4rem; }
+
+    .doc-wrap strong { color: #0f172a; }
+  </style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a class="navbar-brand" href="{% url 'accounts:home' %}">
+    <div class="brand-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+        <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+      </svg>
+    </div>
+    <span>SCHOOLAPP</span>
+  </a>
+  <a href="{% url 'accounts:home' %}" class="btn-back">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M19 12H5m7-7l-7 7 7 7"/>
+    </svg>
+    Retour à l'accueil
+  </a>
+</nav>
+
+<div class="doc-wrap">
+  <h1>Politique de confidentialité</h1>
+  <p class="doc-updated">Dernière mise à jour : 21 septembre 2026</p>
+
+  <section>
+    <h2>1. Qui sommes-nous ?</h2>
+    <p>
+      Portail Scolaire est une application de gestion scolaire développée par <strong>SEPTA</strong>
+      (Collaboration · Innovation · Technologie) pour le compte des établissements qui l'utilisent.
+      L'établissement scolaire qui vous inscrit (vous ou votre enfant) sur la plateforme est
+      responsable des données qu'il y saisit ; SEPTA intervient en tant que prestataire technique
+      hébergeant et faisant fonctionner l'application.
+    </p>
+  </section>
+
+  <section>
+    <h2>2. Quelles données sont collectées ?</h2>
+    <ul>
+      <li><strong>Élèves :</strong> identité, date et lieu de naissance, sexe, photo, acte de naissance, classe, date d'inscription.</li>
+      <li><strong>Parents / tuteurs :</strong> identité, adresse, profession, numéro de téléphone, e-mail.</li>
+      <li><strong>Scolarité :</strong> notes, bulletins, moyennes, rangs, présences et absences.</li>
+      <li><strong>Comptes utilisateurs :</strong> identifiants de connexion des administrateurs et enseignants.</li>
+      <li><strong>Messages :</strong> les messages envoyés via le formulaire de contact du site (nom, e-mail, contenu).</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>3. Pourquoi ces données sont-elles collectées ?</h2>
+    <p>Ces informations sont utilisées exclusivement pour :</p>
+    <ul>
+      <li>assurer le suivi scolaire des élèves (notes, bulletins, présences) ;</li>
+      <li>permettre aux parents de consulter les bulletins de leurs enfants via un lien personnel sécurisé (jeton), sans création de compte ;</li>
+      <li>informer les parents par e-mail ou WhatsApp (absences, bulletins disponibles, messages de l'établissement) ;</li>
+      <li>permettre à l'administration et aux enseignants de gérer l'établissement (classes, matières, notes) ;</li>
+      <li>répondre aux demandes envoyées via le formulaire de contact.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>4. Combien de temps ces données sont-elles conservées ?</h2>
+    <p>
+      Les données d'une année scolaire ne sont <strong>jamais supprimées</strong> lors du passage à
+      l'année suivante : à la fin de chaque année, les élèves sont transférés dans la classe
+      supérieure (ou, en fin de cursus, marqués comme sortis), mais leurs notes et bulletins
+      restent conservés. Par souci de simplicité, l'application donne un accès direct dans la
+      navigation aux données de l'année scolaire en cours et de l'année précédente ; les années
+      plus anciennes restent stockées de façon sécurisée et peuvent être fournies à l'établissement
+      sur simple demande auprès de SEPTA.
+    </p>
+  </section>
+
+  <section>
+    <h2>5. Qui peut accéder à ces données ?</h2>
+    <ul>
+      <li>Les administrateurs de l'établissement (accès complet à la gestion scolaire).</li>
+      <li>Les enseignants (accès limité à leurs classes : saisie des notes et des présences).</li>
+      <li>Les parents, uniquement aux informations concernant leurs propres enfants, via leur lien personnel.</li>
+      <li>L'équipe technique de SEPTA, dans le cadre strict de la maintenance et du support de l'application.</li>
+    </ul>
+    <p>Ces données ne sont ni vendues, ni partagées avec des tiers à des fins commerciales.</p>
+  </section>
+
+  <section>
+    <h2>6. Vos droits</h2>
+    <p>
+      Vous pouvez demander l'accès, la rectification ou la suppression des informations vous
+      concernant (ou concernant votre enfant) en contactant l'établissement scolaire, ou directement
+      SEPTA à l'adresse <a href="mailto:septadev7@gmail.com">septadev7@gmail.com</a>.
+    </p>
+  </section>
+
+  <section>
+    <h2>7. Sécurité</h2>
+    <p>
+      L'accès à l'application est protégé par mot de passe pour les administrateurs et les
+      enseignants. L'accès des parents à un bulletin repose sur un lien personnel et confidentiel
+      (jeton unique) qui ne doit pas être partagé. Des sauvegardes régulières des données sont
+      réalisées afin de limiter tout risque de perte d'information.
+    </p>
+  </section>
+
+  <section>
+    <h2>8. Contact</h2>
+    <p>
+      Pour toute question relative à cette politique de confidentialité ou à vos données
+      personnelles, écrivez-nous à <a href="mailto:septadev7@gmail.com">septadev7@gmail.com</a>.
+    </p>
+  </section>
+</div>
+
+</body>
+</html>
